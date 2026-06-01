@@ -618,6 +618,98 @@ const npcNames = {
   female:["Анна","Олена","Марта","Катерина","Софія","Дарина","Міла","Зоряна","Агата","Ганна"]
 };
 const npcSurnames = ["Коваль","Вишняк","Новак","Ружич","Мельник","Вовк","Зорич","Длугош","Рибак","Левицька","Крамар","Синиця","Боровик","Горська","Ткач"];
+const regionalNpcNames = {
+  default:{
+    male:[["Марек","Marek"],["Стефан","Stefan"],["Павел","Pavel"],["Іван","Ivan"],["Богдан","Bohdan"],["Роман","Roman"],["Ян","Jan"],["Миколай","Mykolai"]],
+    female:[["Анна","Anna"],["Олена","Olena"],["Марта","Marta"],["Катерина","Kateryna"],["Софія","Sofia"],["Дарина","Daryna"],["Агата","Agata"],["Ганна","Hanna"]],
+    surnames:[["Коваль","Koval"],["Вишняк","Vyshniak"],["Новак","Novak"],["Мельник","Melnyk"],["Вовк","Vovk"],["Крамар","Kramar"],["Ткач","Tkach"]]
+  },
+  "Польща":{
+    male:[["Мацей","Maciej"],["Станіслав","Stanislaw"],["Болеслав","Boleslaw"],["Казимир","Kazimierz"],["Войцех","Wojciech"],["Яцек","Jacek"],["Пшемисл","Przemysl"],["Миколай","Mikolaj"]],
+    female:[["Ядвіга","Jadwiga"],["Зофія","Zofia"],["Мальґожата","Malgorzata"],["Аґнешка","Agnieszka"],["Ельжбета","Elzbieta"],["Катажина","Katarzyna"],["Добрава","Dobrawa"],["Барбара","Barbara"]],
+    surnames:[["Ковалик","Kowalik"],["Новак","Nowak"],["Вишневський","Wisniewski"],["Зелінський","Zielinski"],["Лісовський","Lisowski"],["Краківський","Krakowski"]]
+  },
+  "Русь":{
+    male:[["Ярослав","Yaroslav"],["Святослав","Sviatoslav"],["Мстислав","Mstyslav"],["Всеволод","Vsevolod"],["Добриня","Dobrynia"],["Ілля","Illia"],["Лука","Luka"],["Остап","Ostap"]],
+    female:[["Предслава","Predslava"],["Єфросинія","Yefrosynia"],["Милана","Milana"],["Любава","Liubava"],["Зоряна","Zoriana"],["Олена","Olena"],["Марія","Maria"],["Василиса","Vasylysa"]],
+    surnames:[["Киянин","Kyianyn"],["Новгородець","Novgorodets"],["Полочанин","Polochanin"],["Смолянин","Smolianyn"],["Вовк","Vovk"],["Бортник","Bortnyk"]]
+  },
+  "Італія":{
+    male:[["Маттео","Matteo"],["Лоренцо","Lorenzo"],["Джованні","Giovanni"],["Марко","Marco"],["П'єтро","Pietro"],["Нікколо","Niccolo"],["Антоніо","Antonio"],["Данте","Dante"]],
+    female:[["Б'янка","Bianca"],["Лючія","Lucia"],["Катерина","Caterina"],["Ізабелла","Isabella"],["Франческа","Francesca"],["Джулія","Giulia"],["Алессандра","Alessandra"],["К'яра","Chiara"]],
+    surnames:[["Белліні","Bellini"],["Річчі","Ricci"],["Контаріні","Contarini"],["Вісконті","Visconti"],["Медічі","Medici"],["Пізано","Pisano"]]
+  },
+  "Богемія":{
+    male:[["Вацлав","Vaclav"],["Пржемисл","Premysl"],["Отакар","Otakar"],["Богуміл","Bohumil"],["Ян","Jan"],["Зденек","Zdenek"],["Микулаш","Mikulas"],["Радек","Radek"]],
+    female:[["Людмила","Ludmila"],["Божена","Bozena"],["Мілада","Milada"],["Власта","Vlasta"],["Елішка","Eliska"],["Анна","Anna"],["Здена","Zdena"],["Маркета","Marketa"]],
+    surnames:[["Новак","Novak"],["Свобода","Svoboda"],["Дворжак","Dvorak"],["Черний","Cerny"],["Празький","Prazsky"],["Кубік","Kubik"]]
+  },
+  "Англія":{
+    male:[["Вільям","William"],["Генрі","Henry"],["Томас","Thomas"],["Роберт","Robert"],["Едмунд","Edmund"],["Річард","Richard"],["Джон","John"],["Освальд","Oswald"]],
+    female:[["Аліса","Alice"],["Елеонора","Eleanor"],["Матильда","Matilda"],["Маргарет","Margaret"],["Едіт","Edith"],["Джоан","Joan"],["Агнес","Agnes"],["Сесілія","Cecily"]],
+    surnames:[["Сміт","Smith"],["Бейкер","Baker"],["Картер","Carter"],["Флетчер","Fletcher"],["Йоркський","of York"],["Лондонер","Londoner"]]
+  },
+  "Франція":{
+    male:[["Луї","Louis"],["Філіп","Philippe"],["Гійом","Guillaume"],["Етьєн","Etienne"],["П'єр","Pierre"],["Жак","Jacques"],["Анрі","Henri"],["Гуго","Hugues"]],
+    female:[["Марі","Marie"],["Аделаїда","Adelaide"],["Бланш","Blanche"],["Ізабель","Isabelle"],["Жанна","Jeanne"],["Клеманс","Clemence"],["Елоїза","Heloise"],["Марґеріт","Marguerite"]],
+    surnames:[["Леклерк","Leclerc"],["Моро","Moreau"],["Дюбуа","Dubois"],["Буше","Boucher"],["Парижанин","Parisien"],["Лефевр","Lefevre"]]
+  },
+  "Нормандія":{
+    male:[["Рауль","Raoul"],["Гійом","Guillaume"],["Роже","Roger"],["Жоффруа","Geoffroi"],["Ансельм","Anselm"],["Рено","Renaud"],["Танкред","Tancred"],["Ед","Eudes"]],
+    female:[["Адель","Adele"],["Емма","Emma"],["Ізабель","Isabelle"],["Матильда","Mathilde"],["Сибіла","Sibylle"],["Алієнора","Alienor"],["Гіза","Giselle"],["Кларисса","Clarisse"]],
+    surnames:[["де Руан","de Rouen"],["де Кан","de Caen"],["Мартель","Martel"],["Фурньє","Fournier"],["Леру","Leroux"],["Норман","Norman"]]
+  },
+  "Фландрія":{
+    male:[["Бодуен","Boudewijn"],["Дірк","Dirk"],["Ламберт","Lambert"],["Пітер","Pieter"],["Герріт","Gerrit"],["Ян","Jan"],["Віллем","Willem"],["Флоріс","Floris"]],
+    female:[["Марґріт","Margriet"],["Беатріс","Beatrix"],["Клара","Clara"],["Ельза","Elsa"],["Алейда","Aleida"],["Катрін","Katrien"],["Іда","Ida"],["Матільда","Mathilde"]],
+    surnames:[["ван Брюгге","van Brugge"],["ван Гент","van Gent"],["Декер","Dekker"],["де Вевер","de Wever"],["Вермеєр","Vermeer"],["Ван ден Берг","van den Berg"]]
+  },
+  "Священна Римська імперія":{
+    male:[["Отто","Otto"],["Фрідріх","Friedrich"],["Гайнріх","Heinrich"],["Конрад","Konrad"],["Рупрехт","Ruprecht"],["Дітріх","Dietrich"],["Альбрехт","Albrecht"],["Вольфрам","Wolfram"]],
+    female:[["Гертруда","Gertrud"],["Гільдегарда","Hildegard"],["Адельгейда","Adelheid"],["Кунігунда","Kunigunde"],["Ельза","Elsa"],["Ірмґард","Irmgard"],["Брунгільда","Brunhild"],["Анна","Anna"]],
+    surnames:[["Шмідт","Schmidt"],["Мюллер","Muller"],["Вебер","Weber"],["Фішер","Fischer"],["Кельнер","Kolner"],["Шнайдер","Schneider"]]
+  },
+  "Австрія":{
+    male:[["Леопольд","Leopold"],["Оттокар","Ottokar"],["Гайнріх","Heinrich"],["Рудольф","Rudolf"],["Ульріх","Ulrich"],["Вальтер","Walther"],["Гартман","Hartmann"],["Ернст","Ernst"]],
+    female:[["Агнес","Agnes"],["Гертруда","Gertrud"],["Маргарета","Margarete"],["Катаріна","Katharina"],["Анна","Anna"],["Елізабет","Elisabeth"],["Гедвіга","Hedwig"],["Клара","Klara"]],
+    surnames:[["фон Відень","von Wien"],["Зальцбургер","Salzburger"],["Штайнер","Steiner"],["Бергер","Berger"],["Грубер","Gruber"],["Хофер","Hofer"]]
+  },
+  "Візантія":{
+    male:[["Олексій","Alexios"],["Мануїл","Manuel"],["Ісаак","Isaakios"],["Никифор","Nikephoros"],["Михаїл","Michael"],["Андронік","Andronikos"],["Георгій","Georgios"],["Костянтин","Konstantinos"]],
+    female:[["Ірина","Eirene"],["Анна","Anna"],["Феодора","Theodora"],["Євдокія","Eudokia"],["Зоя","Zoe"],["Марія","Maria"],["Олена","Helena"],["Касія","Kassia"]],
+    surnames:[["Комнін","Komnenos"],["Дука","Doukas"],["Палеолог","Palaiologos"],["Кантакузин","Kantakouzenos"],["Фока","Phokas"],["Варяг","Varangios"]]
+  },
+  "Саксонія":{
+    male:[["Герман","Hermann"],["Бернард","Bernhard"],["Людольф","Liudolf"],["Еккехард","Ekkehard"],["Бруно","Bruno"],["Готфрід","Gottfried"],["Ганс","Hans"],["Клаус","Klaus"]],
+    female:[["Матильда","Mathilde"],["Ода","Oda"],["Іда","Ida"],["Емма","Emma"],["Гедвіга","Hedwig"],["Грета","Greta"],["Ельза","Elsa"],["Ліза","Liese"]],
+    surnames:[["Саксон","Saxon"],["Бремер","Bremer"],["Гамбургер","Hamburger"],["Крамер","Kramer"],["Бауер","Bauer"],["Шульц","Schulz"]]
+  },
+  "Нідерланди":{
+    male:[["Дірк","Dirk"],["Флоріс","Floris"],["Віллем","Willem"],["Пітер","Pieter"],["Гейс","Gijs"],["Якоб","Jacob"],["Герріт","Gerrit"],["Клас","Klaas"]],
+    female:[["Алейда","Aleida"],["Беатрікс","Beatrix"],["Гертруда","Geertruid"],["Клара","Clara"],["Маріке","Marieke"],["Лісбет","Liesbeth"],["Анна","Anna"],["Іда","Ida"]],
+    surnames:[["ван Утрехт","van Utrecht"],["де Йонг","de Jong"],["ван Дейк","van Dijk"],["Баккер","Bakker"],["Купман","Koopman"],["Віссер","Visser"]]
+  },
+  "Каталонія":{
+    male:[["Рамон","Ramon"],["Бернат","Bernat"],["Арнау","Arnau"],["Жауме","Jaume"],["Пере","Pere"],["Гільєм","Guillem"],["Ферран","Ferran"],["Марті","Marti"]],
+    female:[["Еулалія","Eulalia"],["Монсеррат","Montserrat"],["Бернарда","Bernarda"],["Марія","Maria"],["Адела","Adela"],["Клара","Clara"],["Ізабель","Isabel"],["Тереза","Teresa"]],
+    surnames:[["Барселонський","Barceloni"],["Пужоль","Pujol"],["Серра","Serra"],["Феррер","Ferrer"],["Ровіра","Rovira"],["Кардона","Cardona"]]
+  },
+  "Кастилія":{
+    male:[["Альфонсо","Alfonso"],["Фернандо","Fernando"],["Родріго","Rodrigo"],["Дієго","Diego"],["Санчо","Sancho"],["Гонсало","Gonzalo"],["Мартін","Martin"],["Енріке","Enrique"]],
+    female:[["Інес","Ines"],["Хімена","Jimena"],["Беатріс","Beatriz"],["Леонор","Leonor"],["Уррака","Urraca"],["Тереза","Teresa"],["Ельвіра","Elvira"],["Марія","Maria"]],
+    surnames:[["де Толедо","de Toledo"],["Гарсія","Garcia"],["Фернандес","Fernandez"],["Родрігес","Rodriguez"],["Кастільйо","Castillo"],["Ерреро","Herrero"]]
+  },
+  "Аль-Андалус":{
+    male:[["Ісмаїл","Ismail"],["Юсуф","Yusuf"],["Ахмад","Ahmad"],["Абдалла","Abdallah"],["Муса","Musa"],["Хасан","Hasan"],["Ібрагім","Ibrahim"],["Омар","Umar"]],
+    female:[["Фатіма","Fatima"],["Айша","Aisha"],["Зайнаб","Zaynab"],["Мар'ям","Maryam"],["Лейла","Layla"],["Хадіджа","Khadija"],["Сафія","Safiya"],["Аміна","Amina"]],
+    surnames:[["аль-Куртубі","al-Qurtubi"],["аль-Ішбілі","al-Ishbili"],["ібн Рашид","ibn Rashid"],["аль-Таджир","al-Tajir"],["аль-Хаддад","al-Haddad"],["аль-Варрак","al-Warraq"]]
+  },
+  "Іберія":{
+    male:[["Афонсу","Afonso"],["Дініш","Dinis"],["Жуан","Joao"],["Мартім","Martim"],["Гонсалу","Goncalo"],["Педру","Pedro"],["Вашку","Vasco"],["Ештеван","Estevao"]],
+    female:[["Леонор","Leonor"],["Інеш","Ines"],["Брітеc","Brites"],["Тереза","Teresa"],["Марія","Maria"],["Констанса","Constanca"],["Мафалда","Mafalda"],["Ізабел","Isabel"]],
+    surnames:[["де Лісбоа","de Lisboa"],["Перейра","Pereira"],["Кошта","Costa"],["Сілва","Silva"],["Феррейра","Ferreira"],["Марінью","Marinho"]]
+  }
+};
 // Add set IDs here after placing additional portrait folders under assets/npc/.
 const npcPortraitSets = {
   male:["male_01","male_slave_01","male_slave_02","male_slave_03","male_slave_04","male_slave_05"],
@@ -961,6 +1053,27 @@ function reputationLabel(index=currentCity){
   if(value<0) return `Репутація: ${value}. Погана слава: ціни x${price}, розбійники вагаються нападати.`;
   return `Репутація: ${value}. Добра слава підвищує ціну продажу.`;
 }
+function namePairText(pair,index){return Array.isArray(pair)?(pair[index]||pair[0]):pair;}
+function regionalNamePool(cityIndex){
+  const city=cities[validCityIndex(cityIndex,0)];
+  return regionalNpcNames[city.region]||regionalNpcNames.default;
+}
+function pickRegionalPair(cityIndex,kind){
+  const pool=regionalNamePool(cityIndex);
+  return pick((pool&&pool[kind])||(regionalNpcNames.default[kind]));
+}
+function randomNpcIdentity(gender,cityIndex){
+  const first=pickRegionalPair(cityIndex,gender);
+  const surname=pickRegionalPair(cityIndex,"surnames");
+  return {name:namePairText(first,0),nameEn:namePairText(first,1),surname:namePairText(surname,0),surnameEn:namePairText(surname,1)};
+}
+function allRegionalNames(gender){
+  const names=[];
+  Object.values(regionalNpcNames).forEach(pool=>(pool[gender]||[]).forEach(pair=>{
+    names.push(namePairText(pair,0),namePairText(pair,1));
+  }));
+  return names;
+}
 function achievementUnlocked(id){return Boolean(achievements && achievements[id]);}
 function unlockAchievement(id){
   const achievement=achievementCatalog.find(entry=>entry.id===id);
@@ -1025,7 +1138,12 @@ function requireHeadquartersPresence(){
   render();
   return false;
 }
-function inferGender(name){return npcNames.female.includes(name)?"female":"male";}
+function inferGender(name){
+  const value=String(name||"");
+  if(npcNames.female.includes(value) || allRegionalNames("female").includes(value)) return "female";
+  if(npcNames.male.includes(value) || allRegionalNames("male").includes(value)) return "male";
+  return /а$|я$|ія$|на$|та$|да$/i.test(value)?"female":"male";
+}
 function safePortraitSet(value,gender){
   return /^[a-z0-9_-]+$/i.test(value||"")?value:pick(npcPortraitSets[gender]);
 }
@@ -1092,13 +1210,16 @@ function makeNPC(status,cityIndex,overrides){
   const role = pick(status==="slave"?slaveRoles:freeRoles);
   const trait = pick(npcTraits);
   const gender = overrides&&overrides.gender?overrides.gender:overrides&&overrides.name?inferGender(overrides.name):pick(["male","female"]);
+  const identity=randomNpcIdentity(gender,cityIndex);
   const portraitPool=status==="slave"
     ? (gender==="male"?["male_slave_01","male_slave_02","male_slave_03","male_slave_04","male_slave_05"]:["female_slave_01","female_slave_02","female_slave_03","female_slave_04","female_slave_05"])
     : npcPortraitSets[gender];
   const person = {
     id:npcId++,
-    name:pick(npcNames[gender]),
-    surname:pick(npcSurnames),
+    name:identity.name,
+    nameEn:identity.nameEn,
+    surname:identity.surname,
+    surnameEn:identity.surnameEn,
     nickname:"",
     gender,
     portraitSet:pick(portraitPool),
@@ -1151,6 +1272,8 @@ function makeNPC(status,cityIndex,overrides){
   Object.assign(person,overrides||{});
   person.gender=person.gender||inferGender(person.name);
   person.portraitSet=safePortraitSet(person.portraitSet,person.gender);
+  if(!person.nameEn) person.nameEn=person.name;
+  if(!person.surnameEn) person.surnameEn=person.surname;
   person.value=person.price;
   if(person.trait.stat) person[person.trait.stat]=clamp(person[person.trait.stat]+person.trait.bonus,0,BALANCE.maxAttribute);
   return person;
@@ -1160,8 +1283,11 @@ function enrichNPC(person,fallbackCity){
   person.id=integerInRange(person.id,npcId++,1,100000000);
   person.gender=["male","female"].includes(person.gender)?person.gender:inferGender(person.name);
   person.portraitSet=safePortraitSet(person.portraitSet,person.gender);
-  person.name=safeStoredText(person.name,pick(npcNames[person.gender]),34);
-  person.surname=safeStoredText(person.surname,pick(npcSurnames),34);
+  const fallbackIdentity=randomNpcIdentity(person.gender,validCityIndex(person.city,fallbackCity));
+  person.name=safeStoredText(person.name,fallbackIdentity.name,34);
+  person.nameEn=safeStoredText(person.nameEn||"", person.name===fallbackIdentity.name?fallbackIdentity.nameEn:person.name,34);
+  person.surname=safeStoredText(person.surname,fallbackIdentity.surname,34);
+  person.surnameEn=safeStoredText(person.surnameEn||"", person.surname===fallbackIdentity.surname?fallbackIdentity.surnameEn:person.surname,34);
   person.nickname=safeStoredText(person.nickname||"", "",34);
   person.status=["slave","serf","citizen","free","child"].includes(person.status)?person.status:"free";
   person.city=validCityIndex(person.city,fallbackCity);
@@ -1218,7 +1344,9 @@ function enrichNPC(person,fallbackCity){
   person.longLived=Boolean(person.longLived || person.age>BALANCE.immortalAge);
   return person;
 }
-function profileName(person){return person.name+(person.nickname?` «${person.nickname}»`:"")+" "+person.surname;}
+function displayFirstName(person){return lang==="en" && person.nameEn?person.nameEn:person.name;}
+function displaySurname(person){return lang==="en" && person.surnameEn?person.surnameEn:person.surname;}
+function profileName(person){return displayFirstName(person)+(person.nickname?` «${person.nickname}»`:"")+" "+displaySurname(person);}
 function htmlName(person){return escapeHtml(profileName(person));}
 function promptClean(message,current,maxLength){
   if(!window.prompt) return null;
@@ -1483,8 +1611,13 @@ function renameNPC(id,field){
   if(!value || value===current) return;
   if(!consumeAction("зміна "+label+" NPC")) return;
   if(field==="nickname") person.nickname=value;
-  else if(field==="surname") person.surname=value;
-  else person.name=value;
+  else if(field==="surname"){
+    person.surname=value;
+    person.surnameEn=value;
+  }else{
+    person.name=value;
+    person.nameEn=value;
+  }
   if(person.childOf && field==="surname") person.familyStatus="Дитина головного героя і "+(person.childOf.motherName||"матері");
   logAction("✍️ NPC тепер має "+label+": "+profileName(person)+".","people");
   saveGame(false);
@@ -1492,11 +1625,14 @@ function renameNPC(id,field){
 }
 function createFamilyChild(mother){
   const childGender=pick(["male","female"]);
-  const chosenName=promptClean("Як назвати дитину?",pick(npcNames[childGender]),34);
+  const childIdentity=randomNpcIdentity(childGender,mother.locationCity);
+  const chosenName=promptClean("Як назвати дитину?",childIdentity.name,34);
   const child=makeNPC("child",mother.locationCity,{
     gender:childGender,
-    name:chosenName||undefined,
+    name:chosenName||childIdentity.name,
+    nameEn:chosenName&&chosenName!==childIdentity.name?chosenName:childIdentity.nameEn,
     surname:mother.surname,
+    surnameEn:mother.surnameEn||mother.surname,
     status:"child",
     profession:"Дитина торгового дому",
     age:0,
@@ -2964,7 +3100,7 @@ function npcCard(n,mode){
   const gender=`<span class="badge gender-sign">${n.gender==="female"?tr("♀ Жінка","♀ Woman"):tr("♂ Чоловік","♂ Man")}</span>`;
   const longevity=n.longLived?`<span class="badge relation-rank">${tr("Довгожитель","Long-lived")}</span>`:"";
   const location=mode==="owned"?`<span class="badge">${tr("Перебуває","Located")}: ${cityName(n.locationCity)}</span>`:"";
-  return `<div class="card npc-card gender-${n.gender}"><div class="portrait">${portraitHtml(n)}</div><div><div class="card-title"><b>${htmlName(n)}</b><span class="badge">${statusLabel(n)} • ${escapeHtml(n.profession)}</span></div>${gender}<span class="badge">${tr("Вік","Age")}: ${n.age}</span>${longevity}<span class="badge">${tr("Звідки","From")}: ${escapeHtml(cityNameByName(n.homeCity)||n.homeCity)}</span>${location}${tenure}${relationship}<span class="badge">${compensationText(n)}</span><br><span class="badge">${tr("Сила","Str")} ${n.strength}</span><span class="badge">${tr("Ремесло","Crf")} ${n.craft}</span><span class="badge">${tr("Бій","Cmb")} ${n.combat}</span><span class="badge">${tr("Гостинність","Svc")} ${n.service}</span><span class="badge">${tr("Лояльність","Loy")} ${n.loyalty}</span><span class="badge">${tr("Покірність","Obd")} ${n.obedience}</span><span class="badge">${tr("Здоров'я","Hp")} ${n.health}</span><div class="person-profile"><strong>${escapeHtml(n.trait.name)}</strong> (${escapeHtml(n.trait.effect)})<br>${escapeHtml(n.trait.description)}<br><span class="muted">${escapeHtml(n.story)} ${escapeHtml(n.name)} ${escapeHtml(n.hope)}.</span></div><p class="muted">${tr("Робота","Job")}: <b>${escapeHtml(n.job)}</b></p>${career}<p>${tr("Набір портретів","Portrait set")}: <b>${escapeHtml(n.portraitSet)}</b></p><p>${tr("Ціна / цінність","Price / value")}: <b>${mode==="market"?npcPrice(n):(n.value||n.price)}</b></p></div><div class="actions">${mode==="market"?`<button class="btn green" onclick="buyNPC(${n.id})">${isSlave?tr("Купити","Buy"):tr("Найняти","Hire")}</button>`:managerActions(n)}</div></div>`;
+  return `<div class="card npc-card gender-${n.gender}"><div class="portrait">${portraitHtml(n)}</div><div><div class="card-title"><b>${htmlName(n)}</b><span class="badge">${statusLabel(n)} • ${escapeHtml(n.profession)}</span></div>${gender}<span class="badge">${tr("Вік","Age")}: ${n.age}</span>${longevity}<span class="badge">${tr("Звідки","From")}: ${escapeHtml(cityNameByName(n.homeCity)||n.homeCity)}</span>${location}${tenure}${relationship}<span class="badge">${compensationText(n)}</span><br><span class="badge">${tr("Сила","Str")} ${n.strength}</span><span class="badge">${tr("Ремесло","Crf")} ${n.craft}</span><span class="badge">${tr("Бій","Cmb")} ${n.combat}</span><span class="badge">${tr("Гостинність","Svc")} ${n.service}</span><span class="badge">${tr("Лояльність","Loy")} ${n.loyalty}</span><span class="badge">${tr("Покірність","Obd")} ${n.obedience}</span><span class="badge">${tr("Здоров'я","Hp")} ${n.health}</span><div class="person-profile"><strong>${escapeHtml(n.trait.name)}</strong> (${escapeHtml(n.trait.effect)})<br>${escapeHtml(n.trait.description)}<br><span class="muted">${escapeHtml(n.story)} ${escapeHtml(displayFirstName(n))} ${escapeHtml(n.hope)}.</span></div><p class="muted">${tr("Робота","Job")}: <b>${escapeHtml(n.job)}</b></p>${career}<p>${tr("Набір портретів","Portrait set")}: <b>${escapeHtml(n.portraitSet)}</b></p><p>${tr("Ціна / цінність","Price / value")}: <b>${mode==="market"?npcPrice(n):(n.value||n.price)}</b></p></div><div class="actions">${mode==="market"?`<button class="btn green" onclick="buyNPC(${n.id})">${isSlave?tr("Купити","Buy"):tr("Найняти","Hire")}</button>`:managerActions(n)}</div></div>`;
 }
 function careerHint(person){
   if(person.status==="slave") return `<p class="career-note">${tr("Кріпак: разом 5 днів, покірність 6, сила або ремесло 8.","Serf: 5 days together, obedience 6, strength or craft 8.")}</p>`;
@@ -3259,11 +3395,12 @@ function renderRelationships(person){
 }
 function dialogueLine(person){
   const rank=relationshipRank(person);
-  if(person.status==="slave" && person.obedience<5) return tr(`${person.name} відповідає коротко й обережно. У погляді більше страху, ніж довіри.`,`${person.name} answers shortly and warily. Their eyes hold more fear than trust.`);
-  if(rank>=9) return tr(`${person.name} говорить відкрито: про втому, надії і те, чого чекає від майбутнього торгового дому.`,`${person.name} speaks openly: about weariness, hopes, and what they expect from the trading house's future.`);
-  if(rank>=6) return tr(`${person.name} уже не ховається за сухими відповідями й згадує те, що зазвичай лишає при собі.`,`${person.name} no longer hides behind dry answers and shares what they usually keep to themselves.`);
-  if(person.loyalty<5) return tr(`${person.name} слухає, але тримає дистанцію. Слова про турботу поки звучать непереконливо.`,`${person.name} listens but keeps distance. Words of care sound unconvincing so far.`);
-  return tr(`${person.name} чемно вітається і чекає, що саме ти хочеш обговорити.`,`${person.name} greets politely and waits to hear what you want to discuss.`);
+  const first=displayFirstName(person);
+  if(person.status==="slave" && person.obedience<5) return tr(`${person.name} відповідає коротко й обережно. У погляді більше страху, ніж довіри.`,`${first} answers shortly and warily. Their eyes hold more fear than trust.`);
+  if(rank>=9) return tr(`${person.name} говорить відкрито: про втому, надії і те, чого чекає від майбутнього торгового дому.`,`${first} speaks openly: about weariness, hopes, and what they expect from the trading house's future.`);
+  if(rank>=6) return tr(`${person.name} уже не ховається за сухими відповідями й згадує те, що зазвичай лишає при собі.`,`${first} no longer hides behind dry answers and shares what they usually keep to themselves.`);
+  if(person.loyalty<5) return tr(`${person.name} слухає, але тримає дистанцію. Слова про турботу поки звучать непереконливо.`,`${first} listens but keeps distance. Words of care sound unconvincing so far.`);
+  return tr(`${person.name} чемно вітається і чекає, що саме ти хочеш обговорити.`,`${first} greets politely and waits to hear what you want to discuss.`);
 }
 function openRelationshipDialog(id){
   const person=findOwnedAny(id);
@@ -3306,7 +3443,7 @@ function renderNpcProfile(){
     longLivedDesc:tr("старість більше не загрожує цьому NPC.","old age no longer threatens this NPC."),
     longLivedTag:tr("Довгожитель","Long-lived"),days:tr("дн.","d.")
   };
-  target.innerHTML=`<div class="profile-shell"><div class="panel"><div class="full-portrait">${fullPortraitHtml}</div></div><div class="panel"><div class="profile-header"><div><h2>${htmlName(person)}</h2><span class="badge">${statusLabel(person)} • ${escapeHtml(person.profession)}</span><span class="badge">${lbl.age}: ${person.age}</span><span class="badge">${compensationText(person)}</span>${longevity}${access}</div><button class="btn gray" onclick="closeNpcProfile()">${lbl.back}</button></div><div class="profile-grid"><div class="profile-block"><h3>${lbl.personality}</h3><b>${lbl.name}:</b> ${escapeHtml(person.name)}<br><b>${lbl.nickname}:</b> ${person.nickname?escapeHtml(person.nickname):lbl.none}<br><b>${lbl.surname}:</b> ${escapeHtml(person.surname)}<br><b>${lbl.from}:</b> ${escapeHtml(cityNameByName(person.homeCity)||person.homeCity)}<br><b>${lbl.at}:</b> ${cityName(person.locationCity)}<br><b>${lbl.family}:</b> ${escapeHtml(person.familyStatus)}<br><b>${lbl.together}:</b> ${person.daysTogether} ${lbl.days}<br><b>${lbl.job}:</b> ${escapeHtml(person.job)}<div class="trade-actions">${nameActions}</div></div><div class="profile-block"><h3>${lbl.trait}</h3><b>${escapeHtml(person.trait.name)}</b> (${escapeHtml(person.trait.effect)})<br>${escapeHtml(person.trait.description)}${person.longLived?`<br><br><b>${lbl.longLivedTag}:</b> ${lbl.longLivedDesc}`:""}</div><div class="profile-block"><h3>${tr("Історія","Story")}</h3>${escapeHtml(person.story)}<br><br>${escapeHtml(person.name)} ${escapeHtml(person.hope)}.</div>${aspirationBlockHtml(person)}<div class="profile-block"><h3>${lbl.preferences}</h3><b>${lbl.likes}:</b> ${escapeHtml(person.likes)}.<br><b>${lbl.dislikes}:</b> ${escapeHtml(person.dislikes)}.</div><div class="profile-block"><h3>${tr("Навички","Skills")}</h3>${statRowHtml(person,"strength",tr("Сила","Strength"))}${statRowHtml(person,"craft",tr("Ремесло","Craft"))}${statRowHtml(person,"combat",tr("Бій","Combat"))}${statRowHtml(person,"service",tr("Гостинність","Hospitality"))}${statRowHtml(person,"loyalty",tr("Лояльність","Loyalty"))}${statRowHtml(person,"obedience",tr("Покірність","Obedience"))}${statRowHtml(person,"health",tr("Здоров'я","Health"))}<p class="muted">${skillBenefitText(person)}</p></div><div class="profile-block"><h3>${lbl.pay}</h3><p>${compensationDetail(person)}</p><div class="earning-total">+${total}</div>${lbl.earnedTotal}<br>${lbl.lastDay}: <b>+${person.lastIncome||0}</b><br>${lbl.daysIncome}: <b>${person.earningsDays||0}</b><br>${lbl.avgContrib}: <b>+${average}</b><br>${lbl.goodsProduced}: <b>${person.goodsProduced||0}</b></div><div class="profile-block profile-wide"><h3>${lbl.gifts}</h3>${renderEquipment(person)}</div></div><div class="profile-actions actions">${managerActions(person,false)}</div></div></div>`;
+  target.innerHTML=`<div class="profile-shell"><div class="panel"><div class="full-portrait">${fullPortraitHtml}</div></div><div class="panel"><div class="profile-header"><div><h2>${htmlName(person)}</h2><span class="badge">${statusLabel(person)} • ${escapeHtml(person.profession)}</span><span class="badge">${lbl.age}: ${person.age}</span><span class="badge">${compensationText(person)}</span>${longevity}${access}</div><button class="btn gray" onclick="closeNpcProfile()">${lbl.back}</button></div><div class="profile-grid"><div class="profile-block"><h3>${lbl.personality}</h3><b>${lbl.name}:</b> ${escapeHtml(displayFirstName(person))}<br><b>${lbl.nickname}:</b> ${person.nickname?escapeHtml(person.nickname):lbl.none}<br><b>${lbl.surname}:</b> ${escapeHtml(displaySurname(person))}<br><b>${lbl.from}:</b> ${escapeHtml(cityNameByName(person.homeCity)||person.homeCity)}<br><b>${lbl.at}:</b> ${cityName(person.locationCity)}<br><b>${lbl.family}:</b> ${escapeHtml(person.familyStatus)}<br><b>${lbl.together}:</b> ${person.daysTogether} ${lbl.days}<br><b>${lbl.job}:</b> ${escapeHtml(person.job)}<div class="trade-actions">${nameActions}</div></div><div class="profile-block"><h3>${lbl.trait}</h3><b>${escapeHtml(person.trait.name)}</b> (${escapeHtml(person.trait.effect)})<br>${escapeHtml(person.trait.description)}${person.longLived?`<br><br><b>${lbl.longLivedTag}:</b> ${lbl.longLivedDesc}`:""}</div><div class="profile-block"><h3>${tr("Історія","Story")}</h3>${escapeHtml(person.story)}<br><br>${escapeHtml(displayFirstName(person))} ${escapeHtml(person.hope)}.</div>${aspirationBlockHtml(person)}<div class="profile-block"><h3>${lbl.preferences}</h3><b>${lbl.likes}:</b> ${escapeHtml(person.likes)}.<br><b>${lbl.dislikes}:</b> ${escapeHtml(person.dislikes)}.</div><div class="profile-block"><h3>${tr("Навички","Skills")}</h3>${statRowHtml(person,"strength",tr("Сила","Strength"))}${statRowHtml(person,"craft",tr("Ремесло","Craft"))}${statRowHtml(person,"combat",tr("Бій","Combat"))}${statRowHtml(person,"service",tr("Гостинність","Hospitality"))}${statRowHtml(person,"loyalty",tr("Лояльність","Loyalty"))}${statRowHtml(person,"obedience",tr("Покірність","Obedience"))}${statRowHtml(person,"health",tr("Здоров'я","Health"))}<p class="muted">${skillBenefitText(person)}</p></div><div class="profile-block"><h3>${lbl.pay}</h3><p>${compensationDetail(person)}</p><div class="earning-total">+${total}</div>${lbl.earnedTotal}<br>${lbl.lastDay}: <b>+${person.lastIncome||0}</b><br>${lbl.daysIncome}: <b>${person.earningsDays||0}</b><br>${lbl.avgContrib}: <b>+${average}</b><br>${lbl.goodsProduced}: <b>${person.goodsProduced||0}</b></div><div class="profile-block profile-wide"><h3>${lbl.gifts}</h3>${renderEquipment(person)}</div></div><div class="profile-actions actions">${managerActions(person,false)}</div></div></div>`;
 }
 
 function renderRoutes(){
