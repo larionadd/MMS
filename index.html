@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Medieval Merchant Simulator v0.39</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23f0c06a'/><stop offset='100%25' stop-color='%238b642b'/></linearGradient></defs><rect width='64' height='64' rx='12' fill='%23241809'/><path d='M10 50 L10 28 L18 28 L18 22 L22 22 L22 28 L28 28 L28 18 L36 18 L36 28 L42 28 L42 22 L46 22 L46 28 L54 28 L54 50 Z' fill='url(%23g)' stroke='%23d3a348' stroke-width='1.5'/><rect x='27' y='34' width='10' height='16' fill='%23241809'/><circle cx='32' cy='40' r='1.5' fill='%23f0c06a'/><path d='M14 32 L14 36 L16 36 L16 32 Z M20 32 L20 36 L22 36 L22 32 Z M42 32 L42 36 L44 36 L44 32 Z M48 32 L48 36 L50 36 L50 32 Z' fill='%23241809'/><circle cx='32' cy='13' r='2.5' fill='%23f0c06a'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="side-nav">
+    <div class="logo"><div class="logo-icon">🏰</div><div><b>Merchant</b><span>Simulator v0.39</span></div></div>
+    <select id="mobileTabDropdown" class="mobile-tab-dropdown" onchange="setActiveTab(this.value)">
+      <option value="market" data-i18n="nav.market">Ринок</option>
+      <option value="travel" data-i18n="nav.travel">Подорожі</option>
+      <option value="player" data-i18n="nav.player">Герой</option>
+      <option value="guild" data-i18n="nav.guild">Гільдія</option>
+      <option value="people" data-i18n="nav.people">Центр зайнятості</option>
+      <option value="subordinates" data-i18n="nav.subordinates">Підлеглі</option>
+      <option value="shop" data-i18n="nav.shop">Крамниця</option>
+      <option value="hq" data-i18n="nav.hq">Штаб</option>
+      <option value="journal" data-i18n="nav.journal">Журнал</option>
+      <option value="help" data-i18n="nav.help">Довідка</option>
+      <option value="achievements" data-i18n="nav.achievements">Досягнення</option>
+    </select>
+    <button class="btn gray lang-toggle" id="langToggle" onclick="toggleLang()">English</button>
+    <button class="nav active" data-tab="market">💰<span data-i18n="nav.market">Ринок</span></button>
+    <button class="nav" data-tab="travel">🧭<span data-i18n="nav.travel">Подорожі</span></button>
+    <button class="nav" data-tab="player">🧭<span data-i18n="nav.player">Герой</span></button>
+    <button class="nav" data-tab="guild">📜<span data-i18n="nav.guild">Гільдія</span></button>
+    <button class="nav" data-tab="people">👥<span data-i18n="nav.people">Центр зайнятості</span></button>
+    <button class="nav" data-tab="subordinates">🛡️<span data-i18n="nav.subordinates">Підлеглі</span></button>
+    <button class="nav" data-tab="shop">🎁<span data-i18n="nav.shop">Крамниця</span></button>
+    <button class="nav feature-disabled" data-tab="caravan">🐎<span data-i18n="nav.caravan">Караван</span></button>
+    <button class="nav" data-tab="hq">🏰<span data-i18n="nav.hq">Штаб</span></button>
+    <button class="nav" data-tab="journal">📜<span data-i18n="nav.journal">Журнал</span></button>
+    <button class="nav" data-tab="help">❔<span data-i18n="nav.help">Довідка</span></button>
+    <button class="nav" data-tab="achievements">🏆<span data-i18n="nav.achievements">Досягнення</span></button>
+    <div class="side-quests">
+      <div class="dock-title" data-i18n="label.active_quests">Активні завдання</div>
+      <div id="activeQuestDock"></div>
+    </div>
+    <div class="side-status">
+      <div id="gold">💰 1000</div>
+      <div id="food">🍲 20</div>
+      <div id="energy">⚡ 7 / 7 actions</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <img class="header-background" src="assets/ui/header_build27.png" onerror="this.style.display='none'" alt="">
+      <div class="header-spacer"></div>
+      <div class="stats">
+        <div id="cityName">📍 Kraków</div>
+        <div id="heroLevel">⭐ Level 1</div>
+        <div id="worldYear">🕰️ 1205 AD</div>
+        <div id="day">📅 Day 1</div>
+        <div id="rep">⚖️ 0</div>
+        <div id="capacity">📦 0 / 40</div>
+        <div id="income">🏰 +0 / day</div>
+      </div>
+      <div class="top-actions">
+        <button class="next-day" onclick="nextDay()" data-i18n="btn.next_day">⏭️ Наступний день</button>
+        <button id="nextWeekButton" class="next-day week-skip hidden" onclick="nextWeek()" data-i18n="btn.next_week">⏩ Наступний тиждень</button>
+        <button class="btn" onclick="saveGame(true)" data-i18n="btn.save">Зберегти</button>
+        <button class="btn" onclick="openSaveSlots()" data-i18n="btn.slots">💾 Слоти</button>
+        <button class="btn gray" onclick="newGame()" data-i18n="btn.new_game">Нова гра</button>
+      </div>
+    </header>
+
+    <section id="market" class="tab active">
+      <div class="grid two">
+        <div class="panel">
+          <h2 data-i18n="market.title">💰 Ринок міста</h2>
+          <label data-i18n="market.you_are_in">Ти перебуваєш у місті</label>
+          <div id="marketCity" class="current-location"></div>
+          <div id="cityPortrait"></div>
+          <div id="cityFacts"></div>
+          <div class="hint" id="marketHint"></div>
+          <h2 class="subhead" data-i18n="market.warehouse">📦 Твій склад</h2>
+          <div id="warehouseSummary"></div>
+        </div>
+        <div class="panel">
+          <h2 data-i18n="market.goods">📦 Товари</h2>
+          <div id="goods" class="market-goods-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="travel" class="tab">
+      <div class="panel">
+        <h2 data-i18n="travel.title">🧭 Подорожі між містами</h2>
+        <div id="travelPageHint" class="hint"></div>
+        <div id="travelGrid" class="travel-destination-grid"></div>
+      </div>
+    </section>
+
+    <section id="player" class="tab">
+      <div id="playerProfile"></div>
+    </section>
+
+    <section id="guild" class="tab">
+      <div class="panel">
+        <h2 id="guildName" data-i18n="guild.title">📜 Гільдія торговців</h2>
+        <div id="guildRegion" class="hint"></div>
+        <h2 class="subhead" data-i18n="guild.contracts">Торгові контракти гільдії</h2>
+        <div id="guildBoard" class="guild-grid"></div>
+        <h2 id="councilName" class="subhead" data-i18n="guild.council">Мерія міста</h2>
+        <div id="councilRegion" class="hint"></div>
+        <div id="councilBoard" class="guild-grid council-grid"></div>
+        <h2 class="subhead" data-i18n="guild.accepted">Прийняті замовлення</h2>
+        <div id="activeGuildQuests" class="guild-grid"></div>
+      </div>
+    </section>
+
+    <section id="people" class="tab">
+      <div class="panel">
+        <h2 data-i18n="people.title">👥 Центр зайнятості</h2>
+        <p class="muted" data-i18n="people.desc">Тут гравець може найняти нових працівників та купити підневільних людей. Доступні лише люди міста, в якому ти перебуваєш; вирушай в інші міста, щоб знайти інших кандидатів.</p>
+        <div id="peopleMarketHint" class="hint"></div>
+        <div id="npcMarket"></div>
+      </div>
+    </section>
+
+    <section id="subordinates" class="tab">
+      <div class="panel">
+        <h2 data-i18n="sub.title">🛡️ Підлеглі торгового дому</h2>
+        <div class="subordinate-columns">
+          <div><h2 class="subhead" data-i18n="sub.workers">Працівники та громадяни</h2><div id="ownedHirelings"></div></div>
+          <div><h2 class="subhead" data-i18n="sub.slaves">Підневільні люди</h2><div id="ownedSlaves"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="profile" class="tab">
+      <div id="npcProfile"></div>
+    </section>
+
+    <section id="shop" class="tab">
+      <div class="panel">
+        <h2 id="localShopName" data-i18n="shop.title">🎁 Крамниця речей</h2>
+        <p class="muted" data-i18n="shop.desc">Придбані речі зберігаються у запасі. Вручити їх конкретному персонажу можна в його особовій справі.</p>
+        <div id="localShopHint" class="hint"></div>
+        <div class="economy-note" data-i18n="shop.quality_note">Якість речей: звичайна, покращена, рідкісна, виняткова, легендарна. Легендарні реліквії не продаються: їх можна випадково знайти під час подорожі.</div>
+        <div class="shop-columns">
+          <div>
+            <h2 class="subhead" data-i18n="shop.workers">Для працівників і громадян</h2>
+            <p class="muted" data-i18n="shop.workers_desc">Подарунки, одяг і талісмани, які підвищують комфорт та відданість.</p>
+            <div id="workerShop"></div>
+          </div>
+          <div>
+            <h2 class="subhead" data-i18n="shop.bonded">Забезпечення підневільних людей</h2>
+            <p class="muted" data-i18n="shop.bonded_desc">Теплі та корисні речі для покращення здоров'я і лояльності.</p>
+            <div id="supportShop"></div>
+          </div>
+        </div>
+        <h2 class="subhead" data-i18n="shop.home">Для дому та штаб-квартири</h2>
+        <p class="muted" data-i18n="shop.home_desc">Меблі й обладнання можна встановлювати лише у доречних приміщеннях штабу. Звичайні та рідкісні речі продаються, легендарні потрібно знайти.</p>
+        <div id="homeShop" class="home-shop-grid"></div>
+        <h2 class="subhead" data-i18n="shop.my_items">Мої придбані речі</h2>
+        <div id="giftInventory"></div>
+        <h2 class="subhead" data-i18n="shop.home_items">Меблі та обладнання в запасі</h2>
+        <div id="homeInventory"></div>
+      </div>
+    </section>
+
+    <section id="caravan" class="tab">
+      <div class="panel">
+        <h2 data-i18n="caravan.title">🐎 Караван</h2>
+        <p class="muted" data-i18n="caravan.desc">Відправляй власні товари маршрутом. Оплата приходить після прибуття, а ризик може знищити частину вантажу.</p>
+        <div id="activeCaravans"></div>
+        <div id="routes"></div>
+      </div>
+    </section>
+
+    <section id="hq" class="tab">
+      <div class="panel">
+        <h2 data-i18n="hq.title">🏰 Штаб-квартира</h2>
+        <div class="room-tabs" id="roomTabs"></div>
+        <div id="roomContent"></div>
+        <div id="familyRooms"></div>
+      </div>
+    </section>
+
+    <section id="journal" class="tab">
+      <div class="panel">
+        <h2 data-i18n="journal.title">📜 Журнал</h2>
+        <input id="journalSearch" class="journal-search" type="search" data-i18n-ph="journal.search" placeholder="Пошук у журналі подій..." oninput="renderLog()">
+        <div id="log"></div>
+      </div>
+    </section>
+
+    <section id="achievements" class="tab">
+      <div class="panel">
+        <h2 data-i18n="ach.title">🏆 Досягнення торгового дому</h2>
+        <p class="muted" data-i18n="ach.desc">Досягнення відкриваються за рівні героя, шлюб, дітей, легендарні речі, міста та розвиток штабу.</p>
+        <div id="achievementList" class="achievement-grid"></div>
+      </div>
+    </section>
+
+    <section id="help" class="tab">
+      <div class="panel help-panel">
+        <h2 data-i18n="help.title">❔ Довідка для нового гравця</h2>
+        <div id="helpContent"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<aside class="action-dock">
+  <button class="next-day mobile-only-next" onclick="nextDay()" data-i18n="btn.next_day">⏭️ Наступний день</button>
+  <button class="dock-toggle-btn mobile-only-next" onclick="toggleActionDock()" title="Розгорнути" data-i18n-title="title.expand">▲</button>
+  <div id="actionHeroDock" class="action-hero-dock"></div>
+  <div class="action-log-wrap">
+    <div class="dock-title" data-i18n="label.action_log">Журнал дій</div>
+    <div id="actionLog"></div>
+  </div>
+</aside>
+
+<div id="eventModal" class="modal hidden">
+  <div class="modal-card">
+    <h2 id="eventTitle" data-i18n="modal.event">Подія дня</h2>
+    <p id="eventText"></p>
+    <div id="eventEffect"></div>
+    <button class="btn green" onclick="closeEvent()" data-i18n="btn.continue">Продовжити</button>
+  </div>
+</div>
+
+<div id="interactionModal" class="modal hidden">
+  <div class="modal-card interaction-modal-card">
+    <h2 id="interactionTitle" data-i18n="modal.meeting">Зустріч</h2>
+    <p id="interactionText"></p>
+    <div id="interactionEffect" class="effect-list"></div>
+    <button class="btn green" onclick="closeInteraction()" data-i18n="btn.continue">Продовжити</button>
+  </div>
+</div>
+
+<div id="hiddenPlaceModal" class="modal hidden">
+  <div class="modal-card hidden-place-card">
+    <div id="hiddenPlaceImage" class="hidden-place-image"></div>
+    <h2 id="hiddenPlaceTitle" data-i18n="modal.hidden_place">Приховане місце</h2>
+    <p id="hiddenPlaceText"></p>
+    <div id="hiddenPlaceActions" class="trade-actions"></div>
+    <button class="btn green" onclick="closeHiddenPlace()" data-i18n="btn.continue">Продовжити</button>
+  </div>
+</div>
+
+<div id="relationshipModal" class="modal hidden">
+  <div class="modal-card interaction-modal-card">
+    <h2 id="relationshipTitle" data-i18n="modal.relationships">Стосунки</h2>
+    <p id="relationshipText"></p>
+    <div id="relationshipContent"></div>
+    <button class="btn green" onclick="closeRelationshipDialog()" data-i18n="btn.close">Закрити</button>
+  </div>
+</div>
+
+<div id="combatModal" class="modal dd-fullscreen-modal hidden">
+  <div class="dd-fullscreen-card">
+    <header class="dd-fullscreen-header">
+      <div>
+        <h2 id="combatTitle" data-i18n="modal.combat">Бій</h2>
+        <p id="combatText"></p>
+      </div>
+      <button id="combatCloseButton" class="btn green" onclick="closeCombat()" data-i18n="btn.continue">Продовжити</button>
+    </header>
+    <div id="combatArena" class="dd-fullscreen-arena"></div>
+    <div id="combatRounds" class="dd-fullscreen-narration"></div>
+  </div>
+</div>
+
+<div id="npcRequestNotice" class="npc-request-notice hidden"></div>
+
+<div id="travelAnimOverlay" class="travel-anim-overlay hidden">
+  <div class="travel-anim-card">
+    <div class="travel-anim-header">
+      <div class="travel-anim-city" id="travelAnimFrom">
+        <img id="travelAnimFromImg" src="" onerror="this.style.display='none'">
+        <span id="travelAnimFromName"></span>
+      </div>
+      <div class="travel-anim-road">
+        <div class="travel-anim-road-line">
+          <div class="travel-anim-wagon" id="travelAnimWagon">🐎</div>
+        </div>
+        <div class="travel-anim-day-counter" id="travelAnimDayCounter" data-i18n="travel.day_zero">День 0</div>
+      </div>
+      <div class="travel-anim-city" id="travelAnimTo">
+        <img id="travelAnimToImg" src="" onerror="this.style.display='none'">
+        <span id="travelAnimToName"></span>
+      </div>
+    </div>
+    <div class="travel-anim-progress-bar">
+      <div class="travel-anim-progress-fill" id="travelAnimProgressFill"></div>
+    </div>
+    <div class="travel-anim-events" id="travelAnimEvents"></div>
+    <div class="travel-anim-buttons">
+      <button class="btn gray travel-anim-skip" onclick="skipTravelAnim()" data-i18n="btn.skip">⏩ Пропустити</button>
+      <button class="btn green travel-anim-finish hidden" id="travelAnimFinishBtn" onclick="finishTravelOverlay()" data-i18n="btn.finish_travel">✓ Завершити подорож</button>
+    </div>
+  </div>
+</div>
+
+<div id="travelModal" class="modal hidden">
+  <div class="modal-card travel-modal-card">
+    <button class="travel-modal-close" onclick="closeTravelModal()" title="Закрити" data-i18n-title="title.close">✕</button>
+    <h2 id="travelModalTitle" data-i18n="travel.prepare">Підготовка подорожі</h2>
+    <p id="travelModalText"></p>
+    <div id="travelCompanionList"></div>
+    <div class="battle-mode-select">
+      <label><input type="radio" name="battleMode" value="auto" checked> <span data-i18n="travel.auto_battle">Автоматичний бій</span></label>
+      <label><input type="radio" name="battleMode" value="manual"> <span data-i18n="travel.manual_battle">Ручний режим бою</span></label>
+    </div>
+    <div class="trade-actions">
+      <button class="btn green" onclick="confirmTravel(false)" data-i18n="btn.travel_peacefully">Вирушити мирно</button>
+      <button id="raidCaravanButton" class="btn red" onclick="confirmTravel(true)" data-i18n="btn.raid_caravan">Напасти на зустрічний караван</button>
+      <button class="btn red travel-cancel-btn" onclick="closeTravelModal()" data-i18n="btn.cancel_travel">✕ Скасувати подорож</button>
+    </div>
+  </div>
+</div>
+
+<div id="daySummaryModal" class="modal hidden">
+  <div class="modal-card summary-modal-card">
+    <h2 id="daySummaryTitle" data-i18n="modal.day_summary">Підсумок дня</h2>
+    <p id="daySummaryText"></p>
+    <div id="daySummaryEntries" class="summary-entries"></div>
+    <button class="btn green" onclick="closeDaySummary()" data-i18n="modal.start_new_day">Почати новий день</button>
+  </div>
+</div>
+
+<div id="welcomeModal" class="welcome-overlay hidden">
+  <div class="welcome-shell">
+    <div class="welcome-banner"><img src="assets/ui/header_build27.png" onerror="this.style.display='none'" alt=""></div>
+    <div class="welcome-content">
+      <h1 class="welcome-title">Medieval Merchant Simulator</h1>
+      <p class="welcome-subtitle" id="welcomeSubtitle" data-i18n="welcome.subtitle">Choose your language / Обери мову</p>
+      <div class="welcome-langs">
+        <button class="welcome-lang-btn" onclick="chooseWelcomeLang('uk')">
+          <span class="welcome-flag">🇺🇦</span>
+          <span class="welcome-lang-name">Українська</span>
+          <span class="welcome-lang-desc">Симулятор середньовічного купця у 1205 році. Європа — від солі Кракова до шовку Константинополя.</span>
+        </button>
+        <button class="welcome-lang-btn" onclick="chooseWelcomeLang('en')">
+          <span class="welcome-flag">🇬🇧</span>
+          <span class="welcome-lang-name">English</span>
+          <span class="welcome-lang-desc">A medieval merchant simulator set in 1205 AD. Europe — from Kraków salt to Constantinople silk.</span>
+        </button>
+      </div>
+      <div class="welcome-intro" id="welcomeIntro"></div>
+    </div>
+  </div>
+</div>
+
+<div id="saveSlotsModal" class="modal hidden">
+  <div class="modal-card summary-modal-card">
+    <h2>💾 <span data-i18n="saves.title">Збереження</span></h2>
+    <p class="muted" data-i18n="saves.desc">Зберігай і завантажуй гру в окремих слотах. Автозбереження у головному ключі лишається активним.</p>
+    <div class="save-slot-create">
+      <input id="saveSlotName" type="text" maxlength="40" placeholder="Назва слота (наприклад: «Перед битвою»)" data-i18n-ph="saves.slot_placeholder">
+      <button class="btn green" onclick="saveCurrentToNewSlot()">💾 <span data-i18n="saves.save_btn">Зберегти поточну гру</span></button>
+    </div>
+    <h3 style="margin-top:18px"><span data-i18n="saves.list">Збережені слоти</span></h3>
+    <div id="saveSlotsList" class="save-slot-list"></div>
+    <button class="btn gray" onclick="closeSaveSlots()" style="margin-top:14px"><span data-i18n="btn.close">Закрити</span></button>
+  </div>
+</div>
+
+<div id="creationModal" class="modal hidden">
+  <div class="modal-card creation-card">
+    <h2 data-i18n="creation.title">Початок шляху: 1205 рік</h2>
+    <p class="world-intro" data-i18n="creation.intro">Європейські шляхи з'єднують князівства, королівства, міські комуни й порти. Після потрясінь попереднього століття торговці дедалі частіше вирішують долю міст: від солі та зерна до зброї й шовку. Ти починаєш без майна і штабу, маючи лише 1000 монет та власне ім'я.</p>
+    <div class="creation-grid">
+      <div>
+        <h3 data-i18n="creation.origin">Обери походження</h3>
+        <div id="heroPresets" class="preset-list"></div>
+      </div>
+      <div class="creation-preview">
+        <div id="heroPortraitPreview" class="creation-portrait"></div>
+        <h3 id="heroPresetName"></h3>
+        <p id="heroPresetStory" class="muted"></p>
+        <label data-i18n="creation.name_label">Власне ім'я або ім'я обраного героя</label>
+        <input id="customHeroName" type="text" maxlength="34" placeholder="Введи ім'я героя" data-i18n-ph="creation.name_placeholder">
+        <label data-i18n="creation.city">Стартове місто</label>
+        <select id="startingCity"></select>
+        <label style="margin-top:10px" data-i18n="creation.difficulty">Рівень складності</label>
+        <div id="difficultyChoice" class="difficulty-choice"></div>
+        <p class="muted" data-i18n="creation.note">Штаб ще не заснований. У вибраному місті можна залишитись або поїхати в інше та створити штаб там.</p>
+        <button class="btn green" onclick="beginCampaign()" data-i18n="btn.start_journey">Почати шлях</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

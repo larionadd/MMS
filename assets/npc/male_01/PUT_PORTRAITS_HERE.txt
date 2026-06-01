@@ -1,0 +1,1 @@
+Put portrait PNG files and full_*.png profile images for male_01 here. See ../README_UK.txt.

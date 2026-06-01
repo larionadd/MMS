@@ -1,0 +1,1 @@
+Put support item PNG icons in this folder. See ../README_UK.txt.

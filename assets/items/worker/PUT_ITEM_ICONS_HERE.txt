@@ -1,0 +1,1 @@
+Put worker gift PNG icons in this folder. See ../README_UK.txt.

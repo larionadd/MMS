@@ -1,0 +1,1 @@
+Place legendary PNG item icons here. See ../README_UK.txt for filenames and catalog fields.

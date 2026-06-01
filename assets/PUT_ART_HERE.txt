@@ -1,0 +1,2 @@
+NPC portraits: assets/npc/README_UK.txt
+Item icons: assets/items/README_UK.txt
