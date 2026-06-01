@@ -351,12 +351,14 @@ function achievementTitle(a){
 }
 function achievementDesc(a){return lang==="en"&&a.descEn?a.descEn:a.desc;}
 const heroPresets = [
-  {id:"yakiv",name:"Яків Соляник",born:1178,birthCity:0,portrait:"yakiv",story:"Син краківського возія, який виріс серед соляних мішків і боргових розписок. Після смерті батька прагне заснувати чесний торговий дім."},
-  {id:"dobromyr",name:"Добромир Вощич",born:1172,birthCity:1,portrait:"dobromyr",story:"Киянин із родини свічників. Знає ціну воску, хутра й слова, даного при свідках, але хоче вирватись за межі рідного торгу."},
-  {id:"matteo",name:"Маттео Белліні",born:1181,birthCity:2,portrait:"matteo",story:"Колишній писар у венеційській гавані. Навчився розрізняти справжній шовк і фальшиву обіцянку, та мріє торгувати під власною печаткою."},
-  {id:"jan",name:"Ян Срібний",born:1176,birthCity:3,portrait:"jan",story:"Син празького майстра, що втратив родинну лавку через борги. Має талант до обліку та бажання повернути ім'я родини на міські брами."},
-  {id:"ismael",name:"Ісмаїл аль-Куртубі",born:1168,birthCity:31,portrait:"ismael",story:"Освічений мандрівник із Кордови, вихований серед книг, тканин і торгових суперечок. Його шлях веде крізь чужі міста до власної влади."}
+  {id:"yakiv",name:"Яків Соляник",nameEn:"Yakiv Solyanyk",born:1178,birthCity:0,portrait:"yakiv",story:"Син краківського возія, який виріс серед соляних мішків і боргових розписок. Після смерті батька прагне заснувати чесний торговий дім.",storyEn:"The son of a Kraków carter, raised among salt sacks and debt ledgers. After his father's death, he wants to found an honest trading house."},
+  {id:"dobromyr",name:"Добромир Вощич",nameEn:"Dobromyr Voshchych",born:1172,birthCity:1,portrait:"dobromyr",story:"Киянин із родини свічників. Знає ціну воску, хутра й слова, даного при свідках, але хоче вирватись за межі рідного торгу.",storyEn:"A Kyiv man from a family of candle-makers. He knows the value of wax, fur, and a word given before witnesses, but longs to break beyond his home market."},
+  {id:"matteo",name:"Маттео Белліні",nameEn:"Matteo Bellini",born:1181,birthCity:2,portrait:"matteo",story:"Колишній писар у венеційській гавані. Навчився розрізняти справжній шовк і фальшиву обіцянку, та мріє торгувати під власною печаткою.",storyEn:"A former clerk in the Venetian harbor. He learned to tell true silk from false promises, and now dreams of trading under his own seal."},
+  {id:"jan",name:"Ян Срібний",nameEn:"Jan Sribny",born:1176,birthCity:3,portrait:"jan",story:"Син празького майстра, що втратив родинну лавку через борги. Має талант до обліку та бажання повернути ім'я родини на міські брами.",storyEn:"The son of a Prague craftsman who lost the family shop to debt. He has a gift for accounts and a hunger to restore his family's name at the city gates."},
+  {id:"ismael",name:"Ісмаїл аль-Куртубі",nameEn:"Ismail al-Qurtubi",born:1168,birthCity:31,portrait:"ismael",story:"Освічений мандрівник із Кордови, вихований серед книг, тканин і торгових суперечок. Його шлях веде крізь чужі міста до власної влади.",storyEn:"A learned traveler from Córdoba, raised among books, textiles, and trade disputes. His road through foreign cities leads toward power of his own."}
 ];
+function heroPresetName(preset){return lang==="en" && preset.nameEn?preset.nameEn:preset.name;}
+function heroPresetStory(preset){return lang==="en" && preset.storyEn?preset.storyEn:preset.story;}
 
 const goodsPool = [
   {name:"Сіль",base:20},{name:"Залізо",base:42},{name:"Зерно",base:14},{name:"Хутро",base:70},
@@ -400,6 +402,13 @@ function goodThumb(name){
 
 function tradingCity(name,region,x,y,supply,demand,shopTier){
   return {name,region,x,y,supply,demand,shopTier,hint:`${name} постачає ${supply.join(", ")}; місцеві купці шукають ${demand.join(", ")}.`};
+}
+function cityHint(city){
+  if(!city) return "";
+  const supply=(city.supply||[]).map(goodName).join(", ");
+  const demand=(city.demand||[]).map(goodName).join(", ");
+  if(lang==="en") return `${cityNameByName(city.name)} supplies ${supply}; local merchants are looking for ${demand}.`;
+  return `${city.name} постачає ${city.supply.join(", ")}; місцеві купці шукають ${city.demand.join(", ")}.`;
 }
 const cities = [
   tradingCity("Краків","Польща",18,15,["Сіль","Залізо","Зерно","Інструменти"],["Хутро","Вино","Шовк"],3),
@@ -474,6 +483,45 @@ const cityProfiles = [
   ["римська доба","близько 45 000","Іслам, християнські й юдейські громади","емірська влада Аль-Андалусу"],
   ["давнє поселення","близько 15 000","Латинське християнство","граф Португалії"]
 ];
+const cityProfilesEn = [
+  ["before the 7th c.","about 10,000","Latin Christianity","Prince Boleslaw III Wrymouth"],
+  ["5th c.","about 50,000","Orthodox Christianity","the Rurikid princely dynasty"],
+  ["5th c.","about 45,000","Latin Christianity","the Doge of the Republic of Venice"],
+  ["9th c.","about 12,000","Latin Christianity","the Czech Premyslid dynasty"],
+  ["Roman settlement","about 18,000","Latin Christianity","the King of England"],
+  ["Roman era","about 8,000","Latin Christianity","the King of England"],
+  ["3rd c. BC","about 30,000","Latin Christianity","the King of France"],
+  ["Roman era","about 8,000","Latin Christianity","the Duke of Normandy"],
+  ["9th c.","about 10,000","Latin Christianity","the Count of Flanders"],
+  ["7th c.","about 9,000","Latin Christianity","the Count of Flanders"],
+  ["Roman era","about 18,000","Latin Christianity","the Archbishop of Cologne"],
+  ["Roman era","about 10,000","Latin Christianity","the Archbishop of Mainz"],
+  ["Roman era","about 12,000","Latin Christianity","the burgrave and imperial authority"],
+  ["Roman era","about 10,000","Latin Christianity","the Margrave of Austria"],
+  ["8th c.","about 6,000","Latin Christianity","the Archbishop of Salzburg"],
+  ["Celtic-Roman era","about 35,000","Latin Christianity","the city commune"],
+  ["ancient harbor","about 20,000","Latin Christianity","the city commune"],
+  ["Roman era","about 12,000","Latin Christianity","the city commune"],
+  ["Roman era","about 18,000","Latin Christianity","the city commune"],
+  ["8th c. BC","about 35,000","Latin Christianity","the papal see"],
+  ["Etruscan/Roman era","about 15,000","Latin Christianity","the city commune"],
+  ["7th c. BC","over 200,000","Orthodox Christianity","the Byzantine Emperor"],
+  ["4th c. BC","about 30,000","Orthodox Christianity","the Byzantine Emperor"],
+  ["9th c.","about 20,000","Orthodox Christianity","the Novgorod veche and prince"],
+  ["9th c.","about 8,000","Orthodox Christianity","a Rus' prince"],
+  ["862 AD","about 6,000","Orthodox Christianity","the princes of Polotsk"],
+  ["9th c.","about 8,000","Latin Christianity","the Duke of Saxony"],
+  ["8th c.","about 7,000","Latin Christianity","the Archbishop of Bremen"],
+  ["Roman era","about 8,000","Latin Christianity","the Bishop of Utrecht"],
+  ["Roman era","about 20,000","Latin Christianity","the Count of Barcelona"],
+  ["Roman era","about 15,000","Latin Christianity","the King of Castile"],
+  ["Roman era","about 60,000","Islam, Christian and Jewish communities","the Emirate authority of al-Andalus"],
+  ["Roman era","about 45,000","Islam, Christian and Jewish communities","the Emirate authority of al-Andalus"],
+  ["ancient settlement","about 15,000","Latin Christianity","the Count of Portugal"]
+];
+function cityProfile(index){
+  return (lang==="en" && cityProfilesEn[index])?cityProfilesEn[index]:cityProfiles[index];
+}
 
 const routes = [
   {id:0,from:0,to:1,name:"Краків → Київ",days:4,risk:"Середній",fee:28},
@@ -2099,7 +2147,7 @@ function renderDifficultyChoice(){
 function showCharacterCreation(){
   selectedHeroPreset=selectedHeroPreset||heroPresets[0].id;
   selectedDifficulty=(player&&player.difficulty)||"normal";
-  document.getElementById("startingCity").innerHTML=cities.map((city,index)=>`<option value="${index}">${city.name} — ${city.region}</option>`).join("");
+  document.getElementById("startingCity").innerHTML=cities.map((city,index)=>`<option value="${index}">${cityName(index)} — ${regionName(city.region)}</option>`).join("");
   renderCharacterCreation();
   renderDifficultyChoice();
   document.getElementById("creationModal").classList.remove("hidden");
@@ -2111,18 +2159,18 @@ function selectHeroPreset(id){
 }
 function renderCharacterCreation(){
   const selected=heroPresets.find(preset=>preset.id===selectedHeroPreset)||heroPresets[0];
-  document.getElementById("heroPresets").innerHTML=heroPresets.map(preset=>`<button class="preset-card ${preset.id===selected.id?"active":""}" onclick="selectHeroPreset('${preset.id}')"><span class="preset-thumb"><img src="assets/player/${preset.portrait}_portrait.png" onerror="this.src='assets/player/${preset.portrait}_full.png';this.onerror=function(){this.remove();this.parentElement.innerHTML='🧭'}"></span><span><b>${preset.name}</b><small>${preset.born} р., ${cities[preset.birthCity].name} • ${CAMPAIGN_YEAR-preset.born} років</small></span></button>`).join("");
+  document.getElementById("heroPresets").innerHTML=heroPresets.map(preset=>`<button class="preset-card ${preset.id===selected.id?"active":""}" onclick="selectHeroPreset('${preset.id}')"><span class="preset-thumb"><img src="assets/player/${preset.portrait}_portrait.png" onerror="this.src='assets/player/${preset.portrait}_full.png';this.onerror=function(){this.remove();this.parentElement.innerHTML='🧭'}"></span><span><b>${escapeHtml(heroPresetName(preset))}</b><small>${preset.born} ${t("status.year")}, ${cityName(preset.birthCity)} • ${CAMPAIGN_YEAR-preset.born} ${tr("років","years old")}</small></span></button>`).join("");
   document.getElementById("heroPortraitPreview").innerHTML=`<img src="assets/player/${selected.portrait}_full.png" onerror="this.remove();this.parentElement.innerHTML='${tr("Повноростовий портрет героя","Full-length hero portrait")}'">`;
-  document.getElementById("heroPresetName").innerText=selected.name+" — "+(CAMPAIGN_YEAR-selected.born)+" "+tr("років","years");
-  document.getElementById("heroPresetStory").innerText=selected.story+" "+tr("Народження","Born")+": "+selected.born+" "+tr("рік","AD")+", "+cityNameByName(cities[selected.birthCity].name)+".";
-  document.getElementById("customHeroName").placeholder=selected.name;
+  document.getElementById("heroPresetName").innerText=heroPresetName(selected)+" — "+(CAMPAIGN_YEAR-selected.born)+" "+tr("років","years old");
+  document.getElementById("heroPresetStory").innerText=heroPresetStory(selected)+" "+tr("Народження","Born")+": "+selected.born+" "+t("status.year")+", "+cityName(selected.birthCity)+".";
+  document.getElementById("customHeroName").placeholder=heroPresetName(selected);
 }
 function beginCampaign(){
   const selected=heroPresets.find(preset=>preset.id===selectedHeroPreset)||heroPresets[0];
   const entered=cleanText(document.getElementById("customHeroName").value,"",34);
   const start=validCityIndex(Number(document.getElementById("startingCity").value),0);
   const diff=DIFFICULTY_LEVELS[selectedDifficulty]||DIFFICULTY_LEVELS.normal;
-  player={...player,name:entered||selected.name,age:CAMPAIGN_YEAR-selected.born,born:selected.born,birthCity:selected.birthCity,portrait:selected.portrait,story:selected.story,currentYear:CAMPAIGN_YEAR,created:true,headquartersCity:null,xp:0,warehouseBonus:0,lifeElixirs:0,hiddenQuests:{},foundHiddenPlaces:[],difficulty:selectedDifficulty,history:["1205 "+t("status.year")+": "+(entered||selected.name)+tr(" починає шлях у місті "," begins the road in ")+cityName(start)+tr(" із "," with ")+diff.startingGold+tr(" монет"," coins")+" ("+(lang==="en"?diff.name.en:diff.name.uk)+")."]};
+  player={...player,name:entered||heroPresetName(selected),age:CAMPAIGN_YEAR-selected.born,born:selected.born,birthCity:selected.birthCity,portrait:selected.portrait,story:heroPresetStory(selected),currentYear:CAMPAIGN_YEAR,created:true,headquartersCity:null,xp:0,warehouseBonus:0,lifeElixirs:0,hiddenQuests:{},foundHiddenPlaces:[],difficulty:selectedDifficulty,history:["1205 "+t("status.year")+": "+(entered||heroPresetName(selected))+tr(" починає шлях у місті "," begins the road in ")+cityName(start)+tr(" із "," with ")+diff.startingGold+tr(" монет"," coins")+" ("+(lang==="en"?diff.name.en:diff.name.uk)+")."]};
   // Apply difficulty starting resources
   gold=diff.startingGold;
   food=diff.startingFood;
@@ -2856,13 +2904,13 @@ function renderMarket(){
   // v0.39: try to reveal a tavern rumour on each market visit (chance-based)
   maybeRevealRumor();
   const city=cities[currentCity];
-  const profile=cityProfiles[currentCity];
+  const profile=cityProfile(currentCity);
   document.getElementById("marketCity").innerText="📍 "+cityName(currentCity);
   document.getElementById("cityPortrait").innerHTML=`<div class="location-art city-card-art"><img src="assets/cities/${cityArtKeys[currentCity]}.png" onerror="this.style.display='none'"><span class="art-placeholder"></span></div>`;
   const factLabels=lang==="en"?["Founded","Population","Religion","Authority"]:["Заснування","Населення","Релігія","Влада"];
   const factNote=lang==="en"?"In-game historical note: population figures are approximate for the early 12th century.":"Ігрова історична довідка: чисельність наведена орієнтовно для початку XII століття.";
   document.getElementById("cityFacts").innerHTML=`<div class="city-facts"><b>${cityName(currentCity)}, ${regionName(city.region)}</b><span>${factLabels[0]}: <b>${profile[0]}</b></span><span>${factLabels[1]}: <b>${profile[1]}</b></span><span>${factLabels[2]}: <b>${profile[2]}</b></span><span>${factLabels[3]}: <b>${profile[3]}</b></span><span><b>${reputationLabel(currentCity)}</b></span><small>${factNote}</small></div>`;
-  document.getElementById("marketHint").innerText=cities[currentCity].hint+(lang==="en"?" Buying and selling are available only at this local market.":" Купівля і продаж доступні тільки на цьому місцевому ринку.");
+  document.getElementById("marketHint").innerText=cityHint(city)+(lang==="en"?" Buying and selling are available only at this local market.":" Купівля і продаж доступні тільки на цьому місцевому ринку.");
   // v0.39: inventory strip above goods grid
   const ownedItems=Object.entries(inventory||{}).filter(e=>e[1]>0);
   let invStrip="";
@@ -2902,7 +2950,7 @@ function renderTravel(){
     const timeLbl=lang==="en"?`Time: ${days} d.`:`Час: ${days} дн.`;
     const costLbl=lang==="en"?`Cost: ${cost}`:`Витрати: ${cost}`;
     const pick=lang==="en"?"Choose route":"Обрати маршрут";
-    return `<div class="card travel-card"><div class="travel-card-art"><img src="assets/cities/${cityArtKeys[index]}.png" onerror="this.style.display='none'"></div><div><div class="card-title"><b>${escapeHtml(cityName(index))}</b><span class="badge">${escapeHtml(regionName(city.region))}</span></div><span class="badge">${timeLbl}</span><span class="badge">${costLbl}</span><span class="badge">${escapeHtml(reputationLabel(index))}</span><p>${escapeHtml(city.hint)}</p></div><div class="trade-actions"><button class="btn green" onclick="prepareTravel(${index})">${pick}</button></div></div>`;
+    return `<div class="card travel-card"><div class="travel-card-art"><img src="assets/cities/${cityArtKeys[index]}.png" onerror="this.style.display='none'"></div><div><div class="card-title"><b>${escapeHtml(cityName(index))}</b><span class="badge">${escapeHtml(regionName(city.region))}</span></div><span class="badge">${timeLbl}</span><span class="badge">${costLbl}</span><span class="badge">${escapeHtml(reputationLabel(index))}</span><p>${escapeHtml(cityHint(city))}</p></div><div class="trade-actions"><button class="btn green" onclick="prepareTravel(${index})">${pick}</button></div></div>`;
   }).join("");
 }
 
