@@ -172,6 +172,7 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .people-columns,.subordinate-columns{display:grid;grid-template-columns:repeat(2,minmax(340px,1fr));gap:14px}
 .people-lane{padding:8px;border:1px solid rgba(91,67,39,.55);border-radius:14px;margin:10px 0;background:rgba(0,0,0,.12)}
 .people-lane h3{margin:0 0 8px;color:var(--gold);font-size:16px}
+.people-lane-scroll{display:grid;gap:10px}
 .people-columns .npc-card,.subordinate-columns .npc-card{display:block}
 .people-columns .portrait,.subordinate-columns .portrait{float:left;margin-right:12px;margin-bottom:8px}
 .people-columns .actions,.subordinate-columns .actions{clear:both;display:flex;flex-wrap:wrap;padding-top:8px}
@@ -729,9 +730,26 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
   .travel-card-art{width:92px;height:92px}
   /* Keep stats compact 3-col on small screens too */
   .side-status{grid-template-columns:repeat(3,1fr) !important}
-  .people-lane{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px}
-  .people-lane h3{flex:0 0 100%;margin-top:4px}
-  .people-lane .npc-card{flex:0 0 86%;scroll-snap-align:start}
-  .people-columns .portrait{float:none;margin:0 0 8px}
-  .people-columns .actions{display:grid;grid-template-columns:1fr}
+  .people-lane h3{margin-top:4px}
+}
+
+@media (max-width:760px){
+  .modal{align-items:flex-start;justify-content:center;padding:6px;overflow-y:auto;overscroll-behavior:contain}
+  .modal-card{width:calc(100vw - 12px) !important;max-width:none !important;max-height:calc(100dvh - 12px) !important;overflow:auto;padding:12px;border-radius:16px}
+  .modal-card h2{font-size:20px;line-height:1.2;margin-bottom:8px}
+  .modal-card p{font-size:14px;line-height:1.35;margin-bottom:8px}
+  .travel-modal-card{display:flex;flex-direction:column;width:calc(100vw - 12px) !important}
+  #travelModalText{max-height:34dvh;overflow:auto;padding-right:4px}
+  #travelCompanionList{min-height:0;overflow:auto}
+  .travel-party-grid{display:flex !important;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 0 8px}
+  .companion-choice,.battle-mode-select{font-size:13px;padding:8px}
+  .companion-choice{flex:0 0 min(82vw,320px);scroll-snap-align:start}
+  .travel-modal-card .trade-actions{position:sticky;bottom:-12px;background:linear-gradient(180deg,rgba(48,35,22,.85),#1b130c);padding-top:10px;margin-top:8px}
+  .people-lane{padding:9px;margin:10px 0}
+  .people-lane-scroll{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px}
+  .people-lane-scroll .npc-card{flex:0 0 min(84vw,360px);scroll-snap-align:start;margin:0;display:grid;grid-template-columns:86px 1fr}
+  .people-lane-scroll .portrait{float:none;width:86px;height:106px;margin:0}
+  .people-lane-scroll .actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr;clear:none}
+  .people-lane-scroll .person-profile{display:none}
+  .people-lane-scroll .npc-card p{font-size:13px;margin:6px 0}
 }

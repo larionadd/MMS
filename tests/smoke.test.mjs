@@ -35,10 +35,11 @@ function element() {
   };
 }
 
-function createGame(legacyState) {
+function createGame(savedState) {
   const nodes = Object.fromEntries(ids.map(id => [id, element()]));
   const storage = new Map();
-  if(legacyState) storage.set("medievalMerchantSaveV022", JSON.stringify(legacyState));
+  const saveKey = source.match(/const SAVE_KEY = "([^"]+)"/)?.[1] || "medievalMerchantSaveV029";
+  if(savedState) storage.set(saveKey, JSON.stringify(savedState));
   const controlledMath = Object.create(Math);
   controlledMath.random = () => 0.5;
   let confirmations = 0;

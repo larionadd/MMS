@@ -1,5 +1,5 @@
-﻿const SAVE_KEY = "medievalMerchantSaveV028";
-const LEGACY_SAVE_KEYS = ["medievalMerchantSaveV027","medievalMerchantSaveV026","medievalMerchantSaveV025","medievalMerchantSaveV024","medievalMerchantSaveV022","medievalMerchantSaveV021","medievalMerchantSaveV020","medievalMerchantSaveV019","medievalMerchantSaveV018","medievalMerchantSaveV017","medievalMerchantSaveV016","medievalMerchantSaveV015","medievalMerchantSaveV014","medievalMerchantSaveV013","medievalMerchantSaveV012","medievalMerchantSaveV011","medievalMerchantSaveV010","medievalMerchantSaveV09","medievalMerchantSaveV08","medievalMerchantSaveV07"];
+﻿const SAVE_KEY = "medievalMerchantSaveV029";
+const LEGACY_SAVE_KEYS = [];
 const CARAVAN_ENABLED = false;
 const CAMPAIGN_YEAR = 1205;
 const BALANCE = Object.freeze({
@@ -3133,7 +3133,10 @@ function renderNpcMarket(){
     return;
   }
   const noneLbl=tr("Немає кандидатів","No candidates");
-  const lane=(status,gender,title)=>`<div class="people-lane"><h3>${title}</h3>${localPeople.filter(n=>n.status===status&&n.gender===gender).map(n=>npcCard(n,"market")).join("")||`<div class="empty">${noneLbl}</div>`}</div>`;
+  const lane=(status,gender,title)=>{
+    const cards=localPeople.filter(n=>n.status===status&&n.gender===gender).map(n=>npcCard(n,"market")).join("")||`<div class="empty">${noneLbl}</div>`;
+    return `<div class="people-lane"><h3>${title}</h3><div class="people-lane-scroll">${cards}</div></div>`;
+  };
   const menLbl=tr("♂ Чоловіки","♂ Men"),womenLbl=tr("♀ Жінки","♀ Women");
   document.getElementById("npcMarket").innerHTML=`<div class="people-columns"><div><h2 class="subhead">${tr("Найманці","Hirelings")}</h2>${lane("free","male",menLbl)}${lane("free","female",womenLbl)}</div><div><h2 class="subhead">${tr("Підневільні люди","Bonded people")}</h2>${lane("slave","male",menLbl)}${lane("slave","female",womenLbl)}</div></div>`;
 }
