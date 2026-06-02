@@ -1,0 +1,36 @@
+{
+  "name": "medieval-merchant-simulator",
+  "version": "0.39.0",
+  "private": true,
+  "description": "Medieval trade, travel, household management, quests, and tactical road encounters in Europe in 1205.",
+  "main": "steam/electron/main.js",
+  "scripts": {
+    "steam:dev": "electron .",
+    "steam:pack": "electron-builder --dir",
+    "steam:dist": "electron-builder --win portable",
+    "web:check": "node tests/smoke.test.mjs"
+  },
+  "build": {
+    "appId": "com.larionadd.medievalmerchant",
+    "productName": "Medieval Merchant Simulator",
+    "directories": {
+      "output": "dist/steam"
+    },
+    "files": [
+      "index.html",
+      "game.js",
+      "style.css",
+      "assets/**/*",
+      "steam/electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  }
+}

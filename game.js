@@ -43,6 +43,64 @@ function loadLang(){ try{ const v=localStorage.getItem(LANG_KEY); if(v==="uk"||v
 function setLang(value){ if(value!=="uk"&&value!=="en") return; lang=value; try{localStorage.setItem(LANG_KEY,lang);}catch(e){} applyStaticI18n(); if(typeof render==="function") render(); }
 function toggleLang(){ setLang(lang==="uk"?"en":"uk"); }
 
+/* ============================ Platform bridges ============================ */
+const PLATFORM = {crazyInitPromise:null,crazyLoadingStopped:false,crazyGameplay:false};
+function crazySdk(){
+  return typeof window!=="undefined" && window.CrazyGames && window.CrazyGames.SDK ? window.CrazyGames.SDK : null;
+}
+function crazyCall(path){
+  const sdk=crazySdk();
+  if(!sdk) return null;
+  try{
+    const parts=path.split(".");
+    let target=sdk;
+    for(let i=0;i<parts.length-1;i++) target=target&&target[parts[i]];
+    const fn=target&&target[parts[parts.length-1]];
+    return typeof fn==="function" ? fn.call(target) : null;
+  }catch(error){
+    return null;
+  }
+}
+function crazyInit(){
+  const sdk=crazySdk();
+  if(!sdk) return null;
+  if(PLATFORM.crazyInitPromise) return PLATFORM.crazyInitPromise;
+  try{
+    PLATFORM.crazyInitPromise=typeof sdk.init==="function" ? sdk.init() : (typeof Promise!=="undefined" ? Promise.resolve() : null);
+  }catch(error){
+    PLATFORM.crazyInitPromise=typeof Promise!=="undefined" ? Promise.resolve() : null;
+  }
+  return PLATFORM.crazyInitPromise;
+}
+function crazyAfterReady(path){
+  const ready=crazyInit();
+  if(!ready) return;
+  if(typeof ready.then==="function") ready.then(()=>crazyCall(path)).catch(()=>{});
+  else crazyCall(path);
+}
+function crazyLoadingStart(){
+  crazyAfterReady("game.loadingStart");
+}
+function crazyLoadingStop(){
+  if(PLATFORM.crazyLoadingStopped) return;
+  crazyAfterReady("game.loadingStop");
+  PLATFORM.crazyLoadingStopped=true;
+}
+function crazyGameplayStart(){
+  if(PLATFORM.crazyGameplay) return;
+  crazyAfterReady("game.gameplayStart");
+  PLATFORM.crazyGameplay=true;
+}
+function crazyGameplayStop(){
+  if(!PLATFORM.crazyGameplay) return;
+  crazyAfterReady("game.gameplayStop");
+  PLATFORM.crazyGameplay=false;
+}
+function crazyHappyTime(){
+  crazyAfterReady("game.happytime");
+}
+crazyLoadingStart();
+
 // Статичні рядки інтерфейсу. Ключі стабільні, значення — для кожної мови.
 const STRINGS = {
   uk:{
@@ -1122,6 +1180,7 @@ function unlockAchievement(id){
   if(!achievement || achievementUnlocked(id)) return;
   achievements[id]={day,title:achievement.title};
   log("🏆 "+tr("Досягнення отримано","Achievement unlocked")+": "+achievementTitle(achievement)+". "+achievementDesc(achievement),"achievement",true);
+  crazyHappyTime();
 }
 function checkLevelAchievements(){
   for(let level=1;level<=playerLevel();level++) unlockAchievement("level_"+level);
@@ -2377,6 +2436,7 @@ function beginCampaign(){
   energy=dailyActionLimit();
   document.getElementById("creationModal").classList.add("hidden");
   unlockPageScroll();
+  crazyGameplayStart();
   log("🧭 "+player.name+tr(" прибуває до міста "," arrives in ")+cityName(currentCity)+". "+tr("У скарбниці ","Treasury: ")+diff.startingGold+tr(" монет; рівень "," coins; difficulty ")+(lang==="en"?diff.name.en:diff.name.uk)+" "+diff.icon+".","system",true);
   saveGame(false);
   render();
@@ -6814,6 +6874,8 @@ if(!loadGame()){
 }
 applyStaticI18n();
 render();
+if(player && player.created) crazyGameplayStart();
+crazyLoadingStop();
 if(showWelcomeIfNew()){
   // wait for chooseWelcomeLang to handle creation
 }else if(!player.created){
