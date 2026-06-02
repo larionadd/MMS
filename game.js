@@ -3116,25 +3116,33 @@ function renderChangelog(){
   }
 }
 
-function renderHelp(){
+let currentHelpTab="guide";
+function renderHelp(which=currentHelpTab){
   const target=document.getElementById("helpContent");
   if(!target) return;
+  currentHelpTab=which==="changelog"?"changelog":"guide";
   const content=HELP_CONTENT[lang]||HELP_CONTENT.uk;
   const versionLine=tr(
     `Поточна версія: <b>v0.40</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
     `Current version: <b>v0.40</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
   );
-  const tabs=`<div class="help-tabs"><button type="button" class="help-tab active" data-help-tab="guide" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button type="button" class="help-tab" data-help-tab="changelog" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
-  const guide=`<div id="helpTabGuide" class="help-tab-content active"><div class="help-grid">`+content.map(item=>`<div class="profile-block help-card"><h3>${item.h}</h3>${item.b}</div>`).join("")+`</div></div>`;
-  const changelog=`<div id="helpTabChangelog" class="help-tab-content">${renderChangelog()}</div>`;
+  const tabs=`<div class="help-tabs"><button type="button" class="help-tab ${currentHelpTab==="guide"?"active":""}" data-help-tab="guide" aria-pressed="${currentHelpTab==="guide"}" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button type="button" class="help-tab ${currentHelpTab==="changelog"?"active":""}" data-help-tab="changelog" aria-pressed="${currentHelpTab==="changelog"}" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
+  const guide=`<div id="helpTabGuide" class="help-tab-content ${currentHelpTab==="guide"?"active":""}"><div class="help-grid">`+content.map(item=>`<div class="profile-block help-card"><h3>${item.h}</h3>${item.b}</div>`).join("")+`</div></div>`;
+  const changelog=`<div id="helpTabChangelog" class="help-tab-content ${currentHelpTab==="changelog"?"active":""}">${renderChangelog()}</div>`;
   target.innerHTML=`<div class="help-version">${versionLine}</div>${tabs}${guide}${changelog}`;
 }
 function switchHelpTab(btn,which){
+  currentHelpTab=which==="changelog"?"changelog":"guide";
   document.querySelectorAll(".help-tab").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
+  document.querySelectorAll(".help-tab").forEach(b=>b.setAttribute("aria-pressed","false"));
+  if(btn){
+    btn.classList.add("active");
+    btn.setAttribute("aria-pressed","true");
+  }
   document.querySelectorAll(".help-tab-content").forEach(c=>c.classList.remove("active"));
   const tgt=document.getElementById("helpTab"+which.charAt(0).toUpperCase()+which.slice(1));
   if(tgt) tgt.classList.add("active");
+  else renderHelp(currentHelpTab);
 }
 
 function renderAchievements(){
@@ -3271,7 +3279,7 @@ function cityMapPoint(index){
   return cityMapPoints[validCityIndex(index,0)] || {x:50,y:50};
 }
 function html5TravelMapBackdrop(){
-  return `<svg class="travel-map-bg" viewBox="0 0 100 66" preserveAspectRatio="none" aria-hidden="true">
+  return `<svg class="travel-map-bg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
     <defs>
       <linearGradient id="mapSea" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stop-color="#1b3441"/>
@@ -3284,22 +3292,62 @@ function html5TravelMapBackdrop(){
         <stop offset="100%" stop-color="#252014"/>
       </linearGradient>
     </defs>
-    <rect class="map-sea" width="100" height="66"/>
-    <path class="map-coast-glow" d="M6 23 C12 17,22 13,31 14 C38 10,47 9,56 11 C68 8,80 12,91 19 C96 25,94 34,88 39 C82 45,75 48,66 49 C58 53,48 54,39 51 C29 53,19 49,14 42 C8 38,3 30,6 23Z"/>
-    <path class="map-land" d="M7 22 C13 16,22 12,31 14 C38 9,48 8,56 11 C69 8,82 13,92 20 C97 27,94 34,88 39 C82 45,74 48,66 49 C59 53,48 55,39 51 C29 53,19 49,14 42 C8 38,2 30,7 22Z"/>
-    <path class="map-region" d="M12 20 C18 15,28 14,34 18 C32 27,25 33,16 34 C10 31,8 25,12 20Z"/>
-    <path class="map-region" d="M36 16 C46 10,58 12,65 19 C62 28,52 32,43 29 C36 27,32 21,36 16Z"/>
-    <path class="map-region" d="M62 20 C73 14,87 18,93 26 C91 34,82 40,70 41 C63 37,59 28,62 20Z"/>
-    <path class="map-region" d="M39 32 C48 31,58 33,66 40 C62 48,49 53,38 50 C30 47,29 38,39 32Z"/>
-    <path class="map-region" d="M57 42 C63 40,73 42,80 48 C74 53,64 55,55 52 C52 48,53 45,57 42Z"/>
-    <path class="map-region" d="M28 43 C34 42,40 46,43 53 C36 56,26 53,22 48 C23 45,25 44,28 43Z"/>
-    <path class="map-river" d="M31 18 C35 23,39 28,44 33 C49 38,54 42,61 45"/>
-    <path class="map-river" d="M59 17 C61 23,60 29,63 36 C66 42,72 44,79 47"/>
-    <path class="map-river" d="M20 19 C22 25,24 30,29 35"/>
-    <path class="map-mountain" d="M35 31 L38 27 L41 32 L44 28 L48 34 L52 29 L56 35"/>
-    <path class="map-mountain" d="M61 24 L64 20 L67 26 L70 21 L74 27"/>
-    <path class="map-mountain" d="M47 45 L50 40 L53 46 L57 42 L60 48"/>
+    <rect class="map-sea" width="100" height="100"/>
+    <path class="map-coast-glow" d="M18 18 C26 13,36 16,42 21 C47 18,56 17,64 20 C74 17,88 21,96 31 L98 46 C92 50,88 56,83 63 C76 66,70 68,64 74 C58 78,50 77,43 73 C35 76,27 71,22 64 C16 60,11 51,13 42 C8 37,9 28,18 18Z"/>
+    <path class="map-land" d="M35 23 C42 18,55 18,64 22 C73 19,88 23,96 32 C98 39,96 46,89 50 C86 56,83 61,76 64 C70 66,66 70,60 74 C53 78,45 76,39 72 C32 75,24 70,20 63 C14 59,10 51,13 43 C10 37,12 30,20 25 C24 22,30 21,35 23Z"/>
+    <path class="map-land map-island" d="M25 18 C29 14,35 17,36 23 C33 28,29 29,25 25 C22 23,22 20,25 18Z"/>
+    <path class="map-land map-island" d="M19 22 C22 19,25 21,25 25 C23 28,20 29,18 26 C17 24,17 23,19 22Z"/>
+    <path class="map-land map-island" d="M58 6 C67 7,75 13,76 22 C70 20,65 21,59 25 C54 23,51 19,53 14 C54 10,55 8,58 6Z"/>
+    <path class="map-land map-peninsula" d="M53 51 C58 55,60 61,58 68 C55 71,51 68,52 63 C50 59,48 54,53 51Z"/>
+    <path class="map-land map-peninsula" d="M28 57 C35 56,41 60,42 67 C38 72,29 70,24 64 C23 61,24 58,28 57Z"/>
+    <path class="map-land map-peninsula" d="M66 60 C74 61,80 66,81 73 C75 76,67 74,62 69 C61 65,62 62,66 60Z"/>
+    <path class="map-region" d="M20 25 C26 21,34 22,38 28 C36 38,29 44,19 43 C13 38,14 30,20 25Z"/>
+    <path class="map-region" d="M39 27 C48 21,59 23,64 31 C61 41,52 46,43 42 C37 38,35 32,39 27Z"/>
+    <path class="map-region" d="M63 31 C74 24,88 29,96 38 C94 48,84 55,72 54 C64 50,59 39,63 31Z"/>
+    <path class="map-region" d="M41 45 C50 43,60 47,68 55 C64 66,51 75,39 72 C31 66,31 52,41 45Z"/>
+    <path class="map-region" d="M64 56 C72 54,83 58,88 67 C80 75,68 76,59 70 C57 64,59 59,64 56Z"/>
+    <path class="map-river" d="M42 29 C46 35,50 41,56 47 C62 53,68 57,76 61"/>
+    <path class="map-river" d="M68 28 C70 36,69 44,73 52 C76 59,83 63,91 66"/>
+    <path class="map-river" d="M24 27 C25 34,28 40,34 45"/>
+    <path class="map-mountain" d="M37 44 L40 39 L44 45 L48 40 L52 47 L56 42 L61 49"/>
+    <path class="map-mountain" d="M63 36 L66 31 L70 38 L73 33 L78 40"/>
+    <path class="map-mountain" d="M50 62 L53 57 L57 64 L61 60 L65 67"/>
+    <text class="map-label" x="26" y="36">Occident</text>
+    <text class="map-label" x="54" y="36">Imperium</text>
+    <text class="map-label" x="78" y="43">Rus'</text>
+    <text class="map-label" x="42" y="69">Mare Nostrum</text>
   </svg>`;
+}
+function travelMapMarkerHtml(index,withLabel=true){
+  const point=cityMapPoint(index);
+  const destination=Number.isInteger(selectedTravelDestination) && selectedTravelDestination!==currentCity ? selectedTravelDestination : null;
+  const cls=["map-city-dot"];
+  if(index===currentCity) cls.push("current");
+  if(index===destination) cls.push("selected");
+  return `<button class="${cls.join(" ")}" style="left:${point.x}%;top:${point.y}%" onclick="prepareTravel(${index})" title="${escapeHtml(cityName(index))}" ${index===currentCity?"disabled":""}><i class="dot-core"></i>${withLabel?`<span>${escapeHtml(cityName(index))}</span>`:""}</button>`;
+}
+function travelRouteSvg(origin,destination,animated=true){
+  const from=cityMapPoint(origin);
+  const to=cityMapPoint(destination);
+  const cls=animated?"travel-route-line":"travel-route-line travel-route-static";
+  return `<svg class="travel-map-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line class="travel-route-shadow" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line><line class="${cls}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line></svg>`;
+}
+function travelHeroMarkerHtml(origin,destination,progress=null){
+  const from=cityMapPoint(origin);
+  const to=cityMapPoint(destination);
+  if(progress===null){
+    return `<div class="map-hero-marker" style="--from-x:${from.x}%;--from-y:${from.y}%;--to-x:${to.x}%;--to-y:${to.y}%">🧭</div>`;
+  }
+  const x=from.x+(to.x-from.x)*progress;
+  const y=from.y+(to.y-from.y)*progress;
+  return `<div class="map-hero-marker map-hero-marker-step" style="left:${x}%;top:${y}%">🧭</div>`;
+}
+function renderTravelAnimMap(origin,destination,progress=0){
+  const target=document.getElementById("travelAnimMap");
+  if(!target) return;
+  const route=travelRouteSvg(origin,destination,true);
+  const endpoints=`<button class="map-city-dot current anim-city-dot" style="left:${cityMapPoint(origin).x}%;top:${cityMapPoint(origin).y}%"><i class="dot-core"></i><span>${escapeHtml(cityName(origin))}</span></button><button class="map-city-dot selected anim-city-dot" style="left:${cityMapPoint(destination).x}%;top:${cityMapPoint(destination).y}%"><i class="dot-core"></i><span>${escapeHtml(cityName(destination))}</span></button>`;
+  target.innerHTML=`<div class="travel-map travel-map-compact">${html5TravelMapBackdrop()}${route}${travelHeroMarkerHtml(origin,destination,progress)}${endpoints}</div>`;
 }
 function renderTravelMap(){
   const target=document.getElementById("travelMap");
@@ -3310,15 +3358,9 @@ function renderTravelMap(){
   const from=cityMapPoint(currentCity);
   const to=destination!=null?cityMapPoint(destination):from;
   const route=destination!=null
-    ? `<svg class="travel-map-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line class="travel-route-shadow" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line><line class="travel-route-line" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line></svg><div class="map-hero-marker" style="--from-x:${from.x}%;--from-y:${from.y}%;--to-x:${to.x}%;--to-y:${to.y}%">🧭</div>`
-    : `<div class="map-hero-marker" style="--from-x:${from.x}%;--from-y:${from.y}%;--to-x:${from.x}%;--to-y:${from.y}%">🧭</div>`;
-  const dots=cities.map((city,index)=>{
-    const point=cityMapPoint(index);
-    const cls=["map-city-dot"];
-    if(index===currentCity) cls.push("current");
-    if(index===destination) cls.push("selected");
-    return `<button class="${cls.join(" ")}" style="left:${point.x}%;top:${point.y}%" onclick="prepareTravel(${index})" title="${escapeHtml(cityName(index))}" ${index===currentCity?"disabled":""}><i class="dot-core"></i><span>${escapeHtml(cityName(index))}</span></button>`;
-  }).join("");
+    ? travelRouteSvg(currentCity,destination,true)+travelHeroMarkerHtml(currentCity,destination,null)
+    : travelHeroMarkerHtml(currentCity,currentCity,null);
+  const dots=cities.map((city,index)=>travelMapMarkerHtml(index,true)).join("");
   const caption=destination!=null
     ? `${escapeHtml(cityName(currentCity))} → ${escapeHtml(cityName(destination))} • ${routeAdjustedDays(currentCity,destination)} ${tr("дн.","d")}`
     : `${tr("Поточне місто","Current city")}: ${escapeHtml(cityName(currentCity))}`;
@@ -4904,6 +4946,7 @@ function moveTravelCompanions(companionIds,destination){
 let _travelAnimCallback=null;
 let _pendingTravelAnim=null;
 let _travelSkipRequested=false;
+let _travelAnimRoute=null;
 function _checkPendingTravelAnim(){
   if(!_pendingTravelAnim) return;
   const anyModalOpen=[...document.querySelectorAll('.modal')].some(m=>!m.classList.contains('hidden'));
@@ -4924,6 +4967,7 @@ function skipTravelAnim(){
 // === v0.40: incremental travel overlay for async confirmTravel ===
 function beginTravelOverlay(origin,destination,duration){
   _travelSkipRequested=false;
+  _travelAnimRoute={origin,destination};
   const overlay=document.getElementById("travelAnimOverlay");
   const artKey=k=>cityArtKeys[k]||"";
   document.getElementById("travelAnimFromImg").src="assets/cities/"+artKey(origin)+".png";
@@ -4934,6 +4978,7 @@ function beginTravelOverlay(origin,destination,duration){
   document.getElementById("travelAnimProgressFill").style.width="0%";
   document.getElementById("travelAnimWagon").style.left="0%";
   document.getElementById("travelAnimEvents").innerHTML="";
+  renderTravelAnimMap(origin,destination,0);
   overlay.classList.remove("hidden");
   // Hook skip button to set flag (so async loop can break out fast)
   overlay.querySelector(".travel-anim-skip").onclick=()=>{_travelSkipRequested=true;};
@@ -4946,6 +4991,7 @@ function setTravelDay(day,duration){
   fill.style.width=progress+"%";
   wagon.style.left="calc("+progress+"% - 11px)";
   counter.textContent=(tr("День ","Day "))+day+" / "+duration;
+  if(_travelAnimRoute) renderTravelAnimMap(_travelAnimRoute.origin,_travelAnimRoute.destination,progress/100);
 }
 function addTravelOverlayEvent(text,type){
   const eventBox=document.getElementById("travelAnimEvents");
@@ -4969,6 +5015,7 @@ function endTravelOverlay(destination){
   fill.style.width="100%";
   wagon.style.left="calc(100% - 22px)";
   counter.textContent=tr("Прибуття! ","Arrival! ")+cityName(destination);
+  if(_travelAnimRoute) renderTravelAnimMap(_travelAnimRoute.origin,_travelAnimRoute.destination,1);
 }
 // v0.40: wait for user to click finish button instead of auto-closing
 let _travelFinishResolver=null;
@@ -5023,6 +5070,7 @@ function showTravelAnimation(origin,destination,duration,journalSnapshot,onDone)
     return;
   }
   const overlay=document.getElementById("travelAnimOverlay");
+  _travelAnimRoute={origin,destination};
   const artKey=k=>cityArtKeys[k]||"";
   document.getElementById("travelAnimFromImg").src="assets/cities/"+artKey(origin)+".png";
   document.getElementById("travelAnimToImg").src="assets/cities/"+artKey(destination)+".png";
@@ -5032,6 +5080,7 @@ function showTravelAnimation(origin,destination,duration,journalSnapshot,onDone)
   document.getElementById("travelAnimProgressFill").style.width="0%";
   document.getElementById("travelAnimWagon").style.left="0%";
   document.getElementById("travelAnimEvents").innerHTML="";
+  renderTravelAnimMap(origin,destination,0);
   overlay.classList.remove("hidden");
   const eventBox=document.getElementById("travelAnimEvents");
   const fill=document.getElementById("travelAnimProgressFill");
@@ -5059,6 +5108,7 @@ function showTravelAnimation(origin,destination,duration,journalSnapshot,onDone)
     const progress=Math.round(((idx+1)/entries.length)*100);
     fill.style.width=progress+"%";
     wagon.style.left="calc("+progress+"% - 11px)";
+    renderTravelAnimMap(origin,destination,progress/100);
     const day=Math.ceil(((idx+1)/entries.length)*duration);
     counter.textContent=tr("День ","Day ")+day+" / "+duration;
     const div=document.createElement("div");

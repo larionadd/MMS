@@ -109,6 +109,8 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .map-river{fill:none;stroke:rgba(99,169,190,.55);stroke-width:.34;stroke-linecap:round;stroke-dasharray:1.2 1.2}
 .map-mountain{fill:none;stroke:rgba(237,194,119,.32);stroke-width:.45;stroke-linecap:round}
 .map-coast-glow{fill:none;stroke:rgba(255,226,164,.18);stroke-width:1.2;filter:blur(.4px)}
+.map-island,.map-peninsula{stroke-width:.3}
+.map-label{fill:rgba(235,205,147,.34);font:700 3px Georgia,'Times New Roman',serif;letter-spacing:.18px;text-transform:uppercase}
 .travel-map:after{content:"";position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.32));pointer-events:none}
 .travel-map-route{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
 .travel-route-line{stroke:rgba(240,204,131,.95);stroke-width:1.4;stroke-dasharray:5 5;fill:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85));animation:routeDash 1.2s linear infinite}
@@ -127,6 +129,10 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 }
 .travel-map-caption{position:absolute;left:12px;right:12px;bottom:12px;z-index:6;display:flex;justify-content:space-between;gap:10px;align-items:center;pointer-events:none}
 .travel-map-caption span{padding:7px 10px;border:1px solid rgba(211,163,72,.35);border-radius:12px;background:rgba(10,7,4,.78);font-size:13px;color:var(--text)}
+.travel-map-compact{min-height:260px;aspect-ratio:16/7;border:1px solid rgba(211,163,72,.35);border-radius:18px;overflow:hidden;background:radial-gradient(circle at 35% 25%,rgba(55,83,86,.38),transparent 30%),linear-gradient(135deg,#172129,#0c100f 52%,#140d08)}
+.travel-map-compact .map-city-dot{pointer-events:none}
+.travel-map-compact .map-city-dot span{max-width:96px;font-size:12px}
+.map-hero-marker-step{left:auto;top:auto;animation:wagonBob .75s ease-in-out infinite}
 .travel-party-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:8px;margin:12px 0}
 .companion-choice{border:1px solid var(--line);border-radius:14px;background:#120d08;color:var(--text);padding:10px;text-align:left;cursor:pointer;line-height:1.35}
 .companion-choice.selected{border-color:var(--gold);background:linear-gradient(180deg,#3b2a17,#24180d);box-shadow:0 0 0 1px rgba(211,163,72,.25) inset}
@@ -230,10 +236,10 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 /* Travel animation overlay */
 .travel-anim-overlay{position:fixed;inset:0;z-index:9000;background:rgba(10,7,4,.92);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .travel-anim-overlay.hidden{display:none!important}
-.travel-anim-card{width:min(760px,96vw);background:radial-gradient(circle at 18% 12%,rgba(211,163,72,.18),transparent 30%),linear-gradient(160deg,#261d13,#17120c);border:1px solid var(--gold);border-radius:24px;padding:28px 24px 20px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 60px rgba(0,0,0,.7);position:relative;overflow:hidden}
+.travel-anim-card{width:min(1120px,96vw);max-height:94vh;background:radial-gradient(circle at 18% 12%,rgba(211,163,72,.18),transparent 30%),linear-gradient(160deg,#261d13,#17120c);border:1px solid var(--gold);border-radius:24px;padding:22px 24px 18px;display:grid;grid-template-columns:minmax(520px,1fr) minmax(260px,340px);grid-template-areas:"head head" "map log" "progress log" "buttons buttons";gap:14px 16px;box-shadow:0 20px 60px rgba(0,0,0,.7);position:relative;overflow:hidden}
 .travel-anim-card:before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(240,192,106,.12) 0 1px,transparent 2px);background-size:34px 34px;animation:travelDust 12s linear infinite;pointer-events:none}
 .travel-anim-card>*{position:relative;z-index:1}
-.travel-anim-header{display:grid;grid-template-columns:120px 1fr 120px;gap:12px;align-items:center}
+.travel-anim-header{grid-area:head;display:grid;grid-template-columns:120px 1fr 120px;gap:12px;align-items:center}
 .travel-anim-city{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .travel-anim-city img{width:100px;height:100px;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
 .travel-anim-city span{font-size:13px;font-weight:700;color:var(--gold)}
@@ -243,9 +249,10 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .travel-anim-road-line:before{left:-2px}.travel-anim-road-line:after{right:-2px}
 .travel-anim-wagon{position:absolute;top:50%;transform:translateY(-78%);font-size:26px;transition:left 0.7s ease;left:0;filter:drop-shadow(0 4px 5px rgba(0,0,0,.8));animation:wagonBob .75s ease-in-out infinite}
 .travel-anim-day-counter{font-size:13px;color:var(--muted);font-weight:700}
-.travel-anim-progress-bar{height:6px;background:#2a1d10;border-radius:3px;overflow:hidden}
+.travel-anim-map{grid-area:map;min-width:0}
+.travel-anim-progress-bar{grid-area:progress;height:6px;background:#2a1d10;border-radius:3px;overflow:hidden}
 .travel-anim-progress-fill{height:100%;background:linear-gradient(90deg,#d3a348,#f0c06a);width:0;transition:width 0.7s ease;border-radius:3px}
-.travel-anim-events{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:80px}
+.travel-anim-events{grid-area:log;max-height:none;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:260px;padding:10px;border:1px solid rgba(211,163,72,.25);border-radius:14px;background:rgba(0,0,0,.22)}
 .travel-anim-event{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.04);border-left:3px solid var(--muted);font-size:14px;opacity:0;animation:fadeInEntry .4s ease forwards}
 @keyframes fadeInEntry{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .travel-anim-event.log-travel{border-color:#58aaba;color:#a9e1ed}
@@ -253,7 +260,7 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .travel-anim-event.log-quest{border-color:#d29042;color:#f5cc96}
 .travel-anim-event.log-system{border-color:#8f8475;color:var(--muted)}
 .travel-anim-skip{padding:8px 18px;font-size:13px}
-.travel-anim-buttons{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.travel-anim-buttons{grid-area:buttons;display:flex;justify-content:space-between;gap:10px;align-items:center}
 .travel-anim-finish{padding:10px 22px;font-size:14px;font-weight:800;animation:travelFinishPulse 1.5s ease-in-out infinite}
 .travel-anim-finish.hidden{display:none}
 @keyframes travelFinishPulse{0%,100%{box-shadow:0 0 0 0 rgba(94,189,114,.5)}50%{box-shadow:0 0 14px 3px rgba(94,189,114,.45)}}
@@ -790,12 +797,26 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
   .people-lane-scroll .actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr;clear:none}
   .people-lane-scroll .person-profile{display:none}
   .people-lane-scroll .npc-card p{font-size:13px;margin:6px 0}
-  .travel-map{min-height:230px}
-  .map-city-dot span{max-width:52px;font-size:9px;padding:1px 4px}
-  .map-city-dot .dot-core{width:10px;height:10px}
+  .travel-map-shell{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-color:var(--gold) #100c08}
+  .travel-map{min-height:420px;min-width:880px}
+  .map-city-dot{min-width:42px}
+  .map-city-dot span{display:none}
+  .map-city-dot .dot-core{width:16px;height:16px;border-width:2px;box-shadow:0 0 0 5px rgba(211,163,72,.22),0 3px 10px rgba(0,0,0,.75)}
   .map-hero-marker{font-size:23px}
   .travel-map-caption{left:8px;right:8px;bottom:8px;align-items:flex-end}
   .travel-map-caption span{font-size:11px;padding:5px 7px;max-width:58%}
+  .travel-anim-card{width:96vw;max-height:94dvh;padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;border-radius:18px}
+  .travel-anim-header{grid-template-columns:62px 1fr 62px;gap:8px}
+  .travel-anim-city img{width:54px;height:54px;border-radius:10px}
+  .travel-anim-city span{font-size:11px}
+  .travel-anim-map{order:2}
+  .travel-map-compact{min-width:0;min-height:210px;aspect-ratio:16/10}
+  .travel-map-compact .map-city-dot span{display:block;max-width:72px;font-size:9px}
+  .travel-map-compact .map-city-dot .dot-core{width:10px;height:10px;box-shadow:0 0 0 2px rgba(211,163,72,.25),0 3px 8px rgba(0,0,0,.7)}
+  .travel-anim-progress-bar{order:3}
+  .travel-anim-events{order:4;min-height:82px;max-height:22dvh;padding:7px;font-size:12px}
+  .travel-anim-event{font-size:12px;padding:5px 8px}
+  .travel-anim-buttons{order:5}
 }
 
 /* === v0.40+: Collapsible desktop side-nav & action-dock (slide on hover/tap) === */

@@ -88,9 +88,14 @@ assert.match(html, /feature-disabled" data-tab="caravan"/, "caravan navigation i
 assert.match(html, /relationshipModal/, "relationship dialog exists");
 assert.match(html, /combatModal/, "combat report dialog exists");
 assert.match(html, /travelModal/, "travel preparation dialog exists");
+assert.match(html, /id="travelAnimMap"/, "travel animation overlay contains an embedded map");
 assert.match(source, /function html5TravelMapBackdrop/, "travel map uses an HTML5/SVG backdrop");
 assert.match(source, /class="travel-map-bg"/, "travel map renders an SVG map layer");
+assert.match(source, /map-island/, "HTML5 map includes island shapes for Europe");
+assert.match(source, /Mare Nostrum/, "HTML5 map includes medieval regional labels");
+assert.match(source, /currentHelpTab/, "help changelog tab keeps explicit state");
 assert.doesNotMatch(fs.readFileSync(path.join(root, "style.css"), "utf8"), /assets\/map\/europe_1205\.png/, "travel map no longer depends on the old raster map background");
+assert.match(fs.readFileSync(path.join(root, "style.css"), "utf8"), /\.travel-map\{min-height:420px;min-width:880px\}/, "mobile travel map is wider than the phone viewport for tappable city spacing");
 assert.match(source, /function writeSaveSlotWithCleanup/, "save slots retry after freeing old slots");
 assert.match(source, /function manualAttack/, "manual combat controls are available");
 assert.match(source, /const hiddenPlaces/, "hidden travel locations are configured");
