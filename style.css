@@ -5,9 +5,11 @@
   --quality-epic:#c47bff; --quality-legendary:#ff9e35;
 }
 *{box-sizing:border-box}
+html{min-height:100%;overflow-y:auto;-webkit-text-size-adjust:100%}
 body{
-  margin:0; color:var(--text); font-family:Arial, Helvetica, sans-serif;
+  margin:0; min-height:100%; overflow-y:auto; color:var(--text); font-family:Arial, Helvetica, sans-serif;
   background:radial-gradient(circle at 20% 0%, #3a2a18 0%, transparent 28%), linear-gradient(135deg,#100d09,#20170e 55%,#0d0b08);
+  -webkit-overflow-scrolling:touch;
 }
 .app-shell{display:flex;height:100vh}
 .side-nav{
@@ -658,7 +660,9 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .mobile-tab-dropdown option{background:#2a1d10;color:var(--text)}
 
 @media (max-width:1050px){
-  .app-shell{display:block;height:auto}
+  html,body{height:auto;min-height:100%;overflow-y:auto}
+  body{position:relative}
+  .app-shell{display:block;height:auto;min-height:100dvh;overflow:visible}
   /* Ultra-compact sticky top: logo+dropdown row + 5-stat strip */
   .side-nav{position:sticky;top:0;z-index:30;width:100%;height:auto;display:grid;grid-template-columns:38px 1fr 40px;gap:6px;padding:6px 8px;background:linear-gradient(180deg,#1a1208,#0d0904);border-bottom:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.45)}
   .logo{margin:0;padding:2px;border:none;background:transparent;display:flex;justify-content:center;align-items:center}
@@ -674,7 +678,7 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
   .side-status{grid-column:1 / -1;width:100%;display:grid !important;grid-template-columns:repeat(3,1fr);margin-top:0;gap:4px}
   .side-status div{padding:5px 4px;font-size:12px;font-weight:800;text-align:center;border-radius:8px;line-height:1.1}
   /* Main content gets minimal padding to maximize space */
-  .main{padding:8px;padding-bottom:84px}
+  .main{overflow:visible;padding:8px;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
   /* Slim bottom dock: only Next Day button + small dock toggle */
   .action-dock{position:fixed;left:0;right:0;bottom:0;height:auto;max-height:none;padding:6px 8px;display:grid;grid-template-columns:1fr 38px;gap:6px;border-top:1px solid var(--gold);background:linear-gradient(180deg,#1b1208,#0d0904);z-index:25;align-items:center}
   .mobile-only-next{display:block}

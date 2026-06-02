@@ -2330,6 +2330,22 @@ function showCharacterCreation(){
   renderDifficultyChoice();
   document.getElementById("creationModal").classList.remove("hidden");
 }
+function unlockPageScroll(){
+  try{
+    document.documentElement.style.overflowY="auto";
+    document.documentElement.style.position="";
+    document.body.style.overflowY="auto";
+    document.body.style.position="relative";
+    document.body.style.height="auto";
+    const main=document.querySelector(".main");
+    if(main) main.scrollTop=0;
+    window.scrollTo(0,0);
+  }catch(error){}
+}
+function deferUnlockPageScroll(){
+  if(typeof setTimeout==="function") setTimeout(unlockPageScroll,0);
+  else unlockPageScroll();
+}
 function selectHeroPreset(id){
   if(!heroPresets.some(preset=>preset.id===id)) return;
   selectedHeroPreset=id;
@@ -2360,9 +2376,11 @@ function beginCampaign(){
   councilBoards=createCouncilBoards();
   energy=dailyActionLimit();
   document.getElementById("creationModal").classList.add("hidden");
+  unlockPageScroll();
   log("🧭 "+player.name+tr(" прибуває до міста "," arrives in ")+cityName(currentCity)+". "+tr("У скарбниці ","Treasury: ")+diff.startingGold+tr(" монет; рівень "," coins; difficulty ")+(lang==="en"?diff.name.en:diff.name.uk)+" "+diff.icon+".","system",true);
   saveGame(false);
   render();
+  deferUnlockPageScroll();
 }
 function establishHeadquarters(){
   const cost=BALANCE.headquartersCost;
@@ -6771,7 +6789,9 @@ function chooseWelcomeLang(value){
   setLang(value);
   document.getElementById("welcomeModal").classList.add("hidden");
   _welcomeShown=false;
+  unlockPageScroll();
   if(!player.created) showCharacterCreation();
+  deferUnlockPageScroll();
 }
 function showWelcomeIfNew(){
   // Show welcome only on the first run (no language pre-set + no character)
