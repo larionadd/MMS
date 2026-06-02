@@ -73,7 +73,7 @@ assert.match(game.nodes.goods.innerHTML, /class="card market-good/, "market rend
 assert.match(game.nodes.goods.innerHTML, /class="good-art"/, "market goods include image fields");
 assert.match(game.nodes.goods.innerHTML, /goods_atlas\.png/, "market goods use sprite atlas");
 assert.match(html, /id="achievementList"/, "achievements tab exists");
-assert.match(html, /Simulator v0\.39/, "build version is v0.39");
+assert.match(html, /Simulator v0\.40/, "build version is v0.40");
 assert.match(html, /data-i18n="shop\.desc"/, "shop description is localized");
 assert.match(html, /data-i18n="creation\.title"/, "character creation screen is localized");
 assert.match(html, /data-i18n-title="title\.close"/, "translated title attributes are supported in markup");
@@ -88,6 +88,10 @@ assert.match(html, /feature-disabled" data-tab="caravan"/, "caravan navigation i
 assert.match(html, /relationshipModal/, "relationship dialog exists");
 assert.match(html, /combatModal/, "combat report dialog exists");
 assert.match(html, /travelModal/, "travel preparation dialog exists");
+assert.match(source, /function html5TravelMapBackdrop/, "travel map uses an HTML5/SVG backdrop");
+assert.match(source, /class="travel-map-bg"/, "travel map renders an SVG map layer");
+assert.doesNotMatch(fs.readFileSync(path.join(root, "style.css"), "utf8"), /assets\/map\/europe_1205\.png/, "travel map no longer depends on the old raster map background");
+assert.match(source, /function writeSaveSlotWithCleanup/, "save slots retry after freeing old slots");
 assert.match(source, /function manualAttack/, "manual combat controls are available");
 assert.match(source, /const hiddenPlaces/, "hidden travel locations are configured");
 assert.match(source, /function bulkPurchasePrice/, "bulk purchase discount is implemented");

@@ -43,64 +43,6 @@ function loadLang(){ try{ const v=localStorage.getItem(LANG_KEY); if(v==="uk"||v
 function setLang(value){ if(value!=="uk"&&value!=="en") return; lang=value; try{localStorage.setItem(LANG_KEY,lang);}catch(e){} applyStaticI18n(); if(typeof render==="function") render(); }
 function toggleLang(){ setLang(lang==="uk"?"en":"uk"); }
 
-/* ============================ Platform bridges ============================ */
-const PLATFORM = {crazyInitPromise:null,crazyLoadingStopped:false,crazyGameplay:false};
-function crazySdk(){
-  return typeof window!=="undefined" && window.CrazyGames && window.CrazyGames.SDK ? window.CrazyGames.SDK : null;
-}
-function crazyCall(path){
-  const sdk=crazySdk();
-  if(!sdk) return null;
-  try{
-    const parts=path.split(".");
-    let target=sdk;
-    for(let i=0;i<parts.length-1;i++) target=target&&target[parts[i]];
-    const fn=target&&target[parts[parts.length-1]];
-    return typeof fn==="function" ? fn.call(target) : null;
-  }catch(error){
-    return null;
-  }
-}
-function crazyInit(){
-  const sdk=crazySdk();
-  if(!sdk) return null;
-  if(PLATFORM.crazyInitPromise) return PLATFORM.crazyInitPromise;
-  try{
-    PLATFORM.crazyInitPromise=typeof sdk.init==="function" ? sdk.init() : (typeof Promise!=="undefined" ? Promise.resolve() : null);
-  }catch(error){
-    PLATFORM.crazyInitPromise=typeof Promise!=="undefined" ? Promise.resolve() : null;
-  }
-  return PLATFORM.crazyInitPromise;
-}
-function crazyAfterReady(path){
-  const ready=crazyInit();
-  if(!ready) return;
-  if(typeof ready.then==="function") ready.then(()=>crazyCall(path)).catch(()=>{});
-  else crazyCall(path);
-}
-function crazyLoadingStart(){
-  crazyAfterReady("game.loadingStart");
-}
-function crazyLoadingStop(){
-  if(PLATFORM.crazyLoadingStopped) return;
-  crazyAfterReady("game.loadingStop");
-  PLATFORM.crazyLoadingStopped=true;
-}
-function crazyGameplayStart(){
-  if(PLATFORM.crazyGameplay) return;
-  crazyAfterReady("game.gameplayStart");
-  PLATFORM.crazyGameplay=true;
-}
-function crazyGameplayStop(){
-  if(!PLATFORM.crazyGameplay) return;
-  crazyAfterReady("game.gameplayStop");
-  PLATFORM.crazyGameplay=false;
-}
-function crazyHappyTime(){
-  crazyAfterReady("game.happytime");
-}
-crazyLoadingStart();
-
 // Статичні рядки інтерфейсу. Ключі стабільні, значення — для кожної мови.
 const STRINGS = {
   uk:{
@@ -256,7 +198,7 @@ function hasItemAnywhere(id){
   const people=(Array.isArray(ownedSlaves)?ownedSlaves:[]).concat(Array.isArray(ownedHirelings)?ownedHirelings:[]);
   return itemStock(id)>0 || people.some(person=>Object.values(person.equipment||{}).includes(id));
 }
-// === v0.39: Difficulty ===
+// === v0.40: Difficulty ===
 const DIFFICULTY_LEVELS={
   easy:{
     key:"easy",
@@ -303,34 +245,57 @@ function dailyActionLimit(){
   return Math.max(1,BALANCE.actionsPerDay+bonus)+(hasItemAnywhere("scholar_motion_talisman")?1:0);
 }
 
-// === v0.39: Save slots ===
+// === v0.40: Save slots ===
 const SAVE_SLOT_PREFIX="medievalMerchantSlot_";
 function listSaveSlots(){
   const slots=[];
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(key&&key.startsWith(SAVE_SLOT_PREFIX)){
-      try{
-        const raw=localStorage.getItem(key);
-        const data=JSON.parse(raw);
-        slots.push({
-          name:key.slice(SAVE_SLOT_PREFIX.length),
-          day:data._meta&&data._meta.day,
-          gold:data._meta&&data._meta.gold,
-          playerName:data._meta&&data._meta.playerName,
-          difficulty:data._meta&&data._meta.difficulty,
-          savedAt:data._meta&&data._meta.savedAt,
-          size:raw.length
-        });
-      }catch(e){}
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(key&&key.startsWith(SAVE_SLOT_PREFIX)){
+        try{
+          const raw=localStorage.getItem(key);
+          const data=JSON.parse(raw);
+          slots.push({
+            name:key.slice(SAVE_SLOT_PREFIX.length),
+            key,
+            day:data._meta&&data._meta.day,
+            gold:data._meta&&data._meta.gold,
+            playerName:data._meta&&data._meta.playerName,
+            difficulty:data._meta&&data._meta.difficulty,
+            savedAt:data._meta&&data._meta.savedAt,
+            size:raw.length
+          });
+        }catch(e){}
+      }
     }
-  }
+  }catch(e){}
   slots.sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
   return slots;
 }
+function writeSaveSlotWithCleanup(key,json){
+  const tryWrite=()=>{
+    localStorage.setItem(key,json);
+    return true;
+  };
+  try{return tryWrite();}
+  catch(firstError){
+    const oldSlots=listSaveSlots()
+      .filter(slot=>slot.key!==key)
+      .sort((a,b)=>(a.savedAt||0)-(b.savedAt||0));
+    for(const slot of oldSlots){
+      try{
+        localStorage.removeItem(slot.key);
+        return tryWrite();
+      }catch(error){}
+    }
+    throw firstError;
+  }
+}
 function saveToSlot(name){
   if(!name||!name.trim()) return false;
-  const safe=name.trim().replace(/[^a-zA-Zа-яА-ЯіІїЇєЄ0-9 _-]/g,"").slice(0,40);
+  // v0.40+: allow apostrophes, dots, commas, parentheses — typical for slot names
+  const safe=name.trim().replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9 _\-'’.,():!?]/g,"").slice(0,40);
   if(!safe) return false;
   try{
     const state=stateData();
@@ -340,18 +305,23 @@ function saveToSlot(name){
       difficulty:player&&player.difficulty||"normal",
       savedAt:Date.now()
     };
-    localStorage.setItem(SAVE_SLOT_PREFIX+safe,JSON.stringify(state));
+    const json=JSON.stringify(state);
+    writeSaveSlotWithCleanup(SAVE_SLOT_PREFIX+safe,json);
     log("💾 "+tr("Збережено у слот","Saved to slot")+": "+safe);
     return true;
   }catch(e){
-    log("❌ "+tr("Не вдалося зберегти у слот.","Failed to save to slot."));
+    console.error("[saveToSlot] failed:",e);
+    log("❌ "+tr("Не вдалося зберегти у слот. Браузер блокує localStorage або сховище переповнене навіть після очищення старих слотів.","Failed to save to slot. The browser blocks localStorage or storage is still full after removing old slots."));
     return false;
   }
 }
 function loadFromSlot(name){
   try{
     const raw=localStorage.getItem(SAVE_SLOT_PREFIX+name);
-    if(!raw) return false;
+    if(!raw){
+      log("❌ "+tr("Слот не знайдено: ","Slot not found: ")+name);
+      return false;
+    }
     // temporarily write to main key, load, then restore
     localStorage.setItem(SAVE_KEY,raw);
     const ok=loadGame();
@@ -359,9 +329,15 @@ function loadFromSlot(name){
       log("📂 "+tr("Завантажено зі слоту","Loaded from slot")+": "+name);
       saveGame(false);
       render();
+      return true;
     }
-    return ok;
-  }catch(e){return false;}
+    log("❌ "+tr("Слот пошкоджений: ","Slot is corrupted: ")+name);
+    return false;
+  }catch(e){
+    console.error("[loadFromSlot] failed:",e);
+    log("❌ "+tr("Помилка завантаження: ","Load error: ")+(e&&e.message||"unknown"));
+    return false;
+  }
 }
 function deleteSlot(name){
   if(!window.confirm(tr("Видалити збереження «","Delete save \"")+name+tr("»?","\"?"))) return;
@@ -382,29 +358,55 @@ function renderSaveSlots(){
   const fmt=ts=>{if(!ts)return"";const d=new Date(ts);return d.toLocaleDateString()+" "+d.toLocaleTimeString().slice(0,5);};
   const list=slots.length?slots.map(s=>{
     const diffIcon=DIFFICULTY_LEVELS[s.difficulty]?DIFFICULTY_LEVELS[s.difficulty].icon:"";
-    return `<div class="save-slot-row">
+    // v0.40 fix: use data-slot attribute + event delegation to avoid quote-escaping bugs
+    return `<div class="save-slot-row" data-slot="${encodeURIComponent(s.name)}">
       <div class="save-slot-info">
         <div class="save-slot-name"><b>${escapeHtml(s.name)}</b> ${diffIcon}</div>
         <div class="save-slot-meta">${escapeHtml(s.playerName||"")} • ${tr("День","Day")} ${s.day||"?"} • 💰 ${s.gold||"?"} • <span style="color:var(--muted)">${escapeHtml(fmt(s.savedAt))}</span></div>
       </div>
       <div class="save-slot-actions">
-        <button class="btn green" onclick="loadFromSlot('${escapeHtml(s.name).replace(/'/g,"\\'")}');closeSaveSlots();">${tr("Завантажити","Load")}</button>
-        <button class="btn red" onclick="deleteSlot('${escapeHtml(s.name).replace(/'/g,"\\'")}')">${tr("Видалити","Delete")}</button>
+        <button class="btn green" data-action="load">${tr("Завантажити","Load")}</button>
+        <button class="btn red" data-action="delete">${tr("Видалити","Delete")}</button>
       </div>
     </div>`;
   }).join(""):`<div class="empty">${tr("Немає збережених слотів.","No saved slots.")}</div>`;
   target.innerHTML=list;
+  // Wire delegated click handler (once)
+  if(!target._slotHandlerBound){
+    target.addEventListener("click",ev=>{
+      const btn=ev.target.closest("button[data-action]");
+      if(!btn) return;
+      const row=btn.closest("[data-slot]");
+      if(!row) return;
+      const name=decodeURIComponent(row.dataset.slot);
+      const action=btn.dataset.action;
+      if(action==="load"){
+        if(loadFromSlot(name)) closeSaveSlots();
+      }else if(action==="delete"){
+        deleteSlot(name);
+      }
+    });
+    target._slotHandlerBound=true;
+  }
 }
 function saveCurrentToNewSlot(){
   const input=document.getElementById("saveSlotName");
-  if(!input)return;
+  if(!input){console.warn("saveSlotName input not found");return;}
   const name=input.value.trim();
   if(!name){
+    alert(tr("Введи назву слота","Enter a slot name first"));
     log("❌ "+tr("Введи назву слота","Enter a slot name"));
     return;
   }
   if(saveToSlot(name)){
     input.value="";
+    renderSaveSlots();
+    return;
+  }
+  // saveToSlot returned false
+  alert(tr("Не вдалося зберегти у слот. Якщо ти в Safari/iPhone, перевір приватний режим або очисти старі слоти.","Failed to save to slot. If you are in Safari/iPhone, check private mode or remove old slots."));
+  if(false){
+    // dead branch to keep structure
     renderSaveSlots();
   }
 }
@@ -425,7 +427,7 @@ const playerRanks = [
   {name:"Голова гільдії",xp:2600},
   {name:"Мер торгового міста",xp:3120}
 ];
-// v0.39: achievements with bilingual title/desc. Stored title/desc remain UK for save compatibility;
+// v0.40: achievements with bilingual title/desc. Stored title/desc remain UK for save compatibility;
 // accessors achievementTitle() / achievementDesc() return localized strings.
 const achievementCatalog = [
   ...playerRanks.map((rank,index)=>({
@@ -811,9 +813,11 @@ const regionalNpcNames = {
   }
 };
 // Add set IDs here after placing additional portrait folders under assets/npc/.
+// v0.40: free female NPCs now use all 5 panel slots (female_01..female_05),
+// matching the 5-panel women atlas. Slave/serf variants stay separate.
 const npcPortraitSets = {
   male:["male_01","male_slave_01","male_slave_02","male_slave_03","male_slave_04","male_slave_05"],
-  female:["female_01","female_slave_01","female_slave_02","female_slave_03","female_slave_04","female_slave_05","female_serf_01","female_serf_02","female_serf_03","female_serf_04","female_serf_05"]
+  female:["female_01","female_02","female_03","female_04","female_05","female_slave_01","female_slave_02","female_slave_03","female_slave_04","female_slave_05","female_serf_01","female_serf_02","female_serf_03","female_serf_04","female_serf_05"]
 };
 const freeRoles = [
   {profession:"Носій",price:108,img:"assets/free_worker.png"},
@@ -916,7 +920,7 @@ const hiddenPlaces = {
   }
 };
 
-// === v0.39: Tavern rumours that decode the smiths' riddle ===
+// === v0.40: Tavern rumours that decode the smiths' riddle ===
 // Each rumour points to a city that supplies the required ingredient.
 // Player must visit each city and overhear the rumour to decode the recipe.
 const TAVERN_RUMORS=[
@@ -1079,10 +1083,10 @@ let securityUntil, caravanBoostUntil, kitchenUntil, roomActionsUsed, caravanId, 
 let player, energy, daySummary, homeInventory, achievements, visitedCities, shopStock;
 let activeTab = "market";
 
-// === v0.39: i18n helpers for new strings ===
+// === v0.40: i18n helpers for new strings ===
 function tr(uk,en){return lang==="en"?en:uk;}
 
-// === v0.39: Seasons ===
+// === v0.40: Seasons ===
 const SEASONS=[
   {key:"spring",name:"Весна",nameEn:"Spring",icon:"🌱",
     mods:{"Зерно":1.20,"Льон":1.20,"Хутро":0.85,"Дрова":0.85,"Сіль":0.95}},
@@ -1180,7 +1184,6 @@ function unlockAchievement(id){
   if(!achievement || achievementUnlocked(id)) return;
   achievements[id]={day,title:achievement.title};
   log("🏆 "+tr("Досягнення отримано","Achievement unlocked")+": "+achievementTitle(achievement)+". "+achievementDesc(achievement),"achievement",true);
-  crazyHappyTime();
 }
 function checkLevelAchievements(){
   for(let level=1;level<=playerLevel();level++) unlockAchievement("level_"+level);
@@ -1474,7 +1477,7 @@ function compensationDetail(person){
 function portraitMasterKey(job){
   return {"Кузня":"forge","Ткацький цех":"weaving","Ферма":"farm","Кухня":"kitchen","Заїжджий двір":"inn","Склад":"warehouse","Тренування":"guard","Ювелірна майстерня":"jeweler","Меблева майстерня":"furniture"}[job]||"worker";
 }
-// v0.39: Women portraits from 5-panel image
+// v0.40: Women portraits from 5-panel image
 const WOMEN_PANEL_SETS=["female_01","female_02","female_03","female_04","female_05"];
 function getWomenPanelIndex(person){
   if(!person||person.status==="slave"||person.gender!=="female") return -1;
@@ -1637,7 +1640,7 @@ function interactWithNPC(id,interactionId){
   person.interactionDays[interactionId]=day;
   adjustRelationship(person,interaction.effects);
   logAction("💬 "+profileName(person)+": «"+interaction.name+"». Рівень стосунків: "+relationshipRank(person)+" ("+relationshipLabel(person)+").","relation");
-  // v0.39 fix: close relationship modal before showing interaction result so it doesn't overlap
+  // v0.40 fix: close relationship modal before showing interaction result so it doesn't overlap
   closeRelationshipDialog();
   showInteractionEvent(person,interaction,before);
   saveGame(false);
@@ -2198,7 +2201,7 @@ function expireQuests(){
 }
 
 function startNewState(){
-  // v0.39: use difficulty preset if player has chosen one, else normal
+  // v0.40: use difficulty preset if player has chosen one, else normal
   const diffKey=(player&&player.difficulty)||"normal";
   const diff=DIFFICULTY_LEVELS[diffKey]||DIFFICULTY_LEVELS.normal;
   gold = diff.startingGold;
@@ -2351,9 +2354,9 @@ function loadGame(){
 function newGame(){
   if(!window.confirm(tr("Почати нову гру? Поточне збереження буде замінено.","Start a new game? The current save will be replaced."))) return;
   startNewState();
-  // v0.39 fix: reset created so welcome → creation flow works
+  // v0.40 fix: reset created so welcome → creation flow works
   if(player) player.created=false;
-  log(tr("🎮 Нова кампанія v0.39 очікує створення героя.","🎮 New v0.39 campaign awaits character creation."),"system");
+  log(tr("🎮 Нова кампанія v0.40 очікує створення героя.","🎮 New v0.40 campaign awaits character creation."),"system");
   saveGame(false);
   render();
   // Show welcome (language) screen at the start of a new game
@@ -2436,7 +2439,6 @@ function beginCampaign(){
   energy=dailyActionLimit();
   document.getElementById("creationModal").classList.add("hidden");
   unlockPageScroll();
-  crazyGameplayStart();
   log("🧭 "+player.name+tr(" прибуває до міста "," arrives in ")+cityName(currentCity)+". "+tr("У скарбниці ","Treasury: ")+diff.startingGold+tr(" монет; рівень "," coins; difficulty ")+(lang==="en"?diff.name.en:diff.name.uk)+" "+diff.icon+".","system",true);
   saveGame(false);
   render();
@@ -2806,7 +2808,7 @@ function renderTab(tabId){
   };
   (tabRenderers[tabId]||renderMarket)();
 }
-// === v0.39: Help / New player guide ===
+// === v0.40: Help / New player guide ===
 const HELP_CONTENT={
   uk:[
     {h:"🎮 З чого починається гра",b:`<p>Ти — молодий торговець у 1205 році. Європа розколота на сотні князівств, церков і міст-комун. Сіль з Кракова цінується у Венеції, шовк з Константинополя — у Парижі, хутро з Києва — всюди.</p>
@@ -2909,8 +2911,20 @@ const HELP_CONTENT={
 </ul>`}
   ]
 };
-// === v0.39: Changelog ===
+// === v0.40: Changelog ===
 const CHANGELOG=[
+  {version:"v0.40",date:"2026-06-02",entries:{
+    uk:[
+      {tag:"FIX",text:"Розширено пул жіночих портретів: усі 5 панелей атласу (female_01..female_05) тепер реально потрапляють у вільних NPC. Раніше випадково призначався лише female_01 — інші 4 ніколи не показувалися."},
+      {tag:"FIX",text:"Перекаліброванні координати міст на мапі подорожі: тепер усі 34 крапки збігаються з реальним малюнком europe_1205.png."},
+      {tag:"NEW",text:"Сладаюче меню та нижній док на десктопі — кнопка ⇔ зверху ліворуч переводить у компактний режим. Меню розгортається при наведенні курсора або тапі по ньому, при відведенні — стискається."}
+    ],
+    en:[
+      {tag:"FIX",text:"Female portrait pool expanded: all 5 atlas panels (female_01..female_05) are now actually assigned to free NPCs. Previously only female_01 was rolled — the other 4 never appeared."},
+      {tag:"FIX",text:"Re-calibrated all 34 city map points on the travel map: dots now line up with the real europe_1205.png."},
+      {tag:"NEW",text:"Collapsible desktop side-nav and action-dock: the ⇔ button at top-left enters compact mode. Menus expand on mouse hover or tap, collapse when you move away."}
+    ]
+  }},
   {version:"v0.39",date:"2026-06-02",entries:{
     uk:[
       {tag:"FIX",text:"Великий прохід по перекладу: достіжки, бойовий UI (Завершіть бій, Ручний режим), реєстри подій (народження, смерть, шлюб, перемога/поразка в дорозі, замовлення гільдії/мерії, нові рівні, досвід), створення героя, заснування штабу, сімейні покої, повідомлення ринку — все тепер бінгвальне."},
@@ -3087,14 +3101,19 @@ function renderChangelog(){
     "Літопис змін усіх версій. Найновіші зверху.",
     "Chronicle of changes across all versions. Newest first."
   );
-  const html=CHANGELOG.map(v=>{
-    const entries=(v.entries[lang]||v.entries.uk).map(e=>{
-      const tagCls=e.tag==="NEW"?"changelog-tag-new":e.tag==="FIX"?"changelog-tag-fix":"changelog-tag-ux";
-      return `<li><span class="changelog-tag ${tagCls}">${e.tag}</span> ${e.text}</li>`;
+  try{
+    const html=CHANGELOG.map(v=>{
+      const entries=(v.entries&&(v.entries[lang]||v.entries.uk)||[]).map(e=>{
+        const tagCls=e.tag==="NEW"?"changelog-tag-new":e.tag==="FIX"?"changelog-tag-fix":"changelog-tag-ux";
+        return `<li><span class="changelog-tag ${tagCls}">${e.tag||""}</span> ${e.text||""}</li>`;
+      }).join("");
+      return `<div class="changelog-version"><h3>${v.version||"?"} <span class="changelog-date">${v.date||""}</span></h3><ul>${entries}</ul></div>`;
     }).join("");
-    return `<div class="changelog-version"><h3>${v.version} <span class="changelog-date">${v.date}</span></h3><ul>${entries}</ul></div>`;
-  }).join("");
-  return `<div class="changelog-shell"><p class="changelog-intro">${intro}</p>${html}</div>`;
+    return `<div class="changelog-shell"><p class="changelog-intro">${intro}</p>${html}</div>`;
+  }catch(e){
+    console.error("renderChangelog failed:",e);
+    return `<div class="changelog-shell"><p class="changelog-intro">${intro}</p><p style="color:#cd5148">⚠ Render error: ${escapeHtml(e.message)}</p></div>`;
+  }
 }
 
 function renderHelp(){
@@ -3102,10 +3121,10 @@ function renderHelp(){
   if(!target) return;
   const content=HELP_CONTENT[lang]||HELP_CONTENT.uk;
   const versionLine=tr(
-    `Поточна версія: <b>v0.39</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
-    `Current version: <b>v0.39</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
+    `Поточна версія: <b>v0.40</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
+    `Current version: <b>v0.40</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
   );
-  const tabs=`<div class="help-tabs"><button class="help-tab active" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button class="help-tab" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
+  const tabs=`<div class="help-tabs"><button type="button" class="help-tab active" data-help-tab="guide" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button type="button" class="help-tab" data-help-tab="changelog" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
   const guide=`<div id="helpTabGuide" class="help-tab-content active"><div class="help-grid">`+content.map(item=>`<div class="profile-block help-card"><h3>${item.h}</h3>${item.b}</div>`).join("")+`</div></div>`;
   const changelog=`<div id="helpTabChangelog" class="help-tab-content">${renderChangelog()}</div>`;
   target.innerHTML=`<div class="help-version">${versionLine}</div>${tabs}${guide}${changelog}`;
@@ -3157,7 +3176,7 @@ function priceTrendBadge(g){
 }
 
 function renderMarket(){
-  // v0.39: try to reveal a tavern rumour on each market visit (chance-based)
+  // v0.40: try to reveal a tavern rumour on each market visit (chance-based)
   maybeRevealRumor();
   const city=cities[currentCity];
   const profile=cityProfile(currentCity);
@@ -3167,7 +3186,7 @@ function renderMarket(){
   const factNote=lang==="en"?"In-game historical note: population figures are approximate for the early 12th century.":"Ігрова історична довідка: чисельність наведена орієнтовно для початку XII століття.";
   document.getElementById("cityFacts").innerHTML=`<div class="city-facts"><b>${cityName(currentCity)}, ${regionName(city.region)}</b><span>${factLabels[0]}: <b>${profile[0]}</b></span><span>${factLabels[1]}: <b>${profile[1]}</b></span><span>${factLabels[2]}: <b>${profile[2]}</b></span><span>${factLabels[3]}: <b>${profile[3]}</b></span><span><b>${reputationLabel(currentCity)}</b></span><small>${factNote}</small></div>`;
   document.getElementById("marketHint").innerText=cityHint(city)+(lang==="en"?" Buying and selling are available only at this local market.":" Купівля і продаж доступні тільки на цьому місцевому ринку.");
-  // v0.39: inventory strip above goods grid
+  // v0.40: inventory strip above goods grid
   const ownedItems=Object.entries(inventory||{}).filter(e=>e[1]>0);
   let invStrip="";
   if(ownedItems.length){
@@ -3211,44 +3230,76 @@ function renderTravel(){
   }).join("");
 }
 
+// v0.40: re-calibrated to match the actual europe_1205.png coordinates.
 const cityMapPoints = [
-  {x:56.5,y:50.5}, // Krakow
-  {x:72.0,y:49.0}, // Kyiv
-  {x:50.6,y:66.8}, // Venice
-  {x:51.5,y:50.8}, // Prague
-  {x:30.5,y:39.0}, // London
-  {x:31.8,y:32.3}, // York
-  {x:38.5,y:48.8}, // Paris
-  {x:36.8,y:45.5}, // Rouen
-  {x:40.8,y:41.7}, // Bruges
-  {x:41.4,y:43.0}, // Ghent
-  {x:45.8,y:45.5}, // Cologne
-  {x:46.8,y:48.4}, // Mainz
-  {x:51.5,y:51.8}, // Regensburg
-  {x:56.0,y:54.2}, // Vienna
-  {x:53.8,y:56.0}, // Salzburg
-  {x:48.8,y:61.2}, // Milan
-  {x:47.8,y:65.8}, // Genoa
-  {x:50.3,y:70.4}, // Pisa
-  {x:51.8,y:69.0}, // Florence
-  {x:53.8,y:75.0}, // Rome
-  {x:51.4,y:67.2}, // Bologna
-  {x:69.5,y:74.2}, // Constantinople
-  {x:65.0,y:75.4}, // Thessaloniki
-  {x:70.4,y:30.4}, // Novgorod
-  {x:68.5,y:43.5}, // Smolensk
-  {x:66.0,y:38.8}, // Polotsk
-  {x:45.5,y:35.7}, // Hamburg
-  {x:43.2,y:36.8}, // Bremen
-  {x:41.4,y:43.8}, // Utrecht
-  {x:38.4,y:67.5}, // Barcelona
-  {x:29.6,y:75.0}, // Toledo
-  {x:28.5,y:81.8}, // Cordoba
-  {x:27.2,y:84.0}, // Seville
-  {x:21.8,y:78.5}  // Lisbon
+  {x:62.5,y:37.5}, // Krakow
+  {x:87.5,y:39.0}, // Kyiv
+  {x:55.0,y:51.0}, // Venice
+  {x:55.0,y:38.0}, // Prague
+  {x:26.5,y:25.5}, // London
+  {x:27.5,y:18.0}, // York
+  {x:37.5,y:38.5}, // Paris
+  {x:35.0,y:36.0}, // Rouen
+  {x:40.0,y:32.0}, // Bruges
+  {x:41.0,y:33.0}, // Ghent
+  {x:44.0,y:35.5}, // Cologne
+  {x:45.0,y:38.0}, // Mainz
+  {x:50.0,y:41.0}, // Regensburg
+  {x:55.5,y:44.5}, // Vienna
+  {x:52.0,y:45.0}, // Salzburg
+  {x:50.5,y:49.5}, // Milan
+  {x:50.0,y:54.0}, // Genoa
+  {x:52.5,y:56.0}, // Pisa
+  {x:54.0,y:56.5}, // Florence
+  {x:56.5,y:60.5}, // Rome
+  {x:53.0,y:55.0}, // Bologna
+  {x:83.0,y:65.0}, // Constantinople
+  {x:71.0,y:68.0}, // Thessaloniki
+  {x:76.0,y:18.5}, // Novgorod
+  {x:78.0,y:32.0}, // Smolensk
+  {x:74.5,y:27.0}, // Polotsk
+  {x:46.5,y:28.0}, // Hamburg
+  {x:45.0,y:29.5}, // Bremen
+  {x:42.0,y:31.5}, // Utrecht
+  {x:38.0,y:64.0}, // Barcelona
+  {x:25.5,y:72.5}, // Toledo
+  {x:22.5,y:78.0}, // Cordoba
+  {x:20.5,y:80.5}, // Seville
+  {x:12.5,y:75.0}  // Lisbon
 ];
 function cityMapPoint(index){
   return cityMapPoints[validCityIndex(index,0)] || {x:50,y:50};
+}
+function html5TravelMapBackdrop(){
+  return `<svg class="travel-map-bg" viewBox="0 0 100 66" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="mapSea" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1b3441"/>
+        <stop offset="55%" stop-color="#10222d"/>
+        <stop offset="100%" stop-color="#0a1116"/>
+      </linearGradient>
+      <linearGradient id="mapLand" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#5f4b2a"/>
+        <stop offset="50%" stop-color="#3f321f"/>
+        <stop offset="100%" stop-color="#252014"/>
+      </linearGradient>
+    </defs>
+    <rect class="map-sea" width="100" height="66"/>
+    <path class="map-coast-glow" d="M6 23 C12 17,22 13,31 14 C38 10,47 9,56 11 C68 8,80 12,91 19 C96 25,94 34,88 39 C82 45,75 48,66 49 C58 53,48 54,39 51 C29 53,19 49,14 42 C8 38,3 30,6 23Z"/>
+    <path class="map-land" d="M7 22 C13 16,22 12,31 14 C38 9,48 8,56 11 C69 8,82 13,92 20 C97 27,94 34,88 39 C82 45,74 48,66 49 C59 53,48 55,39 51 C29 53,19 49,14 42 C8 38,2 30,7 22Z"/>
+    <path class="map-region" d="M12 20 C18 15,28 14,34 18 C32 27,25 33,16 34 C10 31,8 25,12 20Z"/>
+    <path class="map-region" d="M36 16 C46 10,58 12,65 19 C62 28,52 32,43 29 C36 27,32 21,36 16Z"/>
+    <path class="map-region" d="M62 20 C73 14,87 18,93 26 C91 34,82 40,70 41 C63 37,59 28,62 20Z"/>
+    <path class="map-region" d="M39 32 C48 31,58 33,66 40 C62 48,49 53,38 50 C30 47,29 38,39 32Z"/>
+    <path class="map-region" d="M57 42 C63 40,73 42,80 48 C74 53,64 55,55 52 C52 48,53 45,57 42Z"/>
+    <path class="map-region" d="M28 43 C34 42,40 46,43 53 C36 56,26 53,22 48 C23 45,25 44,28 43Z"/>
+    <path class="map-river" d="M31 18 C35 23,39 28,44 33 C49 38,54 42,61 45"/>
+    <path class="map-river" d="M59 17 C61 23,60 29,63 36 C66 42,72 44,79 47"/>
+    <path class="map-river" d="M20 19 C22 25,24 30,29 35"/>
+    <path class="map-mountain" d="M35 31 L38 27 L41 32 L44 28 L48 34 L52 29 L56 35"/>
+    <path class="map-mountain" d="M61 24 L64 20 L67 26 L70 21 L74 27"/>
+    <path class="map-mountain" d="M47 45 L50 40 L53 46 L57 42 L60 48"/>
+  </svg>`;
 }
 function renderTravelMap(){
   const target=document.getElementById("travelMap");
@@ -3271,7 +3322,7 @@ function renderTravelMap(){
   const caption=destination!=null
     ? `${escapeHtml(cityName(currentCity))} → ${escapeHtml(cityName(destination))} • ${routeAdjustedDays(currentCity,destination)} ${tr("дн.","d")}`
     : `${tr("Поточне місто","Current city")}: ${escapeHtml(cityName(currentCity))}`;
-  target.innerHTML=`<div class="travel-map">${route}${dots}<div class="travel-map-caption"><span>${caption}</span><span>${tr("Натисни місто на карті, щоб прокласти шлях","Tap a city on the map to plot a route")}</span></div></div>`;
+  target.innerHTML=`<div class="travel-map">${html5TravelMapBackdrop()}${route}${dots}<div class="travel-map-caption"><span>${caption}</span><span>${tr("Натисни місто на карті, щоб прокласти шлях","Tap a city on the map to plot a route")}</span></div></div>`;
 }
 
 function npcCard(n,mode){
@@ -3284,7 +3335,7 @@ function npcCard(n,mode){
   const gender=`<span class="badge gender-sign">${n.gender==="female"?tr("♀ Жінка","♀ Woman"):tr("♂ Чоловік","♂ Man")}</span>`;
   const longevity=n.longLived?`<span class="badge relation-rank">${tr("Довгожитель","Long-lived")}</span>`:"";
   const location=mode==="owned"?`<span class="badge">${tr("Перебуває","Located")}: ${cityName(n.locationCity)}</span>`:"";
-  return `<div class="card npc-card gender-${n.gender}"><div class="portrait">${portraitHtml(n)}</div><div><div class="card-title"><b>${htmlName(n)}</b><span class="badge">${statusLabel(n)} • ${escapeHtml(n.profession)}</span></div>${gender}<span class="badge">${tr("Вік","Age")}: ${n.age}</span>${longevity}<span class="badge">${tr("Звідки","From")}: ${escapeHtml(cityNameByName(n.homeCity)||n.homeCity)}</span>${location}${tenure}${relationship}<span class="badge">${compensationText(n)}</span><br><span class="badge">${tr("Сила","Str")} ${n.strength}</span><span class="badge">${tr("Ремесло","Crf")} ${n.craft}</span><span class="badge">${tr("Бій","Cmb")} ${n.combat}</span><span class="badge">${tr("Гостинність","Svc")} ${n.service}</span><span class="badge">${tr("Лояльність","Loy")} ${n.loyalty}</span><span class="badge">${tr("Покірність","Obd")} ${n.obedience}</span><span class="badge">${tr("Здоров'я","Hp")} ${n.health}</span><div class="person-profile"><strong>${escapeHtml(n.trait.name)}</strong> (${escapeHtml(n.trait.effect)})<br>${escapeHtml(n.trait.description)}<br><span class="muted">${escapeHtml(n.story)} ${escapeHtml(displayFirstName(n))} ${escapeHtml(n.hope)}.</span></div><p class="muted">${tr("Робота","Job")}: <b>${escapeHtml(n.job)}</b></p>${career}<p>${tr("Набір портретів","Portrait set")}: <b>${escapeHtml(n.portraitSet)}</b></p><p>${tr("Ціна / цінність","Price / value")}: <b>${mode==="market"?npcPrice(n):(n.value||n.price)}</b></p></div><div class="actions">${mode==="market"?`<button class="btn green" onclick="buyNPC(${n.id})">${isSlave?tr("Купити","Buy"):tr("Найняти","Hire")}</button>`:managerActions(n)}</div></div>`;
+  return `<div class="card npc-card gender-${n.gender}"><div class="portrait">${portraitHtml(n)}</div><div><div class="card-title"><b>${htmlName(n)}</b><span class="badge">${statusLabel(n)} • ${escapeHtml(n.profession)}</span></div>${gender}<span class="badge">${tr("Вік","Age")}: ${n.age}</span>${longevity}<span class="badge">${tr("Звідки","From")}: ${escapeHtml(cityNameByName(n.homeCity)||n.homeCity)}</span>${location}${tenure}${relationship}<span class="badge">${compensationText(n)}</span><br><span class="badge">${tr("Сила","Str")} ${n.strength}</span><span class="badge">${tr("Ремесло","Crf")} ${n.craft}</span><span class="badge">${tr("Бій","Cmb")} ${n.combat}</span><span class="badge">${tr("Гостинність","Svc")} ${n.service}</span><span class="badge">${tr("Лояльність","Loy")} ${n.loyalty}</span><span class="badge">${tr("Покірність","Obd")} ${n.obedience}</span><span class="badge">${tr("Здоров'я","Hp")} ${n.health}</span><div class="person-profile"><strong>${escapeHtml(n.trait.name)}</strong> (${escapeHtml(n.trait.effect)})<br>${escapeHtml(n.trait.description)}<br><span class="muted">${escapeHtml(n.story)} ${escapeHtml(displayFirstName(n))} ${escapeHtml(n.hope)}.</span></div><p class="muted">${tr("Робота","Job")}: <b>${escapeHtml(n.job)}</b></p>${career}<p>${tr("Ціна / цінність","Price / value")}: <b>${mode==="market"?npcPrice(n):(n.value||n.price)}</b></p></div><div class="actions">${mode==="market"?`<button class="btn green" onclick="buyNPC(${n.id})">${isSlave?tr("Купити","Buy"):tr("Найняти","Hire")}</button>`:managerActions(n)}</div></div>`;
 }
 function careerHint(person){
   if(person.status==="slave") return `<p class="career-note">${tr("Кріпак: разом 5 днів, покірність 6, сила або ремесло 8.","Serf: 5 days together, obedience 6, strength or craft 8.")}</p>`;
@@ -3437,7 +3488,7 @@ function renderGuild(){
   const active=activeQuests();
   document.getElementById("activeGuildQuests").innerHTML=active.length?active.map(quest=>questCard(quest,false)).join(""):`<div class="empty">${tr("Прийнятих замовлень поки немає.","No accepted orders yet.")}</div>`;
 }
-// v0.39: find best places to buy a good (lowest current buy price with stock)
+// v0.40: find best places to buy a good (lowest current buy price with stock)
 function bestSourcesFor(goodName,limit=3){
   if(!markets||!markets.length) return [];
   const sources=[];
@@ -3533,6 +3584,51 @@ function toggleActionDock(){
   const btn=dock.querySelector(".dock-toggle-btn");
   if(btn) btn.innerText=dock.classList.contains("dock-expanded")?"▼":"▲";
 }
+// v0.40+: collapsible desktop UI (side-nav + action-dock).
+// IMPORTANT: action-dock is a SIBLING of .app-shell, not a child.
+// We therefore put the collapse classes on <body> so the CSS can target both.
+const COLLAPSE_KEY="merchant_ui_collapsed_v40";
+function toggleCollapsedUI(){
+  const isCollapsed=document.body.classList.toggle("nav-collapsed");
+  document.body.classList.toggle("dock-collapsed",isCollapsed);
+  // Mirror on app-shell for backward compat
+  const shell=document.getElementById("appShell");
+  if(shell){shell.classList.toggle("nav-collapsed",isCollapsed);shell.classList.toggle("dock-collapsed",isCollapsed);}
+  try{localStorage.setItem(COLLAPSE_KEY,isCollapsed?"1":"0");}catch(e){}
+}
+function applySavedCollapsedUI(){
+  let saved="0";
+  try{saved=localStorage.getItem(COLLAPSE_KEY)||"0";}catch(e){}
+  if(saved==="1"){
+    document.body.classList.add("nav-collapsed");
+    document.body.classList.add("dock-collapsed");
+    const shell=document.getElementById("appShell");
+    if(shell){shell.classList.add("nav-collapsed");shell.classList.add("dock-collapsed");}
+  }
+}
+function bindCollapseTapHandlers(){
+  const nav=document.querySelector(".side-nav");
+  const dock=document.querySelector(".action-dock");
+  if(nav) nav.addEventListener("click",e=>{
+    if(!document.body.classList.contains("nav-collapsed")) return;
+    if(!nav.classList.contains("tapped")){
+      e.stopPropagation();
+      if(dock) dock.classList.remove("tapped");
+      nav.classList.add("tapped");
+    }
+  });
+  if(dock) dock.addEventListener("click",e=>{
+    if(!document.body.classList.contains("dock-collapsed")) return;
+    if(!dock.classList.contains("tapped") && !e.target.closest("button")){
+      if(nav) nav.classList.remove("tapped");
+      dock.classList.add("tapped");
+    }
+  });
+  document.addEventListener("click",e=>{
+    if(nav && nav.classList.contains("tapped") && !nav.contains(e.target)) nav.classList.remove("tapped");
+    if(dock && dock.classList.contains("tapped") && !dock.contains(e.target)) dock.classList.remove("tapped");
+  });
+}
 function openNpcProfile(id,returnTab){
   if(!findOwnedAny(id)) return;
   selectedProfileId=id;
@@ -3608,7 +3704,7 @@ function renderNpcProfile(){
   }
   const images=fullPortraitPaths(person);
   const portrait=images.shift();
-  // v0.39: use women-panel atlas for free female NPCs in full-portrait too
+  // v0.40: use women-panel atlas for free female NPCs in full-portrait too
   const fullPortraitHtml=getWomenPanelIndex(person)>=0
     ? `<div class="women-panel-portrait" style="background-position-x:${(getWomenPanelIndex(person)/(WOMEN_PANEL_SETS.length-1))*100}%"></div>`
     : `<img src="${portrait}" data-fallbacks="${images.join("|")}" data-icon="${person.status==="slave"?"⛓️":"🧍"}" onerror="nextPortrait(this)">`;
@@ -3635,7 +3731,7 @@ function renderNpcProfile(){
 
 function renderRoutes(){
   if(!CARAVAN_ENABLED){
-    document.getElementById("activeCaravans").innerHTML=`<h2 class="subhead">У дорозі</h2><div class="empty">Караванна система тимчасово прихована в білді v0.39. Поточні каравани, якщо вони були у старому збереженні, ще можуть завершити шлях.</div>`;
+    document.getElementById("activeCaravans").innerHTML=`<h2 class="subhead">У дорозі</h2><div class="empty">Караванна система тимчасово прихована в білді v0.40. Поточні каравани, якщо вони були у старому збереженні, ще можуть завершити шлях.</div>`;
     document.getElementById("routes").innerHTML="";
     return;
   }
@@ -3780,7 +3876,7 @@ function removeKilledNpc(person){
   ownedHirelings=ownedHirelings.filter(candidate=>candidate.id!==person.id);
   leaveProfileIfRemoved(person.id);
 }
-// ==== v0.39: DD combat skills, ranks, stress ====
+// ==== v0.40: DD combat skills, ranks, stress ====
 const DD_SKILL_NAMES={
   strike:{name:"Удар",nameEn:"Strike",desc:"Звичайна атака.",descEn:"Basic attack."},
   cleave:{name:"Розкол строю",nameEn:"Cleave",desc:"+60% шкоди, але -1 захист на 1 раунд.",descEn:"+60% damage, -1 defense for 1 round."},
@@ -3895,7 +3991,7 @@ function ddUnitHtml(unit,side,index,extraClass=""){
     const name=htmlName(unit.person);
     const cmbLbl=tr("Бій","Cmb");
     const meta=`HP ${Math.max(0,unit.hp)}/${unit.maxHp} • ${cmbLbl} ${unit.person.combat}${stress>=100?" • 😱":""}`;
-    // v0.39: women panel portraits in combat
+    // v0.40: women panel portraits in combat
     const womenIdx=getWomenPanelIndex(unit.person);
     const portraitMarkup=womenIdx>=0
       ? `<div class="women-panel-portrait" style="background-position-x:${(womenIdx/(WOMEN_PANEL_SETS.length-1))*100}%"></div>`
@@ -4254,7 +4350,7 @@ async function ddRunAutoCombat(){
       state.turnPos=t;
       const turn=state.turnOrder[t];
       const actor=turn.side==="allies"?state.allies[turn.index]:state.enemies[turn.index];
-      // v0.39 fix: skip dead actors (defense-in-depth) and re-check end-of-combat
+      // v0.40 fix: skip dead actors (defense-in-depth) and re-check end-of-combat
       if(!actor||actor.hp<=0) continue;
       if(state.allies.every(u=>u.hp<=0) || state.enemies.every(u=>u.hp<=0)) break;
       if(turn.side==="allies"){
@@ -4302,7 +4398,7 @@ async function ddManualUseSkill(skillKey,targetIdx,targetSide){
   const actor=state.allies[turn.index];
   const skill=DD_SKILLS.find(s=>s.key===skillKey);
   if(!actor||!skill){state.awaitingPlayer=true;return;}
-  // v0.39 fix: dead actor can't act
+  // v0.40 fix: dead actor can't act
   if(actor.hp<=0){return ddAdvanceManual();}
   // Override execute targets - use the user's pick
   const targets=targetSide==="allies"?[state.allies[targetIdx]]:[state.enemies[targetIdx]];
@@ -4544,7 +4640,7 @@ function combatRewardBox(lines,manual=false){
   return `<div class="combat-reward-box"><h3>Підсумок бою</h3>${content}${mode}</div>`;
 }
 function applyCombatOutcome(origin,destination,companionIds,pool,allies,enemies,rounds,isRaid,victory,manual=false,prose=null){
-  // v0.39: reset stress on victory, half on defeat
+  // v0.40: reset stress on victory, half on defeat
   allies.forEach(unit=>{
     if(unit.person) unit.person.combatStress=victory?0:Math.floor((unit.stress||0)/2);
   });
@@ -4605,9 +4701,9 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   if(!isRaid && !options.forced && badReputationFear(origin)){
     const text=pick(roadFearEvents);
     log("🛡️ "+cities[origin].name+" → "+cities[destination].name+": "+text+" Погана репутація спрацювала як захист дороги.","travel");
-    return null; // v0.39: no modal opened, nothing to await
+    return null; // v0.40: no modal opened, nothing to await
   }
-  // v0.39: build promise that resolves on closeCombat (combat modal opens in all paths below)
+  // v0.40: build promise that resolves on closeCombat (combat modal opens in all paths below)
   const combatPromise=waitForCombatClose();
   const party=travelParty(origin,companionIds);
   if(!party.length){
@@ -4660,7 +4756,7 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   ddRunAutoCombat();
   return combatPromise;
 }
-// v0.39: split into pure roll (returns kind) + apply (logs/state) for async travel flow
+// v0.40: split into pure roll (returns kind) + apply (logs/state) for async travel flow
 function rollTravelEvent(origin,destination,companionIds=null){
   const event=pick(travelEvents);
   if((event.gold<0 || event.reputation<0) && badReputationFear(origin)){
@@ -4687,7 +4783,7 @@ function applyTravelEvent(origin,destination,companionIds=null){
     resolveRoadCombat(origin,destination,companionIds,{manual:selectedBattleMode==="manual"});
   }
 }
-// === v0.39 Routes ===
+// === v0.40 Routes ===
 const ROUTE_TYPES=[
   {key:"forest",icon:"🌲",name:"Лісом",nameEn:"Forest path",daysMod:-1,costMod:0.9,ambushMod:1.6,eventMod:1.1,
     desc:"Швидше на 1 день, дешевше на 10%. Висока ймовірність засідки.",descEn:"-1 day, -10% cost, +60% ambush chance."},
@@ -4795,7 +4891,7 @@ function moveTravelCompanions(companionIds,destination){
   const destCityName=cities[destination]&&cities[destination].name;
   moved.forEach(person=>{
     person.locationCity=destination;
-    // v0.39 #2: Mark aspiration flags for travel-based archetypes
+    // v0.40 #2: Mark aspiration flags for travel-based archetypes
     person.aspirationFlags=person.aspirationFlags||{};
     const data=getAspirationData(person);
     if(data){
@@ -4825,7 +4921,7 @@ function skipTravelAnim(){
   document.getElementById("travelAnimOverlay").classList.add("hidden");
   _pendingTravelAnim=null;
 }
-// === v0.39: incremental travel overlay for async confirmTravel ===
+// === v0.40: incremental travel overlay for async confirmTravel ===
 function beginTravelOverlay(origin,destination,duration){
   _travelSkipRequested=false;
   const overlay=document.getElementById("travelAnimOverlay");
@@ -4874,7 +4970,7 @@ function endTravelOverlay(destination){
   wagon.style.left="calc(100% - 22px)";
   counter.textContent=tr("Прибуття! ","Arrival! ")+cityName(destination);
 }
-// v0.39: wait for user to click finish button instead of auto-closing
+// v0.40: wait for user to click finish button instead of auto-closing
 let _travelFinishResolver=null;
 function waitForTravelFinish(){
   // Hide skip button, show finish button
@@ -4899,7 +4995,7 @@ function finishTravelOverlay(){
 }
 function travelSkipRequested(){return _travelSkipRequested;}
 function travelSleep(ms){return new Promise(r=>setTimeout(r,_travelSkipRequested?0:ms));}
-// === v0.39: combat resolution Promise ===
+// === v0.40: combat resolution Promise ===
 let _combatCloseResolver=null;
 function waitForCombatClose(){
   return new Promise(resolve=>{
@@ -5090,7 +5186,7 @@ async function confirmTravel(raid){
   saveGame(false);
   endTravelOverlay(destination);
   addTravelOverlayEvent("📍 "+tr("Прибуття до міста ","Arrival in ")+cityName(destination),"travel");
-  // v0.39: wait for user to manually close — gives time to read the journey log
+  // v0.40: wait for user to manually close — gives time to read the journey log
   if(!travelSkipRequested()){
     await waitForTravelFinish();
   }else{
@@ -5114,7 +5210,7 @@ function hiddenPlaceActions(key){
   }
   if(state.completed) return `<span class="badge">${tr("Завдання вже виконано","Quest already completed")}</span>`;
   if(!state.accepted) return `<button class="btn green" onclick="acceptHiddenQuest('${key}')">${tr("Прийняти виклик","Accept the challenge")}</button>`;
-  // v0.39: for the smiths' secret recipe, hide the need list — only reveal what player has decoded via rumours
+  // v0.40: for the smiths' secret recipe, hide the need list — only reveal what player has decoded via rumours
   if(place.hideNeed){
     const need=place.quest.need;
     const heardRumors=player.rumorsHeard||{};
@@ -5147,7 +5243,7 @@ function showHiddenPlace(key){
   const desc=lang==="en"&&place.descEn?place.descEn:place.desc;
   const lore=lang==="en"&&place.loreEn?place.loreEn:place.lore;
   document.getElementById("hiddenPlaceTitle").innerText=title;
-  // v0.39: rich text — desc as opening + lore as legend block (supports inline HTML for bold)
+  // v0.40: rich text — desc as opening + lore as legend block (supports inline HTML for bold)
   const textEl=document.getElementById("hiddenPlaceText");
   textEl.innerHTML=`<p class="hidden-desc">${escapeHtml(desc)}</p>`+(lore?`<div class="hidden-lore">${lore}</div>`:"");
   const imgEl=document.getElementById("hiddenPlaceImage");
@@ -5714,7 +5810,7 @@ function consumeFirst(names,qty){
   removeItem(match,qty);
   return match;
 }
-// === v0.39: Skill drift system ===
+// === v0.40: Skill drift system ===
 // Base growth rates per workshop. Multiple stats may grow simultaneously
 // (primary fast, secondary slow). All values mean "points per day at stat=0".
 const SKILL_DRIFT_RATES={
@@ -5950,7 +6046,7 @@ function advanceDay(withEvent,showSummary=true){
   const previousEntries=daySummary.slice();
   day++;
   energy=dailyActionLimit();
-  // v0.39: check season transition + npc requests
+  // v0.40: check season transition + npc requests
   if(((day-1)%30)===0){
     const s=currentSeason();
     log("🗓️ Розпочався новий сезон: "+s.icon+" "+s.name+". Ціни на ринку зміняться.","system");
@@ -5964,15 +6060,15 @@ function advanceDay(withEvent,showSummary=true){
   });
   checkExpiredRequest();
   processNpcRequests();
-  // v0.39 #2: Aspirations
+  // v0.40 #2: Aspirations
   ownedPeople().forEach(p=>processAspiration(p));
   if(pendingAspirationId!=null && document.getElementById("npcRequestNotice").classList.contains("hidden")) showAspirationResolution();
-  // v0.39 #2: Partnership income from departed NPCs
+  // v0.40 #2: Partnership income from departed NPCs
   if(player.partnershipIncome){
     gold+=player.partnershipIncome;
     log("🤝 "+tr("Партнерські відрахування","Partnership income")+": +"+player.partnershipIncome+" 💰","relation");
   }
-  // v0.39 #2: Disillusioned NPCs slowly lose loyalty
+  // v0.40 #2: Disillusioned NPCs slowly lose loyalty
   ownedPeople().forEach(p=>{
     if(p.disillusioned && (day-p.aspiration.startedDay)%7===0){
       p.loyalty=clamp((p.loyalty||0)-1,0,BALANCE.maxAttribute);
@@ -6006,7 +6102,7 @@ function advanceDay(withEvent,showSummary=true){
   saveGame(false);
   render();
 }
-// === v0.39 NPC Aspirations (#2) ===
+// === v0.40 NPC Aspirations (#2) ===
 // Each hope archetype maps to a multi-step personal quest. The final step
 // triggers a resolution dialog where the player chooses how to respond.
 function cityIndexByName(name){
@@ -6283,7 +6379,7 @@ function resolveAspiration(optKey){
   render();
 }
 
-// === v0.39 NPC Requests ===
+// === v0.40 NPC Requests ===
 const NPC_REQUEST_TYPES=[
   {key:"home_visit",weight:3,
     generate(person){
@@ -6496,7 +6592,7 @@ function nextWeek(){
   render();
 }
 function closeEvent(){document.getElementById("eventModal").classList.add("hidden");}
-// === v0.39: Artistic day summary ===
+// === v0.40: Artistic day summary ===
 const DAY_OPENINGS={
   spring:[
     "Тіні весняного вечора подовжуються над {city}, день {n} літа Господнього 1205 згортається у спогад.",
@@ -6835,7 +6931,7 @@ function log(text,type="system",playerAction=false){
 document.querySelectorAll(".nav").forEach(btn=>{btn.onclick=()=>{
   setActiveTab(btn.dataset.tab);
 };});
-// v0.39: track user-opened state for mobile collapsibles
+// v0.40: track user-opened state for mobile collapsibles
 document.addEventListener("toggle",function(e){
   if(e.target.matches("details.npc-actions-toggle")){
     if(e.target.open) e.target.dataset.userOpened="1";
@@ -6867,15 +6963,16 @@ function showWelcomeIfNew(){
 }
 if(!loadGame()){
   startNewState();
-  log("🎮 Білд v0.39 запущено. Створіть героя, оберіть стартове місто і розпочніть шлях у 1205 році.","system",true);
+  log("🎮 Білд v0.40 запущено. Створіть героя, оберіть стартове місто і розпочніть шлях у 1205 році.","system",true);
   saveGame(false);
 }else{
   saveGame(false);
 }
 applyStaticI18n();
 render();
-if(player && player.created) crazyGameplayStart();
-crazyLoadingStop();
+// v0.40: collapsible UI
+applySavedCollapsedUI();
+bindCollapseTapHandlers();
 if(showWelcomeIfNew()){
   // wait for chooseWelcomeLang to handle creation
 }else if(!player.created){
