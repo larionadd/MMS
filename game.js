@@ -3133,16 +3133,44 @@ function renderTravel(){
   }).join("");
 }
 
+const cityMapPoints = [
+  {x:56.5,y:50.5}, // Krakow
+  {x:72.0,y:49.0}, // Kyiv
+  {x:50.6,y:66.8}, // Venice
+  {x:51.5,y:50.8}, // Prague
+  {x:30.5,y:39.0}, // London
+  {x:31.8,y:32.3}, // York
+  {x:38.5,y:48.8}, // Paris
+  {x:36.8,y:45.5}, // Rouen
+  {x:40.8,y:41.7}, // Bruges
+  {x:41.4,y:43.0}, // Ghent
+  {x:45.8,y:45.5}, // Cologne
+  {x:46.8,y:48.4}, // Mainz
+  {x:51.5,y:51.8}, // Regensburg
+  {x:56.0,y:54.2}, // Vienna
+  {x:53.8,y:56.0}, // Salzburg
+  {x:48.8,y:61.2}, // Milan
+  {x:47.8,y:65.8}, // Genoa
+  {x:50.3,y:70.4}, // Pisa
+  {x:51.8,y:69.0}, // Florence
+  {x:53.8,y:75.0}, // Rome
+  {x:51.4,y:67.2}, // Bologna
+  {x:69.5,y:74.2}, // Constantinople
+  {x:65.0,y:75.4}, // Thessaloniki
+  {x:70.4,y:30.4}, // Novgorod
+  {x:68.5,y:43.5}, // Smolensk
+  {x:66.0,y:38.8}, // Polotsk
+  {x:45.5,y:35.7}, // Hamburg
+  {x:43.2,y:36.8}, // Bremen
+  {x:41.4,y:43.8}, // Utrecht
+  {x:38.4,y:67.5}, // Barcelona
+  {x:29.6,y:75.0}, // Toledo
+  {x:28.5,y:81.8}, // Cordoba
+  {x:27.2,y:84.0}, // Seville
+  {x:21.8,y:78.5}  // Lisbon
+];
 function cityMapPoint(index){
-  const xs=cities.map(city=>city.x);
-  const ys=cities.map(city=>city.y);
-  const minX=Math.min(...xs), maxX=Math.max(...xs);
-  const minY=Math.min(...ys), maxY=Math.max(...ys);
-  const city=cities[validCityIndex(index,0)];
-  return {
-    x:6+((city.x-minX)/(maxX-minX))*88,
-    y:92-((city.y-minY)/(maxY-minY))*84
-  };
+  return cityMapPoints[validCityIndex(index,0)] || {x:50,y:50};
 }
 function renderTravelMap(){
   const target=document.getElementById("travelMap");
