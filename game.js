@@ -3338,26 +3338,27 @@ function html5TravelMapBackdrop(){
       </linearGradient>
     </defs>
     <rect class="map-sea" width="100" height="100"/>
-    <path class="map-coast-glow" d="M34 26 C41 20,54 18,63 22 C74 18,91 25,97 38 C99 47,91 55,80 58 C72 61,65 58,58 52 C50 50,43 47,37 42 C32 38,29 31,34 26Z"/>
-    <path class="map-land map-mainland" d="M33 28 C39 22,51 20,63 23 C73 20,88 25,96 36 C98 44,91 53,80 57 C72 60,66 58,60 53 C52 51,44 48,38 43 C32 39,28 32,33 28Z"/>
-    <path class="map-land map-island" d="M24 14 C29 10,35 13,37 20 C36 27,31 31,25 27 C21 24,20 18,24 14Z"/>
-    <path class="map-land map-island" d="M16 22 C19 18,23 20,24 25 C22 30,17 31,15 27 C14 25,14 23,16 22Z"/>
-    <path class="map-land map-island" d="M58 4 C67 5,76 12,78 22 C73 24,67 22,61 27 C55 25,52 20,53 14 C54 9,55 6,58 4Z"/>
-    <path class="map-land map-peninsula" d="M24 57 C31 54,39 57,42 65 C39 76,28 79,18 72 C12 67,15 60,24 57Z"/>
-    <path class="map-land map-peninsula" d="M52 49 C59 54,61 64,57 73 C53 75,50 70,51 64 C49 58,48 53,52 49Z"/>
-    <path class="map-land map-peninsula" d="M64 58 C75 58,84 64,86 72 C79 79,66 76,59 68 C58 62,60 59,64 58Z"/>
-    <path class="map-land map-island" d="M56 75 C60 73,65 75,66 80 C63 83,58 82,56 78Z"/>
-    <path class="map-region" d="M19 24 C25 18,34 22,36 30 C34 38,28 43,20 42 C14 37,13 29,19 24Z"/>
-    <path class="map-region" d="M36 30 C44 23,56 24,63 31 C61 41,52 47,43 44 C36 40,33 34,36 30Z"/>
-    <path class="map-region" d="M61 29 C74 23,91 29,96 40 C93 50,83 56,72 55 C64 51,58 40,61 29Z"/>
-    <path class="map-region" d="M38 45 C48 43,58 48,64 57 C60 67,48 75,38 70 C31 64,31 51,38 45Z"/>
-    <path class="map-region" d="M61 56 C70 54,83 60,88 69 C82 77,68 77,59 69 C57 63,58 59,61 56Z"/>
-    <path class="map-river" d="M40 31 C45 36,50 42,57 48 C65 54,72 58,81 61"/>
-    <path class="map-river" d="M68 29 C70 37,69 45,73 52 C77 60,84 64,92 67"/>
-    <path class="map-river" d="M25 25 C26 32,29 39,35 45"/>
-    <path class="map-mountain" d="M36 45 L40 39 L44 46 L49 40 L53 48 L58 42 L63 50"/>
-    <path class="map-mountain" d="M62 36 L66 31 L70 39 L74 34 L79 41"/>
-    <path class="map-mountain" d="M49 62 L53 56 L57 64 L61 59 L66 68"/>
+    <path class="map-coast-glow" d="M30 24 C36 19,45 18,53 20 C58 16,69 13,79 16 C91 19,99 28,99 40 C98 50,90 57,79 59 C70 61,64 57,59 53 C53 54,47 50,42 45 C36 45,30 42,28 36 C26 31,27 27,30 24Z"/>
+    <path class="map-land map-mainland" d="M31 25 C37 20,46 19,54 21 C59 17,69 14,79 17 C90 20,98 29,98 40 C97 49,89 56,79 58 C70 60,65 56,60 52 C54 53,48 49,43 44 C37 44,31 41,29 36 C27 31,28 27,31 25Z"/>
+    <path class="map-land map-island map-britain" d="M23 12 C28 9,34 12,37 18 C39 25,34 32,27 31 C22 29,20 24,20 19 C20 16,21 14,23 12Z"/>
+    <path class="map-land map-island map-ireland" d="M15 20 C19 16,23 18,24 24 C23 30,18 33,15 29 C13 26,13 23,15 20Z"/>
+    <path class="map-land map-island map-scandinavia" d="M57 3 C66 4,76 9,80 18 C79 25,73 29,66 28 C60 28,54 25,52 18 C51 11,53 6,57 3Z"/>
+    <path class="map-land map-peninsula map-iberia" d="M22 55 C31 52,40 56,43 64 C42 75,32 83,20 80 C10 77,7 68,12 60 C15 57,18 56,22 55Z"/>
+    <path class="map-land map-peninsula map-italy" d="M50 48 C56 51,60 59,59 67 C58 74,54 77,51 72 C49 67,51 62,49 57 C47 52,47 50,50 48Z"/>
+    <path class="map-land map-peninsula map-balkans" d="M60 55 C70 53,84 58,90 67 C86 76,73 78,63 71 C58 67,56 60,60 55Z"/>
+    <path class="map-land map-island map-sicily" d="M55 76 C60 73,66 75,68 79 C65 84,58 83,55 79Z"/>
+    <path class="map-region" d="M20 20 C26 13,36 17,38 26 C36 35,27 41,18 39 C12 33,13 25,20 20Z"/>
+    <path class="map-region" d="M33 31 C42 24,55 25,62 32 C60 43,50 49,39 45 C32 41,29 35,33 31Z"/>
+    <path class="map-region" d="M60 25 C74 17,93 26,98 40 C95 51,82 58,69 56 C61 51,56 36,60 25Z"/>
+    <path class="map-region" d="M17 58 C28 53,39 58,42 66 C38 76,27 81,16 75 C10 69,11 62,17 58Z"/>
+    <path class="map-region" d="M48 47 C58 50,66 58,70 68 C65 77,53 78,47 69 C44 61,43 52,48 47Z"/>
+    <path class="map-region" d="M62 57 C72 55,85 61,89 69 C83 77,69 78,60 69 C57 64,58 60,62 57Z"/>
+    <path class="map-river" d="M39 31 C44 35,49 40,55 46 C63 52,70 56,80 59"/>
+    <path class="map-river" d="M68 22 C70 31,70 41,75 49 C80 57,88 62,95 66"/>
+    <path class="map-river" d="M25 22 C26 30,30 37,36 43"/>
+    <path class="map-mountain" d="M34 47 L39 40 L44 47 L49 41 L54 49 L59 42 L65 51"/>
+    <path class="map-mountain" d="M61 35 L66 29 L70 38 L75 32 L81 41"/>
+    <path class="map-mountain" d="M48 62 L53 56 L58 65 L63 59 L69 70"/>
     <text class="map-label" x="24" y="39">Britannia</text>
     <text class="map-label" x="44" y="36">Francia</text>
     <text class="map-label" x="55" y="41">Imperium</text>
