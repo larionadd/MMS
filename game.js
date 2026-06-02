@@ -152,6 +152,48 @@ function applyStaticI18n(){
 }
 /* ========================== /Локалізація ========================== */
 
+function parseInlineArgs(source){
+  const args=[];
+  let current="", quote=null, escaped=false;
+  for(let i=0;i<source.length;i++){
+    const ch=source[i];
+    if(escaped){current+=ch;escaped=false;continue;}
+    if(ch==="\\"){escaped=true;continue;}
+    if(quote){
+      if(ch===quote){quote=null;continue;}
+      current+=ch;
+      continue;
+    }
+    if(ch==="'" || ch==='"'){quote=ch;continue;}
+    if(ch===","){args.push(current.trim());current="";continue;}
+    current+=ch;
+  }
+  if(current.trim() || source.trim()) args.push(current.trim());
+  return args.map(value=>{
+    if(value==="true") return true;
+    if(value==="false") return false;
+    if(value==="null") return null;
+    if(/^[-]?\d+(\.\d+)?$/.test(value)) return Number(value);
+    return value;
+  });
+}
+function dispatchInlineClick(event){
+  const target=event.target&&event.target.closest?event.target.closest("[onclick]"):null;
+  if(!target) return;
+  const code=target.getAttribute("onclick")||"";
+  const match=code.trim().match(/^([A-Za-z_$][\w$]*)\((.*)\);?$/);
+  if(!match) return;
+  const fn=window[match[1]];
+  if(typeof fn!=="function") return;
+  event.preventDefault();
+  event.stopPropagation();
+  if(event.stopImmediatePropagation) event.stopImmediatePropagation();
+  fn.apply(window,parseInlineArgs(match[2]));
+}
+if(typeof document!=="undefined" && document.addEventListener){
+  document.addEventListener("click",dispatchInlineClick,true);
+}
+
 function hasItemAnywhere(id){
   const people=(Array.isArray(ownedSlaves)?ownedSlaves:[]).concat(Array.isArray(ownedHirelings)?ownedHirelings:[]);
   return itemStock(id)>0 || people.some(person=>Object.values(person.equipment||{}).includes(id));
