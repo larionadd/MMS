@@ -116,11 +116,18 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .travel-route-line{stroke:rgba(240,204,131,.95);stroke-width:1.4;stroke-dasharray:5 5;fill:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85));animation:routeDash 1.2s linear infinite}
 .travel-route-shadow{stroke:rgba(0,0,0,.72);stroke-width:3.2;stroke-dasharray:5 5;fill:none}
 @keyframes routeDash{to{stroke-dashoffset:-20}}
-.map-city-dot{position:absolute;z-index:4;transform:translate(-50%,-50%);border:none;background:transparent;color:var(--text);cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:38px}
-.map-city-dot .dot-core{width:12px;height:12px;border-radius:50%;background:#ecd08d;border:2px solid #33210e;box-shadow:0 0 0 2px rgba(211,163,72,.35),0 3px 8px rgba(0,0,0,.7)}
-.map-city-dot span{max-width:74px;padding:2px 5px;border-radius:8px;background:rgba(12,8,4,.72);border:1px solid rgba(211,163,72,.24);font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}
+.map-city-dot{position:absolute;z-index:4;transform:translate(-50%,-50%);border:none;background:transparent;color:var(--text);cursor:pointer;padding:0;width:18px;height:18px}
+.map-city-dot .dot-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#ecd08d;border:2px solid #33210e;box-shadow:0 0 0 2px rgba(211,163,72,.35),0 3px 8px rgba(0,0,0,.7)}
+.map-city-dot span{position:absolute;left:50%;top:50%;transform:translate(calc(-50% + var(--label-x,0px)),var(--label-y,14px));max-width:86px;padding:2px 5px;border-radius:8px;background:rgba(12,8,4,.78);border:1px solid rgba(211,163,72,.32);font-size:10px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000;pointer-events:none}
 .map-city-dot:hover .dot-core,.map-city-dot.selected .dot-core{background:#ffdc78;box-shadow:0 0 0 3px rgba(255,200,92,.38),0 0 18px rgba(255,190,70,.9)}
 .map-city-dot.current .dot-core{background:#54a6ff;box-shadow:0 0 0 3px rgba(84,166,255,.3),0 0 18px rgba(84,166,255,.82)}
+.map-city-dot.current,.map-city-dot.selected{z-index:7}
+.map-city-dot.current span,.map-city-dot.selected span{background:rgba(16,25,38,.9);border-color:rgba(99,180,255,.58);color:#f4fbff}
+.map-hidden-marker{position:absolute;z-index:6;transform:translate(-50%,-50%);width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:#ffe6a9;pointer-events:auto;cursor:help}
+.map-hidden-marker i{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#6e3b85,#271325 70%);border:1px solid rgba(255,215,128,.78);box-shadow:0 0 0 3px rgba(111,65,130,.26),0 0 16px rgba(255,190,78,.5);font-style:normal;font-size:13px}
+.map-hidden-marker span{position:absolute;left:50%;top:100%;transform:translate(-50%,4px);max-width:120px;padding:3px 6px;border-radius:9px;background:rgba(21,10,25,.86);border:1px solid rgba(255,215,128,.35);font-size:10px;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}
+.map-hidden-marker:after{content:attr(data-hint);position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);width:min(280px,70vw);padding:9px 10px;border-radius:12px;background:rgba(11,7,5,.94);border:1px solid rgba(255,215,128,.5);box-shadow:0 12px 28px rgba(0,0,0,.45);font-size:12px;line-height:1.35;color:var(--text);opacity:0;visibility:hidden;transition:opacity .15s ease,visibility .15s ease;pointer-events:none}
+.map-hidden-marker:hover:after{opacity:1;visibility:visible}
 .map-hero-marker{position:absolute;z-index:5;left:var(--from-x);top:var(--from-y);transform:translate(-50%,-110%);font-size:28px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.9));animation:mapHeroTravel 2.6s ease-in-out infinite}
 .map-hero-marker:after{content:"";position:absolute;left:50%;bottom:-4px;width:22px;height:8px;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.45);filter:blur(2px)}
 @keyframes mapHeroTravel{
@@ -799,9 +806,11 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
   .people-lane-scroll .npc-card p{font-size:13px;margin:6px 0}
   .travel-map-shell{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-color:var(--gold) #100c08}
   .travel-map{min-height:420px;min-width:880px}
-  .map-city-dot{min-width:42px}
-  .map-city-dot span{display:none}
+  .map-city-dot{width:22px;height:22px}
+  .map-city-dot span{display:block;max-width:78px;font-size:9px;padding:2px 4px}
   .map-city-dot .dot-core{width:16px;height:16px;border-width:2px;box-shadow:0 0 0 5px rgba(211,163,72,.22),0 3px 10px rgba(0,0,0,.75)}
+  .map-hidden-marker span{max-width:92px;font-size:9px}
+  .map-hidden-marker:after{width:min(250px,72vw);font-size:11px}
   .map-hero-marker{font-size:23px}
   .travel-map-caption{left:8px;right:8px;bottom:8px;align-items:flex-end}
   .travel-map-caption span{font-size:11px;padding:5px 7px;max-width:58%}

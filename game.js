@@ -3275,8 +3275,53 @@ const cityMapPoints = [
   {x:20.5,y:80.5}, // Seville
   {x:12.5,y:75.0}  // Lisbon
 ];
+const cityLabelOffsets = [
+  {x:-10,y:-30}, // Krakow
+  {x:10,y:-30}, // Kyiv
+  {x:12,y:16}, // Venice
+  {x:-18,y:-28}, // Prague
+  {x:-24,y:16}, // London
+  {x:8,y:-30}, // York
+  {x:-18,y:16}, // Paris
+  {x:-58,y:-8}, // Rouen
+  {x:-22,y:-30}, // Bruges
+  {x:12,y:16}, // Ghent
+  {x:18,y:-30}, // Cologne
+  {x:16,y:16}, // Mainz
+  {x:20,y:-28}, // Regensburg
+  {x:18,y:-30}, // Vienna
+  {x:-58,y:12}, // Salzburg
+  {x:-44,y:-24}, // Milan
+  {x:-50,y:14}, // Genoa
+  {x:-44,y:16}, // Pisa
+  {x:14,y:-28}, // Florence
+  {x:18,y:16}, // Rome
+  {x:18,y:14}, // Bologna
+  {x:20,y:-30}, // Constantinople
+  {x:18,y:16}, // Thessaloniki
+  {x:18,y:-30}, // Novgorod
+  {x:18,y:16}, // Smolensk
+  {x:-58,y:-16}, // Polotsk
+  {x:10,y:-30}, // Hamburg
+  {x:-54,y:8}, // Bremen
+  {x:-58,y:-18}, // Utrecht
+  {x:16,y:-30}, // Barcelona
+  {x:12,y:-30}, // Toledo
+  {x:-42,y:16}, // Cordoba
+  {x:16,y:16}, // Seville
+  {x:-18,y:16}  // Lisbon
+];
+const hiddenMapPoints = {
+  witch:{x:49,y:73,icon:"✦"},
+  smiths:{x:69,y:30,icon:"⚒"},
+  circus:{x:43,y:48,icon:"✹"},
+  scholars:{x:58,y:50,icon:"✧"}
+};
 function cityMapPoint(index){
   return cityMapPoints[validCityIndex(index,0)] || {x:50,y:50};
+}
+function cityLabelOffset(index){
+  return cityLabelOffsets[validCityIndex(index,0)] || {x:0,y:14};
 }
 function html5TravelMapBackdrop(){
   return `<svg class="travel-map-bg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -3293,38 +3338,70 @@ function html5TravelMapBackdrop(){
       </linearGradient>
     </defs>
     <rect class="map-sea" width="100" height="100"/>
-    <path class="map-coast-glow" d="M18 18 C26 13,36 16,42 21 C47 18,56 17,64 20 C74 17,88 21,96 31 L98 46 C92 50,88 56,83 63 C76 66,70 68,64 74 C58 78,50 77,43 73 C35 76,27 71,22 64 C16 60,11 51,13 42 C8 37,9 28,18 18Z"/>
-    <path class="map-land" d="M35 23 C42 18,55 18,64 22 C73 19,88 23,96 32 C98 39,96 46,89 50 C86 56,83 61,76 64 C70 66,66 70,60 74 C53 78,45 76,39 72 C32 75,24 70,20 63 C14 59,10 51,13 43 C10 37,12 30,20 25 C24 22,30 21,35 23Z"/>
-    <path class="map-land map-island" d="M25 18 C29 14,35 17,36 23 C33 28,29 29,25 25 C22 23,22 20,25 18Z"/>
-    <path class="map-land map-island" d="M19 22 C22 19,25 21,25 25 C23 28,20 29,18 26 C17 24,17 23,19 22Z"/>
-    <path class="map-land map-island" d="M58 6 C67 7,75 13,76 22 C70 20,65 21,59 25 C54 23,51 19,53 14 C54 10,55 8,58 6Z"/>
-    <path class="map-land map-peninsula" d="M53 51 C58 55,60 61,58 68 C55 71,51 68,52 63 C50 59,48 54,53 51Z"/>
-    <path class="map-land map-peninsula" d="M28 57 C35 56,41 60,42 67 C38 72,29 70,24 64 C23 61,24 58,28 57Z"/>
-    <path class="map-land map-peninsula" d="M66 60 C74 61,80 66,81 73 C75 76,67 74,62 69 C61 65,62 62,66 60Z"/>
-    <path class="map-region" d="M20 25 C26 21,34 22,38 28 C36 38,29 44,19 43 C13 38,14 30,20 25Z"/>
-    <path class="map-region" d="M39 27 C48 21,59 23,64 31 C61 41,52 46,43 42 C37 38,35 32,39 27Z"/>
-    <path class="map-region" d="M63 31 C74 24,88 29,96 38 C94 48,84 55,72 54 C64 50,59 39,63 31Z"/>
-    <path class="map-region" d="M41 45 C50 43,60 47,68 55 C64 66,51 75,39 72 C31 66,31 52,41 45Z"/>
-    <path class="map-region" d="M64 56 C72 54,83 58,88 67 C80 75,68 76,59 70 C57 64,59 59,64 56Z"/>
-    <path class="map-river" d="M42 29 C46 35,50 41,56 47 C62 53,68 57,76 61"/>
-    <path class="map-river" d="M68 28 C70 36,69 44,73 52 C76 59,83 63,91 66"/>
-    <path class="map-river" d="M24 27 C25 34,28 40,34 45"/>
-    <path class="map-mountain" d="M37 44 L40 39 L44 45 L48 40 L52 47 L56 42 L61 49"/>
-    <path class="map-mountain" d="M63 36 L66 31 L70 38 L73 33 L78 40"/>
-    <path class="map-mountain" d="M50 62 L53 57 L57 64 L61 60 L65 67"/>
-    <text class="map-label" x="26" y="36">Occident</text>
-    <text class="map-label" x="54" y="36">Imperium</text>
-    <text class="map-label" x="78" y="43">Rus'</text>
-    <text class="map-label" x="42" y="69">Mare Nostrum</text>
+    <path class="map-coast-glow" d="M34 26 C41 20,54 18,63 22 C74 18,91 25,97 38 C99 47,91 55,80 58 C72 61,65 58,58 52 C50 50,43 47,37 42 C32 38,29 31,34 26Z"/>
+    <path class="map-land map-mainland" d="M33 28 C39 22,51 20,63 23 C73 20,88 25,96 36 C98 44,91 53,80 57 C72 60,66 58,60 53 C52 51,44 48,38 43 C32 39,28 32,33 28Z"/>
+    <path class="map-land map-island" d="M24 14 C29 10,35 13,37 20 C36 27,31 31,25 27 C21 24,20 18,24 14Z"/>
+    <path class="map-land map-island" d="M16 22 C19 18,23 20,24 25 C22 30,17 31,15 27 C14 25,14 23,16 22Z"/>
+    <path class="map-land map-island" d="M58 4 C67 5,76 12,78 22 C73 24,67 22,61 27 C55 25,52 20,53 14 C54 9,55 6,58 4Z"/>
+    <path class="map-land map-peninsula" d="M24 57 C31 54,39 57,42 65 C39 76,28 79,18 72 C12 67,15 60,24 57Z"/>
+    <path class="map-land map-peninsula" d="M52 49 C59 54,61 64,57 73 C53 75,50 70,51 64 C49 58,48 53,52 49Z"/>
+    <path class="map-land map-peninsula" d="M64 58 C75 58,84 64,86 72 C79 79,66 76,59 68 C58 62,60 59,64 58Z"/>
+    <path class="map-land map-island" d="M56 75 C60 73,65 75,66 80 C63 83,58 82,56 78Z"/>
+    <path class="map-region" d="M19 24 C25 18,34 22,36 30 C34 38,28 43,20 42 C14 37,13 29,19 24Z"/>
+    <path class="map-region" d="M36 30 C44 23,56 24,63 31 C61 41,52 47,43 44 C36 40,33 34,36 30Z"/>
+    <path class="map-region" d="M61 29 C74 23,91 29,96 40 C93 50,83 56,72 55 C64 51,58 40,61 29Z"/>
+    <path class="map-region" d="M38 45 C48 43,58 48,64 57 C60 67,48 75,38 70 C31 64,31 51,38 45Z"/>
+    <path class="map-region" d="M61 56 C70 54,83 60,88 69 C82 77,68 77,59 69 C57 63,58 59,61 56Z"/>
+    <path class="map-river" d="M40 31 C45 36,50 42,57 48 C65 54,72 58,81 61"/>
+    <path class="map-river" d="M68 29 C70 37,69 45,73 52 C77 60,84 64,92 67"/>
+    <path class="map-river" d="M25 25 C26 32,29 39,35 45"/>
+    <path class="map-mountain" d="M36 45 L40 39 L44 46 L49 40 L53 48 L58 42 L63 50"/>
+    <path class="map-mountain" d="M62 36 L66 31 L70 39 L74 34 L79 41"/>
+    <path class="map-mountain" d="M49 62 L53 56 L57 64 L61 59 L66 68"/>
+    <text class="map-label" x="24" y="39">Britannia</text>
+    <text class="map-label" x="44" y="36">Francia</text>
+    <text class="map-label" x="55" y="41">Imperium</text>
+    <text class="map-label" x="79" y="42">Rus'</text>
+    <text class="map-label" x="27" y="68">Iberia</text>
+    <text class="map-label" x="55" y="65">Italia</text>
+    <text class="map-label" x="73" y="70">Byzantium</text>
   </svg>`;
 }
 function travelMapMarkerHtml(index,withLabel=true){
   const point=cityMapPoint(index);
+  const label=cityLabelOffset(index);
   const destination=Number.isInteger(selectedTravelDestination) && selectedTravelDestination!==currentCity ? selectedTravelDestination : null;
   const cls=["map-city-dot"];
   if(index===currentCity) cls.push("current");
   if(index===destination) cls.push("selected");
-  return `<button class="${cls.join(" ")}" style="left:${point.x}%;top:${point.y}%" onclick="prepareTravel(${index})" title="${escapeHtml(cityName(index))}" ${index===currentCity?"disabled":""}><i class="dot-core"></i>${withLabel?`<span>${escapeHtml(cityName(index))}</span>`:""}</button>`;
+  return `<button class="${cls.join(" ")}" style="left:${point.x}%;top:${point.y}%;--label-x:${label.x}px;--label-y:${label.y}px" onclick="prepareTravel(${index})" title="${escapeHtml(cityName(index))}" ${index===currentCity?"disabled":""}><i class="dot-core"></i>${withLabel?`<span>${escapeHtml(cityName(index))}</span>`:""}</button>`;
+}
+function hiddenPlaceName(key){
+  const place=hiddenPlaces[key];
+  if(!place) return key;
+  return lang==="en" ? (place.titleEn||place.title||key) : (place.title||place.titleEn||key);
+}
+function hiddenPlaceRouteHint(key){
+  if(key==="witch") return tr("Знайти знову: подорожуй між Києвом і Лісабоном.", "Find again: travel between Kyiv and Lisbon.");
+  if(key==="smiths") return tr("Знайти знову: подорожуй між Краковом і Полоцьком.", "Find again: travel between Krakow and Polotsk.");
+  if(key==="circus") return tr("Бродячий цирк може з'явитись на будь-якому маршруті з шансом 3%.", "The wandering circus can appear on any route with a 3% chance.");
+  if(key==="scholars") return tr("Караван науковців може з'явитись на будь-якому маршруті з шансом 3%.", "The scholars' caravan can appear on any route with a 3% chance.");
+  return tr("Це приховане місце вже знайдено, але їхати до нього напряму не можна.", "This hidden place is discovered, but it cannot be targeted directly.");
+}
+function plainMapHint(text){
+  return String(text||"").replace(/<[^>]*>/g,"").replace(/\s+/g," ").trim();
+}
+function hiddenPlaceMapMarkers(){
+  if(!player || !Array.isArray(player.foundHiddenPlaces)) return "";
+  return player.foundHiddenPlaces
+    .filter(key=>hiddenPlaces[key] && hiddenMapPoints[key])
+    .map(key=>{
+      const point=hiddenMapPoints[key];
+      const place=hiddenPlaces[key];
+      const desc=lang==="en" ? (place.descEn||place.desc||"") : (place.desc||place.descEn||"");
+      const hint=`${hiddenPlaceName(key)}. ${hiddenPlaceRouteHint(key)} ${plainMapHint(desc).slice(0,180)}`;
+      return `<div class="map-hidden-marker" style="left:${point.x}%;top:${point.y}%" title="${escapeHtml(hint)}" data-hint="${escapeHtml(hint)}" aria-label="${escapeHtml(hint)}"><i>${point.icon}</i><span>${escapeHtml(hiddenPlaceName(key))}</span></div>`;
+    }).join("");
 }
 function travelRouteSvg(origin,destination,animated=true){
   const from=cityMapPoint(origin);
@@ -3361,10 +3438,11 @@ function renderTravelMap(){
     ? travelRouteSvg(currentCity,destination,true)+travelHeroMarkerHtml(currentCity,destination,null)
     : travelHeroMarkerHtml(currentCity,currentCity,null);
   const dots=cities.map((city,index)=>travelMapMarkerHtml(index,true)).join("");
+  const hidden=hiddenPlaceMapMarkers();
   const caption=destination!=null
     ? `${escapeHtml(cityName(currentCity))} → ${escapeHtml(cityName(destination))} • ${routeAdjustedDays(currentCity,destination)} ${tr("дн.","d")}`
     : `${tr("Поточне місто","Current city")}: ${escapeHtml(cityName(currentCity))}`;
-  target.innerHTML=`<div class="travel-map">${html5TravelMapBackdrop()}${route}${dots}<div class="travel-map-caption"><span>${caption}</span><span>${tr("Натисни місто на карті, щоб прокласти шлях","Tap a city on the map to plot a route")}</span></div></div>`;
+  target.innerHTML=`<div class="travel-map">${html5TravelMapBackdrop()}${route}${dots}${hidden}<div class="travel-map-caption"><span>${caption}</span><span>${tr("Натисни місто на карті, щоб прокласти шлях","Tap a city on the map to plot a route")}</span></div></div>`;
 }
 
 function npcCard(n,mode){

@@ -92,7 +92,11 @@ assert.match(html, /id="travelAnimMap"/, "travel animation overlay contains an e
 assert.match(source, /function html5TravelMapBackdrop/, "travel map uses an HTML5/SVG backdrop");
 assert.match(source, /class="travel-map-bg"/, "travel map renders an SVG map layer");
 assert.match(source, /map-island/, "HTML5 map includes island shapes for Europe");
-assert.match(source, /Mare Nostrum/, "HTML5 map includes medieval regional labels");
+assert.match(source, /Britannia/, "HTML5 map includes medieval regional labels");
+assert.match(source, /const cityLabelOffsets/, "travel map city labels have collision-aware offsets");
+assert.match(source, /function hiddenPlaceMapMarkers/, "discovered hidden places can appear on the travel map");
+assert.match(fs.readFileSync(path.join(root, "style.css"), "utf8"), /\.map-hidden-marker/, "hidden place markers have map styling");
+assert.doesNotMatch(fs.readFileSync(path.join(root, "style.css"), "utf8"), /\.map-city-dot span\{display:none\}/, "mobile travel map keeps city labels visible");
 assert.match(source, /currentHelpTab/, "help changelog tab keeps explicit state");
 assert.doesNotMatch(fs.readFileSync(path.join(root, "style.css"), "utf8"), /assets\/map\/europe_1205\.png/, "travel map no longer depends on the old raster map background");
 assert.match(fs.readFileSync(path.join(root, "style.css"), "utf8"), /\.travel-map\{min-height:420px;min-width:880px\}/, "mobile travel map is wider than the phone viewport for tappable city spacing");
@@ -148,6 +152,9 @@ for (const tab of ["market","travel","player","guild","people","subordinates","s
   game.run(`setActiveTab("${tab}")`);
 }
 assert.match(game.nodes.travelGrid.innerHTML, /travel-card/, "travel destinations render as cards");
+game.run("player.foundHiddenPlaces=['witch','smiths']; renderTravelMap();");
+assert.match(game.nodes.travelMap.innerHTML, /map-hidden-marker/, "discovered hidden places render on the travel map");
+assert.match(game.nodes.travelMap.innerHTML, /Києвом і Лісабоном|Краковом і Полоцьком/, "hidden place tooltips explain how to find the place again");
 game.run("prepareTravel((currentCity+1)%cities.length)");
 assert.match(game.nodes.travelCompanionList.innerHTML, /Обрано супровід/, "travel dialog renders companion selector");
 assert.equal(game.nodes.raidCaravanButton.disabled, true, "raid is disabled without selected companions");
