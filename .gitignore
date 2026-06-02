@@ -5,5 +5,7 @@ desktop.ini
 *.tmp
 *.bak
 *.zip
+!downloads/
+!downloads/medieval_merchant_v039_itch_fixed.zip
 node_modules/
 .claude/
