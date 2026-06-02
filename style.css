@@ -97,6 +97,26 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 .travel-card .card-title{margin-bottom:4px}
 .travel-card p{margin:8px 0;color:var(--muted);line-height:1.35}
 .travel-card .trade-actions{grid-column:1 / -1;margin-top:2px}
+.travel-map-shell{margin:14px 0 16px;border:1px solid var(--line);border-radius:18px;background:#100c08;overflow:hidden;box-shadow:0 18px 42px rgba(0,0,0,.28)}
+.travel-map{position:relative;aspect-ratio:320/213;background:#120d08 url('assets/map/europe_1205.png') center/cover no-repeat;min-height:360px}
+.travel-map:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.28));pointer-events:none}
+.travel-map-route{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.travel-route-line{stroke:rgba(240,204,131,.95);stroke-width:1.4;stroke-dasharray:5 5;fill:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.85));animation:routeDash 1.2s linear infinite}
+.travel-route-shadow{stroke:rgba(0,0,0,.72);stroke-width:3.2;stroke-dasharray:5 5;fill:none}
+@keyframes routeDash{to{stroke-dashoffset:-20}}
+.map-city-dot{position:absolute;z-index:4;transform:translate(-50%,-50%);border:none;background:transparent;color:var(--text);cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:38px}
+.map-city-dot .dot-core{width:12px;height:12px;border-radius:50%;background:#ecd08d;border:2px solid #33210e;box-shadow:0 0 0 2px rgba(211,163,72,.35),0 3px 8px rgba(0,0,0,.7)}
+.map-city-dot span{max-width:74px;padding:2px 5px;border-radius:8px;background:rgba(12,8,4,.72);border:1px solid rgba(211,163,72,.24);font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}
+.map-city-dot:hover .dot-core,.map-city-dot.selected .dot-core{background:#ffdc78;box-shadow:0 0 0 3px rgba(255,200,92,.38),0 0 18px rgba(255,190,70,.9)}
+.map-city-dot.current .dot-core{background:#54a6ff;box-shadow:0 0 0 3px rgba(84,166,255,.3),0 0 18px rgba(84,166,255,.82)}
+.map-hero-marker{position:absolute;z-index:5;left:var(--from-x);top:var(--from-y);transform:translate(-50%,-110%);font-size:28px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.9));animation:mapHeroTravel 2.6s ease-in-out infinite}
+.map-hero-marker:after{content:"";position:absolute;left:50%;bottom:-4px;width:22px;height:8px;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.45);filter:blur(2px)}
+@keyframes mapHeroTravel{
+  0%,16%{left:var(--from-x);top:var(--from-y)}
+  84%,100%{left:var(--to-x);top:var(--to-y)}
+}
+.travel-map-caption{position:absolute;left:12px;right:12px;bottom:12px;z-index:6;display:flex;justify-content:space-between;gap:10px;align-items:center;pointer-events:none}
+.travel-map-caption span{padding:7px 10px;border:1px solid rgba(211,163,72,.35);border-radius:12px;background:rgba(10,7,4,.78);font-size:13px;color:var(--text)}
 .travel-party-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:8px;margin:12px 0}
 .companion-choice{border:1px solid var(--line);border-radius:14px;background:#120d08;color:var(--text);padding:10px;text-align:left;cursor:pointer;line-height:1.35}
 .companion-choice.selected{border-color:var(--gold);background:linear-gradient(180deg,#3b2a17,#24180d);box-shadow:0 0 0 1px rgba(211,163,72,.25) inset}
@@ -752,4 +772,10 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
   .people-lane-scroll .actions{grid-column:1 / -1;display:grid;grid-template-columns:1fr;clear:none}
   .people-lane-scroll .person-profile{display:none}
   .people-lane-scroll .npc-card p{font-size:13px;margin:6px 0}
+  .travel-map{min-height:230px}
+  .map-city-dot span{max-width:52px;font-size:9px;padding:1px 4px}
+  .map-city-dot .dot-core{width:10px;height:10px}
+  .map-hero-marker{font-size:23px}
+  .travel-map-caption{left:8px;right:8px;bottom:8px;align-items:flex-end}
+  .travel-map-caption span{font-size:11px;padding:5px 7px;max-width:58%}
 }

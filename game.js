@@ -3117,6 +3117,7 @@ function renderTravel(){
   const hint=document.getElementById("travelPageHint");
   const grid=document.getElementById("travelGrid");
   if(!hint || !grid) return;
+  renderTravelMap();
   const availableGuards=eligibleTravelCompanions(currentCity).length;
   hint.innerHTML=lang==="en"
     ? `You are in the city of <b>${cityName(currentCity)}</b>. Choose a destination, then pick your escort. Without subordinates the merchant cannot raid caravans and, if attacked on the road, loses automatically and forfeits the goods. People available for the road: <b>${availableGuards}</b>.`
@@ -3130,6 +3131,41 @@ function renderTravel(){
     const pick=lang==="en"?"Choose route":"Обрати маршрут";
     return `<div class="card travel-card"><div class="travel-card-art"><img src="assets/cities/${cityArtKeys[index]}.png" onerror="this.style.display='none'"></div><div><div class="card-title"><b>${escapeHtml(cityName(index))}</b><span class="badge">${escapeHtml(regionName(city.region))}</span></div><span class="badge">${timeLbl}</span><span class="badge">${costLbl}</span><span class="badge">${escapeHtml(reputationLabel(index))}</span><p>${escapeHtml(cityHint(city))}</p></div><div class="trade-actions"><button class="btn green" onclick="prepareTravel(${index})">${pick}</button></div></div>`;
   }).join("");
+}
+
+function cityMapPoint(index){
+  const xs=cities.map(city=>city.x);
+  const ys=cities.map(city=>city.y);
+  const minX=Math.min(...xs), maxX=Math.max(...xs);
+  const minY=Math.min(...ys), maxY=Math.max(...ys);
+  const city=cities[validCityIndex(index,0)];
+  return {
+    x:6+((city.x-minX)/(maxX-minX))*88,
+    y:92-((city.y-minY)/(maxY-minY))*84
+  };
+}
+function renderTravelMap(){
+  const target=document.getElementById("travelMap");
+  if(!target) return;
+  const destination=Number.isInteger(selectedTravelDestination) && selectedTravelDestination!==currentCity
+    ? selectedTravelDestination
+    : null;
+  const from=cityMapPoint(currentCity);
+  const to=destination!=null?cityMapPoint(destination):from;
+  const route=destination!=null
+    ? `<svg class="travel-map-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line class="travel-route-shadow" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line><line class="travel-route-line" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line></svg><div class="map-hero-marker" style="--from-x:${from.x}%;--from-y:${from.y}%;--to-x:${to.x}%;--to-y:${to.y}%">🧭</div>`
+    : `<div class="map-hero-marker" style="--from-x:${from.x}%;--from-y:${from.y}%;--to-x:${from.x}%;--to-y:${from.y}%">🧭</div>`;
+  const dots=cities.map((city,index)=>{
+    const point=cityMapPoint(index);
+    const cls=["map-city-dot"];
+    if(index===currentCity) cls.push("current");
+    if(index===destination) cls.push("selected");
+    return `<button class="${cls.join(" ")}" style="left:${point.x}%;top:${point.y}%" onclick="prepareTravel(${index})" title="${escapeHtml(cityName(index))}" ${index===currentCity?"disabled":""}><i class="dot-core"></i><span>${escapeHtml(cityName(index))}</span></button>`;
+  }).join("");
+  const caption=destination!=null
+    ? `${escapeHtml(cityName(currentCity))} → ${escapeHtml(cityName(destination))} • ${routeAdjustedDays(currentCity,destination)} ${tr("дн.","d")}`
+    : `${tr("Поточне місто","Current city")}: ${escapeHtml(cityName(currentCity))}`;
+  target.innerHTML=`<div class="travel-map">${route}${dots}<div class="travel-map-caption"><span>${caption}</span><span>${tr("Натисни місто на карті, щоб прокласти шлях","Tap a city on the map to plot a route")}</span></div></div>`;
 }
 
 function npcCard(n,mode){
@@ -4592,6 +4628,7 @@ function prepareTravel(destination){
   selectedTravelDestination=destination;
   selectedTravelCompanions=requiredTravelCompanionIds(currentCity);
   selectedRoute="highway";
+  renderTravelMap();
   renderTravelCompanionList();
   document.getElementById("travelModal").classList.remove("hidden");
 }
@@ -4599,6 +4636,7 @@ function closeTravelModal(){
   document.getElementById("travelModal").classList.add("hidden");
   selectedTravelDestination=null;
   selectedTravelCompanions=[];
+  renderTravelMap();
 }
 function currentBattleMode(){
   const selected=document.querySelector&&document.querySelector('input[name="battleMode"]:checked');
