@@ -3343,12 +3343,18 @@ function html5TravelMapBackdrop(){
     <path class="map-land map-island map-britain" d="M19 18 L24 20 L27 28 L26 37 L22 43 L17 39 L15 30 L16 23 Z"/>
     <path class="map-land map-island map-ireland" d="M10 24 L15 22 L18 28 L17 38 L13 43 L9 38 L8 30 Z"/>
     <path class="map-land map-island map-scandinavia" d="M44 8 L52 2 L63 5 L72 14 L75 25 L68 34 L58 31 L51 24 L46 18 Z"/>
-    <path class="map-land map-peninsula map-jutland" d="M42 26 L45 24 L47 29 L46 36 L43 38 L41 32 Z"/>
-    <path class="map-land map-peninsula map-italy" d="M38 58 L45 58 L49 64 L50 72 L54 78 L50 83 L45 76 L42 68 L37 63 Z"/>
-    <path class="map-land map-peninsula map-balkans" d="M52 62 L63 58 L74 63 L82 72 L78 81 L66 84 L58 78 L51 70 Z"/>
-    <path class="map-land map-island map-sicily" d="M44 80 L51 78 L58 81 L53 85 L46 84 Z"/>
-    <path class="map-land map-island map-sardinia" d="M36 73 L39 75 L39 81 L36 83 L34 78 Z"/>
-    <path class="map-land map-island map-corsica" d="M38 68 L41 70 L40 74 L37 74 Z"/>
+    <path class="map-coastline map-atlantic" d="M5 86 L8 76 L16 70 L24 72 L28 66 L25 57 L28 49 L24 45 L29 39 L31 34 L36 33 L41 27 L45 23"/>
+    <path class="map-coastline map-north-sea" d="M45 23 L50 25 L50 33 L46 35 L48 40 L56 41 L61 35 L60 28 L66 23 L73 14 L82 10"/>
+    <path class="map-coastline map-east-europe" d="M82 10 L91 22 L99 39 L96 53 L87 60 L77 62 L72 67"/>
+    <path class="map-coastline map-mediterranean" d="M5 86 L13 94 L21 92 L27 84 L25 75 L28 69 L34 68 L38 64 L42 66 L44 73 L48 75 L52 68 L58 72 L64 80 L73 83 L77 76 L72 67"/>
+    <path class="map-coastline map-jutland" d="M42 26 L45 24 L47 29 L46 36 L43 38 L41 32 Z"/>
+    <path class="map-coastline map-italy" d="M38 58 L45 58 L49 64 L50 72 L54 78 L50 83 L45 76 L42 68 L37 63"/>
+    <path class="map-coastline map-balkans" d="M52 62 L63 58 L74 63 L82 72 L78 81 L66 84 L58 78 L51 70"/>
+    <path class="map-coastline map-sicily" d="M44 80 L51 78 L58 81 L53 85 L46 84 Z"/>
+    <path class="map-coastline map-sardinia" d="M36 73 L39 75 L39 81 L36 83 L34 78 Z"/>
+    <path class="map-coastline map-corsica" d="M38 68 L41 70 L40 74 L37 74 Z"/>
+    <path class="map-coastline map-british-coast" d="M19 18 L24 20 L27 28 L26 37 L22 43 L17 39 L15 30 L16 23 Z M10 24 L15 22 L18 28 L17 38 L13 43 L9 38 L8 30 Z"/>
+    <path class="map-coastline map-scandinavian-coast" d="M44 8 L52 2 L63 5 L72 14 L75 25 L68 34 L58 31 L51 24 L46 18 Z"/>
     <path class="map-region map-iberia" d="M5 86 L8 76 L16 70 L24 72 L28 78 L26 88 L20 94 L12 94 Z"/>
     <path class="map-region" d="M25 47 L29 39 L36 37 L43 42 L42 51 L35 58 L28 55 Z"/>
     <path class="map-region" d="M39 31 L48 30 L56 40 L52 49 L43 47 L37 39 Z"/>

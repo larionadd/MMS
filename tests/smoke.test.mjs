@@ -98,6 +98,9 @@ assert.match(source, /map-italy/, "HTML5 map has a recognizable Italian peninsul
 assert.match(source, /map-balkans/, "HTML5 map has a recognizable Balkan peninsula");
 assert.match(source, /map-scandinavia/, "HTML5 map has a recognizable Scandinavian shape");
 assert.match(source, /map-jutland/, "HTML5 map has a Jutland peninsula for northern Europe");
+assert.match(source, /map-coastline/, "HTML5 map uses line-art coastlines instead of a single filled blob");
+assert.match(source, /map-atlantic/, "HTML5 map draws a separate Atlantic coastline");
+assert.match(source, /map-mediterranean/, "HTML5 map draws a separate Mediterranean coastline");
 assert.match(source, /Britannia/, "HTML5 map includes medieval regional labels");
 assert.match(source, /const cityLabelOffsets/, "travel map city labels have collision-aware offsets");
 assert.match(source, /function hiddenPlaceMapMarkers/, "discovered hidden places can appear on the travel map");
