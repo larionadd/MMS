@@ -2114,16 +2114,21 @@ function replaceQuest(quest){
   if(index>=0) board[index]=quest.kind==="guild"?makeGuildQuest(quest.issuer):makeCouncilQuest(quest.issuer);
 }
 function grantCouncilReward(reward){
+  // v0.40: harden against corrupted/missing reward data
+  if(!reward||!reward.type) return "—";
   if(reward.type==="goods"){
+    if(!reward.name||!Number.isFinite(reward.qty)||reward.qty<1) return "—";
     addItem(reward.name,reward.qty);
-    return reward.qty+" × "+reward.name;
+    return reward.qty+" × "+goodName(reward.name);
   }
   if(reward.type==="homeItem"){
     const item=homeItemById(reward.id);
+    if(!item) return "—";
     homeInventory[reward.id]=homeStock(reward.id)+1;
     return "«"+item.name+"»";
   }
   const item=itemById(reward.id);
+  if(!item) return "—";
   itemInventory[reward.id]=itemStock(reward.id)+1;
   return "«"+item.name+"»";
 }
@@ -4829,8 +4834,11 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
       ddCombatState.turnPos++;
     }
     if(ddCombatState.turnPos>=ddCombatState.turnOrder.length){
-      ddCombatState.turnPos=ddCombatState.turnOrder.findIndex(t=>t.side==="allies");
+      const ai=ddCombatState.turnOrder.findIndex(t=>t.side==="allies");
+      // v0.40: guard against findIndex === -1 (no allies in turn order)
+      ddCombatState.turnPos=ai>=0?ai:0;
     }
+    if(ddCombatState.turnPos<0) ddCombatState.turnPos=0;
     ddCombatState.awaitingPlayer=true;
     ddRender();
     return combatPromise;
@@ -6116,7 +6124,10 @@ function replenishNpcMarket(){
 }
 
 function applyDailyEvent(){
+  // v0.40: guard against an empty/malformed dailyEvents array
+  if(!Array.isArray(dailyEvents)||!dailyEvents.length) return;
   const event=dailyEvents[rand(0,dailyEvents.length-1)];
+  if(!Array.isArray(event)||event.length<3) return;
   let money=event[2];
   let text=event[1];
   const storageSecurity=roomByKey("warehouse").unlocked?roomFurnitureBonus(roomByKey("warehouse"),"security"):0;
@@ -6199,8 +6210,16 @@ function cityIndexByName(name){
   return cities.findIndex(c=>c.name===name);
 }
 function removeOwnedPerson(person){
+  if(!person) return;
   ownedHirelings=ownedHirelings.filter(p=>p.id!==person.id);
   ownedSlaves=ownedSlaves.filter(p=>p.id!==person.id);
+  // v0.40: also clear from travel state so the NPC doesn't ghost in the dock/UI
+  if(Array.isArray(travelCompanionIds)) travelCompanionIds=travelCompanionIds.filter(id=>id!==person.id);
+  if(Array.isArray(selectedTravelCompanions)) selectedTravelCompanions=selectedTravelCompanions.filter(id=>id!==person.id);
+  if(activeNpcRequest && activeNpcRequest.personId===person.id){
+    activeNpcRequest=null;
+    if(typeof hideNpcRequestNotice==="function") hideNpcRequestNotice();
+  }
 }
 const NPC_ASPIRATIONS=[
   {key:"own_shop",icon:"🏪",
