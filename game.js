@@ -190,6 +190,11 @@ const STRINGS = {
     "trend.shortage":"📈 Дефіцит","trend.glut":"📉 Надлишок","trend.expensive":"📈 Дорого","trend.cheap":"📉 Дешево",
     "btn.slots":"💾 Слоти","btn.rewards":"🎁 Бонуси",
     "rewards.title":"Бонуси за рекламу","rewards.desc":"Подивись коротку рекламу — отримай корисний бонус. Доступно до 3 нагород на день.",
+    "square.townhall":"Мерія","square.tavern":"Таверна",
+    "townhall.title":"🏛️ Мерія міста","townhall.orders":"Доручення міської ради","townhall.accepted":"Прийняті доручення мерії",
+    "guild.accepted_guild":"Прийняті замовлення гільдії",
+    "tavern.title":"🍻 Міська таверна","tavern.desc":"Гамірне світло свічок, запах смаженого м'яса, дзвін кухлів. Тут торговці відпочивають, слухають чужі історії — і часом ризикують усім.",
+    "dice.title":"🎲 Гра в кості","lock.pay":"Сплатити штраф 1000 монет",
     "saves.title":"Збереження","saves.desc":"Зберігай і завантажуй гру в окремих слотах. Автозбереження у головному ключі лишається активним.","saves.save_btn":"Зберегти поточну гру","saves.list":"Збережені слоти"
   },
   en:{
@@ -224,6 +229,11 @@ const STRINGS = {
     "trend.shortage":"📈 Shortage","trend.glut":"📉 Surplus","trend.expensive":"📈 Pricey","trend.cheap":"📉 Cheap",
     "btn.slots":"💾 Slots","btn.rewards":"🎁 Bonuses",
     "rewards.title":"Ad rewards","rewards.desc":"Watch a short ad to get a useful bonus. Up to 3 rewards per day.",
+    "square.townhall":"Town hall","square.tavern":"Tavern",
+    "townhall.title":"🏛️ City town hall","townhall.orders":"City council orders","townhall.accepted":"Accepted council orders",
+    "guild.accepted_guild":"Accepted guild orders",
+    "tavern.title":"🍻 City tavern","tavern.desc":"Candle-light flickers, the smell of roast meat, the clink of tankards. Here merchants rest, listen to other folk's tales — and sometimes risk it all.",
+    "dice.title":"🎲 Dice game","lock.pay":"Pay fine of 1000 coins",
     "saves.title":"Save slots","saves.desc":"Save and load the game in named slots. Autosave to the main key remains active.","saves.save_btn":"Save current game","saves.list":"Saved slots"
   }
 };
@@ -2211,6 +2221,7 @@ function guardedQuestProtection(){
 function acceptQuest(id,guarded=false){
   const quest=questById(id);
   if(!quest || quest.issuer!==currentCity || quest.accepted) return;
+  if(isCityLocked(currentCity)){openCityLockModal();return;}
   const activeOfKind=activeQuests().filter(active=>active.kind===quest.kind).length;
   const limit=quest.kind==="guild"?2:1;
   if(activeOfKind>=limit){
@@ -3043,6 +3054,24 @@ const HELP_CONTENT={
 };
 // === v0.43: Changelog ===
 const CHANGELOG=[
+  {version:"v0.44",date:"2026-06-04",entries:{
+    uk:[
+      {tag:"NEW",text:"Міська таверна на Площі: вечеря за 20 монет відновлює всі дії на день і відкриває чутку від місцевих про цирк / караван науковців / поселення ковалів."},
+      {tag:"NEW",text:"Гра в кості в таверні: ставки 10/50/100. Можна грати в борг — але якщо нічим заплатити, місто оголошує тебе шахраєм, репутація падає до -20 і блокуються гільдія, мерія, таверна, найм і ринок рабів. Розблокувати — штраф 1000 монет."},
+      {tag:"NEW",text:"Мерія міста винесена в окрему вкладку Площі поряд з гільдією — більше не плутаються контракти й доручення."},
+      {tag:"NEW",text:"Фонові ілюстрації бою: окремий арт для нападів вовків (звірі) та розбійників."},
+      {tag:"NEW",text:"Місця для арту у всіх локаціях Площі (гільдія, мерія, таверна, центр зайнятості, ринок рабів) та в Штабі."},
+      {tag:"NEW",text:"Rewarded ads (тільки на CrazyGames): кнопка 🎁 Бонуси — за перегляд короткої реклами отримуєш +200 монет, +3 дії або повний рестокінг крамниці. Глобальний ліміт 3 нагороди/день."}
+    ],
+    en:[
+      {tag:"NEW",text:"City tavern on the Square: a 20-coin dinner restores all daily actions and earns you a rumour from locals about the circus / scholars' caravan / smiths' settlement."},
+      {tag:"NEW",text:"Tavern dice game: stakes 10/50/100. Playing on credit is allowed — but if you can't pay, the city brands you a cheat, reputation drops to -20, and the guild, town hall, tavern, hiring and slave market are locked. Unlock costs a 1000-coin fine."},
+      {tag:"NEW",text:"Town hall moved to its own subtab on the Square next to the guild — contracts and council orders no longer overlap."},
+      {tag:"NEW",text:"Combat backdrops: dedicated art for wolf (beasts) and bandit encounters."},
+      {tag:"NEW",text:"Art slots in every Square location (guild, town hall, tavern, employment, slave market) and the HQ."},
+      {tag:"NEW",text:"Rewarded ads (CrazyGames only): 🎁 Bonuses button — watch a short ad to get +200 coins, +3 actions, or a full shop restock. Global cap 3 rewards/day."}
+    ]
+  }},
   {version:"v0.43",date:"2026-06-02",entries:{
     uk:[
       {tag:"FIX",text:"Розширено пул жіночих портретів: усі 5 панелей атласу (female_01..female_05) тепер реально потрапляють у вільних NPC. Раніше випадково призначався лише female_01 — інші 4 ніколи не показувалися."},
@@ -3253,8 +3282,8 @@ function renderHelp(which=currentHelpTab){
   currentHelpTab=which==="changelog"?"changelog":"guide";
   const content=HELP_CONTENT[lang]||HELP_CONTENT.uk;
   const versionLine=tr(
-    `Поточна версія: <b>v0.43</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
-    `Current version: <b>v0.43</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
+    `Поточна версія: <b>v0.44</b> — таверна (вечеря+кості+чутки), мерія окремою вкладкою, фонові ілюстрації бою, rewarded ads.`,
+    `Current version: <b>v0.44</b> — tavern (dinner+dice+rumours), town hall as a separate tab, combat backdrops, rewarded ads.`
   );
   const tabs=`<div class="help-tabs"><button type="button" class="help-tab ${currentHelpTab==="guide"?"active":""}" data-help-tab="guide" aria-pressed="${currentHelpTab==="guide"}" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button type="button" class="help-tab ${currentHelpTab==="changelog"?"active":""}" data-help-tab="changelog" aria-pressed="${currentHelpTab==="changelog"}" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
   const guide=`<div id="helpTabGuide" class="help-tab-content ${currentHelpTab==="guide"?"active":""}"><div class="help-grid">`+content.map(item=>`<div class="profile-block help-card"><h3>${item.h}</h3>${item.b}</div>`).join("")+`</div></div>`;
@@ -3653,12 +3682,14 @@ function renderNpcMarket(){
 // === v0.43: Square (Main Square) — city hub combining Guild, Shop, Employment, Slave Market ===
 let currentSquareSub="guild";
 function setSquareSub(name){
-  if(!["guild","shop","people","slaves"].includes(name)) return;
+  if(!["guild","townhall","tavern","shop","people","slaves"].includes(name)) return;
   currentSquareSub=name;
   document.querySelectorAll(".square-tab").forEach(b=>b.classList.toggle("active",b.dataset.sub===name));
   document.querySelectorAll(".square-sub").forEach(div=>div.classList.toggle("active",div.id==="sub-"+name));
   // Re-render the relevant sub
   if(name==="guild") renderGuild();
+  else if(name==="townhall") renderTownHall();
+  else if(name==="tavern") renderTavern();
   else if(name==="shop") renderShops();
   else if(name==="people"||name==="slaves") renderNpcMarket();
 }
@@ -3823,13 +3854,178 @@ function renderGuild(){
   if(!board) return;
   document.getElementById("guildName").innerText=tr("Гільдія торговців міста ","Merchants' guild of ")+cityName(currentCity);
   document.getElementById("guildRegion").innerText=regionName(cities[currentCity].region)+tr(". Рівень героя: ",". Hero level: ")+playerLevel()+" ("+rankName(rankInfo())+"). "+tr("Гільдія видає доречні рівню контракти, винагороджує лише монетами; ліміт - два активні.","The guild offers level-appropriate contracts and rewards only in coins; limit — two active.");
+  if(isCityLocked(currentCity)){
+    board.innerHTML=cityLockBanner();
+    document.getElementById("activeGuildQuests").innerHTML="";
+    return;
+  }
   board.innerHTML=guildBoards[currentCity].filter(quest=>!quest.accepted).map(quest=>questCard(quest,true)).join("") || `<div class="empty">${tr("Нові контракти готуються писарями.","Scribes are preparing new contracts.")}</div>`;
-  document.getElementById("councilName").innerText=tr("Мерія міста ","City council of ")+cityName(currentCity);
-  document.getElementById("councilRegion").innerText=tr("Міська рада замовляє доставку для комор, ремонту, варти або подій і винагороджує товарами чи предметами. Ліміт - одне активне доручення.","The city council orders deliveries for granaries, repairs, the guard or events, and rewards with goods or items. Limit — one active order.");
-  document.getElementById("councilBoard").innerHTML=councilBoards[currentCity].filter(quest=>!quest.accepted).map(quest=>questCard(quest,true)).join("");
-  const active=activeQuests();
+  const active=activeQuests().filter(q=>q.kind==="guild");
   document.getElementById("activeGuildQuests").innerHTML=active.length?active.map(quest=>questCard(quest,false)).join(""):`<div class="empty">${tr("Прийнятих замовлень поки немає.","No accepted orders yet.")}</div>`;
 }
+function renderTownHall(){
+  const board=document.getElementById("councilBoard");
+  if(!board) return;
+  document.getElementById("councilName").innerText=tr("🏛️ Мерія міста ","🏛️ City council of ")+cityName(currentCity);
+  document.getElementById("councilRegion").innerText=tr("Міська рада замовляє доставку для комор, ремонту, варти або подій і винагороджує товарами чи предметами. Ліміт - одне активне доручення.","The city council orders deliveries for granaries, repairs, the guard or events, and rewards with goods or items. Limit — one active order.");
+  if(isCityLocked(currentCity)){
+    board.innerHTML=cityLockBanner();
+    document.getElementById("activeCouncilQuests").innerHTML="";
+    return;
+  }
+  board.innerHTML=councilBoards[currentCity].filter(quest=>!quest.accepted).map(quest=>questCard(quest,true)).join("") || `<div class="empty">${tr("Рада нічого не замовляє цього тижня.","The council has no orders this week.")}</div>`;
+  const active=activeQuests().filter(q=>q.kind==="council");
+  document.getElementById("activeCouncilQuests").innerHTML=active.length?active.map(quest=>questCard(quest,false)).join(""):`<div class="empty">${tr("Прийнятих доручень мерії поки немає.","No accepted council orders yet.")}</div>`;
+}
+// === v0.44: City lock system ===
+function isCityLocked(city){return Boolean(player&&player.cityLocks&&player.cityLocks[city]);}
+function lockCity(city,reason){
+  if(!player) return;
+  player.cityLocks=player.cityLocks||{};
+  if(player.cityLocks[city]) return;
+  player.cityLocks[city]={reason:reason||"fraud",day};
+  // crash reputation
+  player.cityReputation=player.cityReputation||{};
+  player.cityReputation[city]=-20;
+  logAction("🚫 "+tr("Місто ","The city of ")+cityName(city)+tr(" закрило перед тобою всі двері: міська варта оголосила тебе шахраєм у таверні. Репутація впала до -20."," has shut every door before you: the city watch declared you a tavern cheat. Reputation crashed to -20."),"travel");
+}
+function unlockCity(city){
+  if(!player||!player.cityLocks) return;
+  delete player.cityLocks[city];
+  logAction("✅ "+tr("Шахрайський борг у місті ","The fraud debt in ")+cityName(city)+tr(" сплачено. Двері знову відчинені."," has been paid. Doors are open again."),"travel");
+}
+function cityLockBanner(){
+  return `<div class="empty city-lock-banner">🚫 ${tr("Це місце для тебе зачинене. Сплати штраф у таверні.","This place is closed to you. Pay the fine in the tavern.")} <button class="btn red" onclick="openCityLockModal()">${tr("Подробиці","Details")}</button></div>`;
+}
+function openCityLockModal(){
+  const c=currentCity;
+  const lockText=tr(
+    "Міська рада оголосила тебе персоною нон-ґрата. Чутки про твій програш у кості без монет розлетілися по всіх кварталах. Двері гільдії, мерії, навіть найзачуханішої таверни зачиняються перед тобою. Сторожа біля брами зиркає скоса — ще трохи, і виставлять за міські стіни. Поки штраф не сплачено, у "+cityName(c)+" тобі немає життя.",
+    "The city council has branded you persona non grata. Word of your unpaid dice debt has spread to every quarter. The doors of the guild, the town hall, even the meanest tavern shut before you. The watchmen at the gate eye you sideways — one more slip and you'll be put outside the walls. Until the fine is paid, there is no life for you in "+cityName(c)+"."
+  );
+  document.getElementById("cityLockText").innerText=lockText;
+  document.getElementById("cityLockBlocks").innerHTML="🔒 "+tr("Заблоковано","Blocked")+": "+tr("гільдія, мерія, таверна, найм, ринок рабів","guild, town hall, tavern, hiring, slave market");
+  document.getElementById("cityLockPayBtn").disabled=gold<1000;
+  document.getElementById("cityLockPayBtn").innerHTML=`💰 ${tr("Сплатити штраф","Pay fine")}: 1000 ${tr("монет","coins")} (${tr("у скрині","you have")}: ${gold})`;
+  document.getElementById("cityLockModal").classList.remove("hidden");
+}
+function closeCityLock(){document.getElementById("cityLockModal").classList.add("hidden");}
+function payCityFine(){
+  if(gold<1000){alert(tr("Недостатньо монет.","Not enough coins."));return;}
+  gold-=1000;
+  unlockCity(currentCity);
+  closeCityLock();
+  saveGame(false);
+  render();
+}
+// === v0.44: Tavern ===
+function renderTavern(){
+  const body=document.getElementById("tavernBody");
+  if(!body) return;
+  if(isCityLocked(currentCity)){
+    body.innerHTML=cityLockBanner();
+    return;
+  }
+  const dice=player&&player.tavernDice||{wins:0,losses:0,debt:0};
+  const meals=(player&&player.tavernMealsToday)||0;
+  const today=(player&&player.tavernMealDay)===day;
+  const mealsCount=today?meals:0;
+  const mealLbl=tr("🍖 Вечеря з пивом","🍖 Dinner with ale");
+  const mealCta=tr("Замовити (20 монет)","Order (20 coins)");
+  const mealDisabled=gold<20?"disabled":"";
+  const mealCount=mealsCount?` <span class="muted">(${tr("сьогодні","today")}: ${mealsCount})</span>`:"";
+  const rumourHtml=(()=>{
+    const heard=player&&player.lastTavernRumour;
+    if(!heard) return `<p class="muted tavern-no-rumour">${tr("Замов вечерю — за столом сусіди розговоряться.","Order dinner — your neighbours will start talking.")}</p>`;
+    return `<div class="tavern-rumour"><div class="tavern-meal-art"><img src="assets/locations/tavern_meal.jpg" onerror="this.style.display='none'"></div><div class="tavern-rumour-text">${escapeHtml(heard)}</div></div>`;
+  })();
+  const debtLine=dice.debt>0?`<div class="tavern-debt">⚠️ ${tr("Шахрайський борг у місті","Fraud debt in")}: <b>${dice.debt}</b></div>`:"";
+  const diceBtns=[10,50,100].map(s=>`<button class="btn ${gold<s?"red":"green"}" onclick="tavernDiceRoll(${s})">🎲 ${tr("Ставка","Stake")} ${s}${gold<s?" ⚠️":""}</button>`).join("");
+  body.innerHTML=`
+    <div class="tavern-grid">
+      <div class="tavern-card">
+        <h3>${mealLbl}${mealCount}</h3>
+        <p class="muted">${tr("Гарячий куліш, скибка хліба, кухоль темного пива. Відновить всі дії на цей день і подарує плітку від місцевих.","A hot stew, a slice of bread, a tankard of dark ale. Restores all actions for the day and earns you a local rumour.")}</p>
+        <button class="btn gold" ${mealDisabled} onclick="tavernMeal()">${mealCta}</button>
+        ${rumourHtml}
+      </div>
+      <div class="tavern-card">
+        <h3>🎲 ${tr("Кості на гроші","Dice for coin")}</h3>
+        <p class="muted">${tr("Кидаєш проти корчмаря дві кості — у нього випадає 2–12, у тебе 2–12. Більше число виграє. Можна грати в борг, але якщо нічим заплатити — місто закриє перед тобою всі двері.","You roll two dice against the innkeeper — he rolls 2–12, you roll 2–12. The higher total wins. Playing on credit is allowed, but if you can't pay, the city slams every door.")}</p>
+        <div class="tavern-dice-row">${diceBtns}</div>
+        <p class="muted small">${tr("Перемог","Wins")}: ${dice.wins} · ${tr("Поразок","Losses")}: ${dice.losses}</p>
+        ${debtLine}
+      </div>
+    </div>`;
+}
+function tavernMeal(){
+  if(isCityLocked(currentCity)){openCityLockModal();return;}
+  if(gold<20){log("❌ "+tr("Недостатньо монет на вечерю.","Not enough coins for dinner."));render();return;}
+  gold-=20;
+  energy=dailyActionLimit();
+  player.tavernMealDay=day;
+  player.tavernMealsToday=((player.tavernMealDay===day?player.tavernMealsToday:0)||0)+1;
+  // Try to reveal a fresh rumour (100% if any unheard exists in this city)
+  player.rumorsHeard=player.rumorsHeard||{};
+  const found=player.foundHiddenPlaces||[];
+  const cand=TAVERN_RUMORS.filter(r=>r.city===currentCity && found.includes(r.place) && !player.rumorsHeard[r.id]);
+  let rumourText="";
+  if(cand.length){
+    const r=cand[0];
+    player.rumorsHeard[r.id]=true;
+    rumourText=lang==="en"?r.en:r.uk;
+  }else{
+    // Generic atmospheric line if no decoded place yet or all heard
+    const fallback=[
+      tr("🍻 За сусіднім столом купець бурчить про дороги: «Знову розбійники в Чорному лісі. Караван без охорони — здобич для вовків та людей».","🍻 At the next table a merchant grumbles about the roads: «Bandits in the Black Forest again. An unguarded caravan is prey for wolves and men alike.»"),
+      tr("🍻 Стара жінка біля вогнища шепоче: «Кажуть, у глухих краях ще живуть прокляті майстри й науковці-чарівники. Хто знайде — той забагатіє чи згине».","🍻 An old woman by the fire whispers: «They say in the wild lands cursed masters and sorcerer-scholars still live. He who finds them grows rich — or perishes.»"),
+      tr("🍻 П'яний солдат піднімає кухоль: «За мою службу! За мою рану! За моє пиво!» — і падає лобом у миску.","🍻 A drunk soldier lifts his tankard: «To my service! To my wound! To my ale!» — then plants his forehead in the bowl.")
+    ];
+    rumourText=pick(fallback);
+  }
+  player.lastTavernRumour=rumourText;
+  logAction("🍖 "+tr("Вечеря в таверні ","Dinner at the tavern of ")+cityName(currentCity)+tr(": дії відновлено."," : actions restored.")+" "+rumourText,"travel");
+  saveGame(false);
+  render();
+}
+function tavernDiceRoll(stake){
+  if(isCityLocked(currentCity)){openCityLockModal();return;}
+  if(!Number.isFinite(stake)||stake<=0) return;
+  player.tavernDice=player.tavernDice||{wins:0,losses:0,debt:0};
+  const p1=rand(1,6),p2=rand(1,6),pl=p1+p2;
+  const i1=rand(1,6),i2=rand(1,6),inn=i1+i2;
+  const diceFace=n=>["⚀","⚁","⚂","⚃","⚄","⚅"][n-1]||"🎲";
+  document.getElementById("diceDisplay").innerText=`${diceFace(p1)}${diceFace(p2)}  ${tr("ти","you")}: ${pl}   ⚔   ${tr("корчмар","innkeeper")}: ${inn}  ${diceFace(i1)}${diceFace(i2)}`;
+  let result="";
+  if(pl>inn){
+    gold+=stake;
+    player.tavernDice.wins++;
+    result=`✅ ${tr("Перемога","Win")}! +${stake} ${tr("монет","coins")}.`;
+    logAction("🎲 "+tr("Виграш у кості: +","Dice win: +")+stake+" "+tr("монет.","coins."),"travel");
+    try{CG.happytime&&CG.happytime();}catch(e){}
+  }else if(pl<inn){
+    player.tavernDice.losses++;
+    if(gold>=stake){
+      gold-=stake;
+      result=`❌ ${tr("Поразка","Loss")}. -${stake} ${tr("монет","coins")}.`;
+      logAction("🎲 "+tr("Програш у кості: -","Dice loss: -")+stake+" "+tr("монет.","coins."),"travel");
+    }else{
+      const debt=stake-gold;
+      gold=0;
+      player.tavernDice.debt=(player.tavernDice.debt||0)+debt;
+      result=`💀 ${tr("Поразка без монет!","Loss with no coin!")} ${tr("Корчмар вирвав з гаманця останнє і покликав варту. Місто оголосило тебе шахраєм.","The innkeeper snatched what little was left and called the watch. The city has branded you a cheat.")}`;
+      lockCity(currentCity,"dice_debt");
+      setTimeout(openCityLockModal,800);
+    }
+  }else{
+    result=`🤝 ${tr("Нічия. Ставки повертаються.","Draw. Stakes returned.")}`;
+  }
+  document.getElementById("diceResult").innerText=result;
+  document.getElementById("diceModal").classList.remove("hidden");
+  saveGame(false);
+  render();
+}
+function closeDiceModal(){document.getElementById("diceModal").classList.add("hidden");}
 // v0.43: find best places to buy a good (lowest current buy price with stock)
 function bestSourcesFor(goodName,limit=3){
   if(!markets||!markets.length) return [];
@@ -4570,7 +4766,10 @@ function ddRender(){
     closeBtn.disabled=!state.finished;
     closeBtn.innerText=state.finished?tr("Продовжити","Continue"):(state.manual?tr("Завершіть бій","Finish the fight"):tr("Битва триває...","Battle in progress..."));
   }
-  document.getElementById("combatModal").classList.remove("hidden");
+  const modalEl=document.getElementById("combatModal");
+  const kind=(state.pool&&state.pool.kind)||"bandits";
+  modalEl.setAttribute("data-combat-kind",kind);
+  modalEl.classList.remove("hidden");
 }
 function ddManualActionsHtml(state){
   if(!state.awaitingPlayer) return "";
@@ -5745,6 +5944,7 @@ function buyNPC(id){
     render();
     return;
   }
+  if(isCityLocked(currentCity)){openCityLockModal();return;}
   const price=npcPrice(person);
   if(gold<price){log(tr("❌ Недостатньо монет.","❌ Not enough coins."));render();return;}
   if(hasHeadquarters() && currentCity===player.headquartersCity && freeHouseRooms()<1){

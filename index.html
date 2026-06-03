@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Medieval Merchant Simulator v0.43</title>
+  <title>Medieval Merchant Simulator v0.44</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23f0c06a'/><stop offset='100%25' stop-color='%238b642b'/></linearGradient></defs><rect width='64' height='64' rx='12' fill='%23241809'/><path d='M10 50 L10 28 L18 28 L18 22 L22 22 L22 28 L28 28 L28 18 L36 18 L36 28 L42 28 L42 22 L46 22 L46 28 L54 28 L54 50 Z' fill='url(%23g)' stroke='%23d3a348' stroke-width='1.5'/><rect x='27' y='34' width='10' height='16' fill='%23241809'/><circle cx='32' cy='40' r='1.5' fill='%23f0c06a'/><path d='M14 32 L14 36 L16 36 L16 32 Z M20 32 L20 36 L22 36 L22 32 Z M42 32 L42 36 L44 36 L44 32 Z M48 32 L48 36 L50 36 L50 32 Z' fill='%23241809'/><circle cx='32' cy='13' r='2.5' fill='%23f0c06a'/></svg>">
   <link rel="stylesheet" href="style.css">
-  <!-- v0.43: CrazyGames SDK v3 (no-op on other hosts, safe-guarded by host check) -->
+  <!-- v0.44: CrazyGames SDK v3 (no-op on other hosts, safe-guarded by host check) -->
   <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js" async onerror="window.__CG_FAIL=true;"></script>
 </head>
 <body>
 <button class="ui-collapse-toggle" id="uiCollapseToggle" title="Compact UI" onclick="toggleCollapsedUI()">⇔</button>
 <div class="app-shell" id="appShell">
   <aside class="side-nav">
-    <div class="logo"><div class="logo-icon">🏰</div><div><b>Merchant</b><span>Simulator v0.43</span></div></div>
+    <div class="logo"><div class="logo-icon">🏰</div><div><b>Merchant</b><span>Simulator v0.44</span></div></div>
     <select id="mobileTabDropdown" class="mobile-tab-dropdown" onchange="setActiveTab(this.value)">
       <option value="market" data-i18n="nav.market">Ринок</option>
       <option value="square" data-i18n="nav.square">Головна площа</option>
@@ -108,21 +108,38 @@
         <div id="squareCity" class="square-city"></div>
         <div class="square-subtabs">
           <button class="square-tab active" data-sub="guild" onclick="setSquareSub('guild')">📜 <span data-i18n="square.guild">Гільдія</span></button>
+          <button class="square-tab" data-sub="townhall" onclick="setSquareSub('townhall')">🏛️ <span data-i18n="square.townhall">Мерія</span></button>
+          <button class="square-tab" data-sub="tavern" onclick="setSquareSub('tavern')">🍻 <span data-i18n="square.tavern">Таверна</span></button>
           <button class="square-tab" data-sub="shop" onclick="setSquareSub('shop')">🎁 <span data-i18n="square.shop">Крамниця</span></button>
           <button class="square-tab" data-sub="people" onclick="setSquareSub('people')">👥 <span data-i18n="square.people">Центр зайнятості</span></button>
           <button class="square-tab" data-sub="slaves" onclick="setSquareSub('slaves')">⛓️ <span data-i18n="square.slaves">Ринок рабів</span></button>
         </div>
 
         <div id="sub-guild" class="square-sub active">
+          <div class="location-art"><img src="assets/locations/guild.jpg" onerror="this.style.display='none'"></div>
           <h2 id="guildName" data-i18n="guild.title">📜 Гільдія торговців</h2>
           <div id="guildRegion" class="hint"></div>
           <h2 class="subhead" data-i18n="guild.contracts">Торгові контракти гільдії</h2>
           <div id="guildBoard" class="guild-grid"></div>
-          <h2 id="councilName" class="subhead" data-i18n="guild.council">Мерія міста</h2>
-          <div id="councilRegion" class="hint"></div>
-          <div id="councilBoard" class="guild-grid council-grid"></div>
-          <h2 class="subhead" data-i18n="guild.accepted">Прийняті замовлення</h2>
+          <h2 class="subhead" data-i18n="guild.accepted_guild">Прийняті замовлення гільдії</h2>
           <div id="activeGuildQuests" class="guild-grid"></div>
+        </div>
+
+        <div id="sub-townhall" class="square-sub">
+          <div class="location-art"><img src="assets/locations/townhall.jpg" onerror="this.style.display='none'"></div>
+          <h2 id="councilName" data-i18n="townhall.title">🏛️ Мерія міста</h2>
+          <div id="councilRegion" class="hint"></div>
+          <h2 class="subhead" data-i18n="townhall.orders">Доручення міської ради</h2>
+          <div id="councilBoard" class="guild-grid council-grid"></div>
+          <h2 class="subhead" data-i18n="townhall.accepted">Прийняті доручення мерії</h2>
+          <div id="activeCouncilQuests" class="guild-grid"></div>
+        </div>
+
+        <div id="sub-tavern" class="square-sub">
+          <div class="location-art"><img src="assets/locations/tavern.jpg" onerror="this.style.display='none'"></div>
+          <h2 data-i18n="tavern.title">🍻 Міська таверна</h2>
+          <p class="muted" id="tavernDesc" data-i18n="tavern.desc">Гамірне світло свічок, запах смаженого м'яса, дзвін кухлів. Тут торговці відпочивають, слухають чужі історії — і часом ризикують усім.</p>
+          <div id="tavernBody"></div>
         </div>
 
         <div id="sub-shop" class="square-sub">
@@ -152,6 +169,7 @@
         </div>
 
         <div id="sub-people" class="square-sub">
+          <div class="location-art"><img src="assets/locations/employment.jpg" onerror="this.style.display='none'"></div>
           <h2 data-i18n="people.title">👥 Центр зайнятості</h2>
           <p class="muted" data-i18n="people.desc">Найми вільних людей. Доступні лише мешканці міста, в якому ти перебуваєш.</p>
           <div id="peopleMarketHint" class="hint"></div>
@@ -159,6 +177,7 @@
         </div>
 
         <div id="sub-slaves" class="square-sub">
+          <div class="location-art"><img src="assets/locations/slave_market.jpg" onerror="this.style.display='none'"></div>
           <h2 data-i18n="slaves.title">⛓️ Ринок рабів</h2>
           <p class="muted" data-i18n="slaves.desc">Можна купити підневільних людей. Доступні лише мешканці поточного міста.</p>
           <div id="slavesMarketHint" class="hint"></div>
@@ -192,6 +211,7 @@
 
     <section id="hq" class="tab">
       <div class="panel">
+        <div class="location-art"><img src="assets/locations/hq.jpg" onerror="this.style.display='none'"></div>
         <h2 data-i18n="hq.title">🏰 Штаб-квартира</h2>
         <div class="room-tabs" id="roomTabs"></div>
         <div id="roomContent"></div>
@@ -364,6 +384,29 @@
       </div>
       <div class="welcome-intro" id="welcomeIntro"></div>
     </div>
+  </div>
+</div>
+
+<div id="cityLockModal" class="modal hidden">
+  <div class="modal-card city-lock-card">
+    <div class="city-lock-art"><img id="cityLockArtImg" src="assets/locations/city_lock.jpg" onerror="this.style.display='none'"></div>
+    <h2 id="cityLockTitle">🚫 Місто закрило перед тобою браму</h2>
+    <p id="cityLockText"></p>
+    <div id="cityLockBlocks" class="muted" style="margin:8px 0 12px"></div>
+    <div class="trade-actions">
+      <button id="cityLockPayBtn" class="btn green" onclick="payCityFine()">💰 <span data-i18n="lock.pay">Сплатити штраф 1000 монет</span></button>
+      <button class="btn gray" onclick="closeCityLock()" data-i18n="btn.close">Закрити</button>
+    </div>
+  </div>
+</div>
+
+<div id="diceModal" class="modal hidden">
+  <div class="modal-card dice-card">
+    <h2 data-i18n="dice.title">🎲 Гра в кості</h2>
+    <p id="diceText" class="muted"></p>
+    <div class="dice-display" id="diceDisplay">🎲 🎲</div>
+    <div id="diceResult" class="dice-result"></div>
+    <button class="btn green" id="diceCloseBtn" onclick="closeDiceModal()" data-i18n="btn.continue">Продовжити</button>
   </div>
 </div>
 
