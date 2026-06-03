@@ -3338,21 +3338,22 @@ function html5TravelMapBackdrop(){
       </linearGradient>
     </defs>
     <rect class="map-sea" width="100" height="100"/>
-    <path class="map-coast-glow" d="M30 24 C36 19,45 18,53 20 C58 16,69 13,79 16 C91 19,99 28,99 40 C98 50,90 57,79 59 C70 61,64 57,59 53 C53 54,47 50,42 45 C36 45,30 42,28 36 C26 31,27 27,30 24Z"/>
-    <path class="map-land map-mainland" d="M31 25 C37 20,46 19,54 21 C59 17,69 14,79 17 C90 20,98 29,98 40 C97 49,89 56,79 58 C70 60,65 56,60 52 C54 53,48 49,43 44 C37 44,31 41,29 36 C27 31,28 27,31 25Z"/>
-    <path class="map-land map-island map-britain" d="M23 12 C28 9,34 12,37 18 C39 25,34 32,27 31 C22 29,20 24,20 19 C20 16,21 14,23 12Z"/>
-    <path class="map-land map-island map-ireland" d="M15 20 C19 16,23 18,24 24 C23 30,18 33,15 29 C13 26,13 23,15 20Z"/>
-    <path class="map-land map-island map-scandinavia" d="M57 3 C66 4,76 9,80 18 C79 25,73 29,66 28 C60 28,54 25,52 18 C51 11,53 6,57 3Z"/>
-    <path class="map-land map-peninsula map-iberia" d="M22 55 C31 52,40 56,43 64 C42 75,32 83,20 80 C10 77,7 68,12 60 C15 57,18 56,22 55Z"/>
-    <path class="map-land map-peninsula map-italy" d="M50 48 C56 51,60 59,59 67 C58 74,54 77,51 72 C49 67,51 62,49 57 C47 52,47 50,50 48Z"/>
-    <path class="map-land map-peninsula map-balkans" d="M60 55 C70 53,84 58,90 67 C86 76,73 78,63 71 C58 67,56 60,60 55Z"/>
-    <path class="map-land map-island map-sicily" d="M55 76 C60 73,66 75,68 79 C65 84,58 83,55 79Z"/>
-    <path class="map-region" d="M20 20 C26 13,36 17,38 26 C36 35,27 41,18 39 C12 33,13 25,20 20Z"/>
-    <path class="map-region" d="M33 31 C42 24,55 25,62 32 C60 43,50 49,39 45 C32 41,29 35,33 31Z"/>
-    <path class="map-region" d="M60 25 C74 17,93 26,98 40 C95 51,82 58,69 56 C61 51,56 36,60 25Z"/>
-    <path class="map-region" d="M17 58 C28 53,39 58,42 66 C38 76,27 81,16 75 C10 69,11 62,17 58Z"/>
-    <path class="map-region" d="M48 47 C58 50,66 58,70 68 C65 77,53 78,47 69 C44 61,43 52,48 47Z"/>
-    <path class="map-region" d="M62 57 C72 55,85 61,89 69 C83 77,69 78,60 69 C57 64,58 60,62 57Z"/>
+    <path class="map-coast-glow" d="M30 27 L35 23 L43 23 L49 21 L55 24 L61 20 L69 18 L78 20 L86 24 L95 31 L99 38 L96 47 L89 53 L78 58 L69 58 L62 54 L56 52 L51 54 L45 48 L38 44 L31 42 L27 36 Z"/>
+    <path class="map-land map-mainland" d="M30 27 L35 23 L43 23 L49 21 L55 24 L61 20 L69 18 L78 20 L86 24 L95 31 L99 38 L96 47 L89 53 L78 58 L69 58 L62 54 L56 52 L51 54 L45 48 L38 44 L31 42 L27 36 Z"/>
+    <path class="map-land map-island map-britain" d="M25 11 L31 12 L35 17 L37 24 L34 30 L29 33 L23 30 L20 24 L21 17 Z"/>
+    <path class="map-land map-island map-ireland" d="M15 19 L19 16 L23 20 L23 27 L19 32 L15 29 L13 24 Z"/>
+    <path class="map-land map-island map-scandinavia" d="M57 3 L66 5 L74 10 L81 18 L78 26 L70 30 L62 28 L55 23 L52 15 Z"/>
+    <path class="map-land map-peninsula map-jutland" d="M47 23 L50 25 L49 31 L46 32 L44 28 Z"/>
+    <path class="map-land map-peninsula map-iberia" d="M20 55 L29 53 L38 57 L43 64 L41 73 L33 80 L22 82 L12 77 L8 68 L12 60 Z"/>
+    <path class="map-land map-peninsula map-italy" d="M50 48 L55 51 L58 58 L59 66 L56 73 L52 75 L49 69 L51 62 L48 55 Z"/>
+    <path class="map-land map-peninsula map-balkans" d="M60 55 L70 53 L82 58 L91 66 L86 75 L73 78 L63 71 L57 63 Z"/>
+    <path class="map-land map-island map-sicily" d="M55 76 L62 74 L68 78 L64 82 L57 81 Z"/>
+    <path class="map-region" d="M20 19 L27 14 L35 18 L38 25 L35 34 L27 40 L18 38 L13 31 L15 24 Z"/>
+    <path class="map-region" d="M33 31 L42 25 L54 26 L62 32 L59 42 L50 49 L39 45 L31 39 Z"/>
+    <path class="map-region" d="M60 25 L72 18 L85 23 L98 37 L95 49 L83 57 L70 56 L62 48 L58 36 Z"/>
+    <path class="map-region" d="M16 59 L28 54 L39 59 L42 67 L37 76 L27 82 L15 76 L9 68 Z"/>
+    <path class="map-region" d="M48 47 L57 51 L66 58 L70 68 L64 77 L53 77 L47 69 L44 59 Z"/>
+    <path class="map-region" d="M62 57 L73 55 L86 61 L90 69 L83 77 L69 78 L60 69 L57 63 Z"/>
     <path class="map-river" d="M39 31 C44 35,49 40,55 46 C63 52,70 56,80 59"/>
     <path class="map-river" d="M68 22 C70 31,70 41,75 49 C80 57,88 62,95 66"/>
     <path class="map-river" d="M25 22 C26 30,30 37,36 43"/>

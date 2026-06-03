@@ -92,6 +92,12 @@ assert.match(html, /id="travelAnimMap"/, "travel animation overlay contains an e
 assert.match(source, /function html5TravelMapBackdrop/, "travel map uses an HTML5/SVG backdrop");
 assert.match(source, /class="travel-map-bg"/, "travel map renders an SVG map layer");
 assert.match(source, /map-island/, "HTML5 map includes island shapes for Europe");
+assert.match(source, /map-britain/, "HTML5 map has a recognizable Britain shape");
+assert.match(source, /map-iberia/, "HTML5 map has a recognizable Iberian peninsula");
+assert.match(source, /map-italy/, "HTML5 map has a recognizable Italian peninsula");
+assert.match(source, /map-balkans/, "HTML5 map has a recognizable Balkan peninsula");
+assert.match(source, /map-scandinavia/, "HTML5 map has a recognizable Scandinavian shape");
+assert.match(source, /map-jutland/, "HTML5 map has a Jutland peninsula for northern Europe");
 assert.match(source, /Britannia/, "HTML5 map includes medieval regional labels");
 assert.match(source, /const cityLabelOffsets/, "travel map city labels have collision-aware offsets");
 assert.match(source, /function hiddenPlaceMapMarkers/, "discovered hidden places can appear on the travel map");
