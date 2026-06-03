@@ -3238,42 +3238,42 @@ function renderTravel(){
   }).join("");
 }
 
-// v0.40: re-calibrated to match the actual europe_1205.png coordinates.
+// v0.40+: stylized equirectangular Europe map coordinates.
 const cityMapPoints = [
-  {x:62.5,y:37.5}, // Krakow
-  {x:87.5,y:39.0}, // Kyiv
-  {x:55.0,y:51.0}, // Venice
-  {x:55.0,y:38.0}, // Prague
-  {x:26.5,y:25.5}, // London
-  {x:27.5,y:18.0}, // York
-  {x:37.5,y:38.5}, // Paris
-  {x:35.0,y:36.0}, // Rouen
-  {x:40.0,y:32.0}, // Bruges
-  {x:41.0,y:33.0}, // Ghent
-  {x:44.0,y:35.5}, // Cologne
-  {x:45.0,y:38.0}, // Mainz
-  {x:50.0,y:41.0}, // Regensburg
-  {x:55.5,y:44.5}, // Vienna
-  {x:52.0,y:45.0}, // Salzburg
-  {x:50.5,y:49.5}, // Milan
-  {x:50.0,y:54.0}, // Genoa
-  {x:52.5,y:56.0}, // Pisa
-  {x:54.0,y:56.5}, // Florence
-  {x:56.5,y:60.5}, // Rome
-  {x:53.0,y:55.0}, // Bologna
-  {x:83.0,y:65.0}, // Constantinople
-  {x:71.0,y:68.0}, // Thessaloniki
-  {x:76.0,y:18.5}, // Novgorod
-  {x:78.0,y:32.0}, // Smolensk
-  {x:74.5,y:27.0}, // Polotsk
-  {x:46.5,y:28.0}, // Hamburg
-  {x:45.0,y:29.5}, // Bremen
-  {x:42.0,y:31.5}, // Utrecht
-  {x:38.0,y:64.0}, // Barcelona
-  {x:25.5,y:72.5}, // Toledo
-  {x:22.5,y:78.0}, // Cordoba
-  {x:20.5,y:80.5}, // Seville
-  {x:12.5,y:75.0}  // Lisbon
+  {x:59.1,y:42.1}, // Krakow
+  {x:78.7,y:40.6}, // Kyiv
+  {x:45.0,y:60.0}, // Venice
+  {x:48.9,y:42.0}, // Prague
+  {x:22.0,y:36.5}, // London
+  {x:20.2,y:27.1}, // York
+  {x:26.6,y:46.7}, // Paris
+  {x:24.3,y:44.7}, // Rouen
+  {x:28.2,y:37.7}, // Bruges
+  {x:29.1,y:38.5}, // Ghent
+  {x:35.1,y:38.7}, // Cologne
+  {x:37.5,y:42.0}, // Mainz
+  {x:44.7,y:46.0}, // Regensburg
+  {x:52.5,y:49.0}, // Vienna
+  {x:46.5,y:50.8}, // Salzburg
+  {x:39.2,y:59.8}, // Milan
+  {x:38.8,y:63.8}, // Genoa
+  {x:41.5,y:66.5}, // Pisa
+  {x:43.1,y:66.3}, // Florence
+  {x:45.4,y:73.5}, // Rome
+  {x:43.2,y:63.5}, // Bologna
+  {x:75.9,y:76.9}, // Constantinople
+  {x:64.7,y:78.3}, // Thessaloniki
+  {x:80.2,y:9.6}, // Novgorod
+  {x:81.6,y:23.9}, // Smolensk
+  {x:75.5,y:21.2}, // Polotsk
+  {x:40.7,y:28.8}, // Hamburg
+  {x:38.5,y:30.4}, // Bremen
+  {x:31.7,y:34.2}, // Utrecht
+  {x:26.2,y:75.5}, // Barcelona
+  {x:14.8,y:81.3}, // Toledo
+  {x:13.4,y:88.9}, // Cordoba
+  {x:11.1,y:90.8}, // Seville
+  {x:5.3,y:85.7}  // Lisbon
 ];
 const cityLabelOffsets = [
   {x:-10,y:-30}, // Krakow
@@ -3312,10 +3312,10 @@ const cityLabelOffsets = [
   {x:-18,y:16}  // Lisbon
 ];
 const hiddenMapPoints = {
-  witch:{x:49,y:73,icon:"✦"},
-  smiths:{x:69,y:30,icon:"⚒"},
-  circus:{x:43,y:48,icon:"✹"},
-  scholars:{x:58,y:50,icon:"✧"}
+  witch:{x:42,y:78,icon:"✦"},
+  smiths:{x:67,y:31,icon:"⚒"},
+  circus:{x:35,y:55,icon:"✹"},
+  scholars:{x:50,y:53,icon:"✧"}
 };
 function cityMapPoint(index){
   return cityMapPoints[validCityIndex(index,0)] || {x:50,y:50};
@@ -3338,35 +3338,36 @@ function html5TravelMapBackdrop(){
       </linearGradient>
     </defs>
     <rect class="map-sea" width="100" height="100"/>
-    <path class="map-coast-glow" d="M30 27 L35 23 L43 23 L49 21 L55 24 L61 20 L69 18 L78 20 L86 24 L95 31 L99 38 L96 47 L89 53 L78 58 L69 58 L62 54 L56 52 L51 54 L45 48 L38 44 L31 42 L27 36 Z"/>
-    <path class="map-land map-mainland" d="M30 27 L35 23 L43 23 L49 21 L55 24 L61 20 L69 18 L78 20 L86 24 L95 31 L99 38 L96 47 L89 53 L78 58 L69 58 L62 54 L56 52 L51 54 L45 48 L38 44 L31 42 L27 36 Z"/>
-    <path class="map-land map-island map-britain" d="M25 11 L31 12 L35 17 L37 24 L34 30 L29 33 L23 30 L20 24 L21 17 Z"/>
-    <path class="map-land map-island map-ireland" d="M15 19 L19 16 L23 20 L23 27 L19 32 L15 29 L13 24 Z"/>
-    <path class="map-land map-island map-scandinavia" d="M57 3 L66 5 L74 10 L81 18 L78 26 L70 30 L62 28 L55 23 L52 15 Z"/>
-    <path class="map-land map-peninsula map-jutland" d="M47 23 L50 25 L49 31 L46 32 L44 28 Z"/>
-    <path class="map-land map-peninsula map-iberia" d="M20 55 L29 53 L38 57 L43 64 L41 73 L33 80 L22 82 L12 77 L8 68 L12 60 Z"/>
-    <path class="map-land map-peninsula map-italy" d="M50 48 L55 51 L58 58 L59 66 L56 73 L52 75 L49 69 L51 62 L48 55 Z"/>
-    <path class="map-land map-peninsula map-balkans" d="M60 55 L70 53 L82 58 L91 66 L86 75 L73 78 L63 71 L57 63 Z"/>
-    <path class="map-land map-island map-sicily" d="M55 76 L62 74 L68 78 L64 82 L57 81 Z"/>
-    <path class="map-region" d="M20 19 L27 14 L35 18 L38 25 L35 34 L27 40 L18 38 L13 31 L15 24 Z"/>
-    <path class="map-region" d="M33 31 L42 25 L54 26 L62 32 L59 42 L50 49 L39 45 L31 39 Z"/>
-    <path class="map-region" d="M60 25 L72 18 L85 23 L98 37 L95 49 L83 57 L70 56 L62 48 L58 36 Z"/>
-    <path class="map-region" d="M16 59 L28 54 L39 59 L42 67 L37 76 L27 82 L15 76 L9 68 Z"/>
-    <path class="map-region" d="M48 47 L57 51 L66 58 L70 68 L64 77 L53 77 L47 69 L44 59 Z"/>
-    <path class="map-region" d="M62 57 L73 55 L86 61 L90 69 L83 77 L69 78 L60 69 L57 63 Z"/>
-    <path class="map-river" d="M39 31 C44 35,49 40,55 46 C63 52,70 56,80 59"/>
-    <path class="map-river" d="M68 22 C70 31,70 41,75 49 C80 57,88 62,95 66"/>
-    <path class="map-river" d="M25 22 C26 30,30 37,36 43"/>
-    <path class="map-mountain" d="M34 47 L39 40 L44 47 L49 41 L54 49 L59 42 L65 51"/>
-    <path class="map-mountain" d="M61 35 L66 29 L70 38 L75 32 L81 41"/>
-    <path class="map-mountain" d="M48 62 L53 56 L58 65 L63 59 L69 70"/>
-    <text class="map-label" x="24" y="39">Britannia</text>
-    <text class="map-label" x="44" y="36">Francia</text>
-    <text class="map-label" x="55" y="41">Imperium</text>
-    <text class="map-label" x="79" y="42">Rus'</text>
-    <text class="map-label" x="27" y="68">Iberia</text>
-    <text class="map-label" x="55" y="65">Italia</text>
-    <text class="map-label" x="73" y="70">Byzantium</text>
+    <path class="map-coast-glow" d="M5 86 L8 76 L16 70 L24 72 L28 66 L25 57 L28 49 L24 45 L29 39 L31 34 L36 33 L41 27 L45 23 L50 25 L50 33 L46 35 L48 40 L56 41 L61 35 L60 28 L66 23 L73 14 L82 10 L91 22 L99 39 L96 53 L87 60 L77 62 L72 67 L77 76 L73 83 L64 80 L58 72 L52 68 L48 75 L44 73 L42 66 L38 64 L34 68 L28 69 L25 75 L27 84 L21 92 L13 94 Z"/>
+    <path class="map-land map-mainland" d="M5 86 L8 76 L16 70 L24 72 L28 66 L25 57 L28 49 L24 45 L29 39 L31 34 L36 33 L41 27 L45 23 L50 25 L50 33 L46 35 L48 40 L56 41 L61 35 L60 28 L66 23 L73 14 L82 10 L91 22 L99 39 L96 53 L87 60 L77 62 L72 67 L77 76 L73 83 L64 80 L58 72 L52 68 L48 75 L44 73 L42 66 L38 64 L34 68 L28 69 L25 75 L27 84 L21 92 L13 94 Z"/>
+    <path class="map-land map-island map-britain" d="M19 18 L24 20 L27 28 L26 37 L22 43 L17 39 L15 30 L16 23 Z"/>
+    <path class="map-land map-island map-ireland" d="M10 24 L15 22 L18 28 L17 38 L13 43 L9 38 L8 30 Z"/>
+    <path class="map-land map-island map-scandinavia" d="M44 8 L52 2 L63 5 L72 14 L75 25 L68 34 L58 31 L51 24 L46 18 Z"/>
+    <path class="map-land map-peninsula map-jutland" d="M42 26 L45 24 L47 29 L46 36 L43 38 L41 32 Z"/>
+    <path class="map-land map-peninsula map-italy" d="M38 58 L45 58 L49 64 L50 72 L54 78 L50 83 L45 76 L42 68 L37 63 Z"/>
+    <path class="map-land map-peninsula map-balkans" d="M52 62 L63 58 L74 63 L82 72 L78 81 L66 84 L58 78 L51 70 Z"/>
+    <path class="map-land map-island map-sicily" d="M44 80 L51 78 L58 81 L53 85 L46 84 Z"/>
+    <path class="map-land map-island map-sardinia" d="M36 73 L39 75 L39 81 L36 83 L34 78 Z"/>
+    <path class="map-land map-island map-corsica" d="M38 68 L41 70 L40 74 L37 74 Z"/>
+    <path class="map-region map-iberia" d="M5 86 L8 76 L16 70 L24 72 L28 78 L26 88 L20 94 L12 94 Z"/>
+    <path class="map-region" d="M25 47 L29 39 L36 37 L43 42 L42 51 L35 58 L28 55 Z"/>
+    <path class="map-region" d="M39 31 L48 30 L56 40 L52 49 L43 47 L37 39 Z"/>
+    <path class="map-region" d="M58 28 L68 20 L82 12 L92 25 L98 40 L94 52 L80 58 L66 53 L58 42 Z"/>
+    <path class="map-region" d="M38 58 L48 60 L57 69 L55 80 L47 80 L42 69 L36 64 Z"/>
+    <path class="map-region" d="M52 62 L64 59 L78 66 L81 74 L75 82 L63 81 L54 72 Z"/>
+    <path class="map-river" d="M35 40 C42 43,48 48,55 54 C63 61,70 65,79 68"/>
+    <path class="map-river" d="M62 29 C65 38,67 47,73 55 C80 63,88 67,96 70"/>
+    <path class="map-river" d="M22 42 C25 50,29 57,35 64"/>
+    <path class="map-mountain" d="M29 68 L33 63 L37 69 L42 62 L47 70 L52 64 L57 73"/>
+    <path class="map-mountain" d="M37 56 L42 51 L48 58 L53 52 L59 61"/>
+    <path class="map-mountain" d="M57 45 L62 39 L67 48 L73 42 L80 52"/>
+    <text class="map-label" x="18" y="48">Britannia</text>
+    <text class="map-label" x="29" y="56">Francia</text>
+    <text class="map-label" x="43" y="38">Imperium</text>
+    <text class="map-label" x="75" y="35">Rus'</text>
+    <text class="map-label" x="13" y="79">Iberia</text>
+    <text class="map-label" x="42" y="72">Italia</text>
+    <text class="map-label" x="63" y="75">Byzantium</text>
   </svg>`;
 }
 function travelMapMarkerHtml(index,withLabel=true){
