@@ -65,6 +65,7 @@
         <button id="nextWeekButton" class="next-day week-skip hidden" onclick="nextWeek()" data-i18n="btn.next_week">⏩ Наступний тиждень</button>
         <button class="btn" onclick="saveGame(true)" data-i18n="btn.save">Зберегти</button>
         <button class="btn" onclick="openSaveSlots()" data-i18n="btn.slots">💾 Слоти</button>
+        <button id="adRewardBtn" class="btn cg-only hidden" onclick="openAdRewardModal()" data-i18n="btn.rewards">🎁 Бонуси</button>
         <button class="btn gray" onclick="newGame()" data-i18n="btn.new_game">Нова гра</button>
       </div>
     </header>
@@ -363,6 +364,15 @@
       </div>
       <div class="welcome-intro" id="welcomeIntro"></div>
     </div>
+  </div>
+</div>
+
+<div id="adRewardModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>🎁 <span data-i18n="rewards.title">Бонуси за рекламу</span></h2>
+    <p class="muted" id="adRewardHint" data-i18n="rewards.desc">Подивись коротку рекламу — отримай корисний бонус. Доступно до 3 нагород на день.</p>
+    <div id="adRewardOptions" class="ad-reward-grid"></div>
+    <button class="btn gray" onclick="closeAdRewardModal()"><span data-i18n="btn.close">Закрити</span></button>
   </div>
 </div>
 

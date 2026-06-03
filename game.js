@@ -109,7 +109,10 @@ const CG = (function(){
     isReady:()=>state.initialized};
 })();
 // Kick off the SDK init as early as possible so it's ready by first gameplay.
-CG.init();
+CG.init().then(()=>{
+  // Show the "Bonuses" button only on CrazyGames once the SDK is confirmed
+  if(typeof showAdRewardButtonIfNeeded==="function") showAdRewardButtonIfNeeded();
+});
 // ============================================================================
 
 const BALANCE = Object.freeze({
@@ -185,7 +188,8 @@ const STRINGS = {
     "trade.buy1":"Купити 1","trade.buy5":"Купити до 5","trade.sell1":"Продати 1","trade.sell_all":"Продати все",
     "badge.stock":"Запас","badge.buy":"Купити","badge.bulk":"Опт 5+","badge.sell":"Продати","badge.have":"Маєш",
     "trend.shortage":"📈 Дефіцит","trend.glut":"📉 Надлишок","trend.expensive":"📈 Дорого","trend.cheap":"📉 Дешево",
-    "btn.slots":"💾 Слоти",
+    "btn.slots":"💾 Слоти","btn.rewards":"🎁 Бонуси",
+    "rewards.title":"Бонуси за рекламу","rewards.desc":"Подивись коротку рекламу — отримай корисний бонус. Доступно до 3 нагород на день.",
     "saves.title":"Збереження","saves.desc":"Зберігай і завантажуй гру в окремих слотах. Автозбереження у головному ключі лишається активним.","saves.save_btn":"Зберегти поточну гру","saves.list":"Збережені слоти"
   },
   en:{
@@ -218,7 +222,8 @@ const STRINGS = {
     "trade.buy1":"Buy 1","trade.buy5":"Buy up to 5","trade.sell1":"Sell 1","trade.sell_all":"Sell all",
     "badge.stock":"Stock","badge.buy":"Buy","badge.bulk":"Bulk 5+","badge.sell":"Sell","badge.have":"Have",
     "trend.shortage":"📈 Shortage","trend.glut":"📉 Surplus","trend.expensive":"📈 Pricey","trend.cheap":"📉 Cheap",
-    "btn.slots":"💾 Slots",
+    "btn.slots":"💾 Slots","btn.rewards":"🎁 Bonuses",
+    "rewards.title":"Ad rewards","rewards.desc":"Watch a short ad to get a useful bonus. Up to 3 rewards per day.",
     "saves.title":"Save slots","saves.desc":"Save and load the game in named slots. Autosave to the main key remains active.","saves.save_btn":"Save current game","saves.list":"Saved slots"
   }
 };
@@ -6972,6 +6977,107 @@ async function nextDay(){
   }
   advanceDay(true);
 }
+
+// === v0.43: Rewarded ads ====================================================
+// Player-initiated ads grant in-game rewards. Up to 3 per day, with per-type
+// cooldowns so a single ad can't be farmed in a loop.
+const AD_REWARDS = [
+  {
+    key:"gold",
+    icon:"💰",
+    name:{uk:"+200 монет",en:"+200 coins"},
+    desc:{uk:"Швидке вливання у скарбницю.",en:"A quick boost to the treasury."},
+    cooldownDays:1,
+    apply(){gold+=200;log("📺💰 "+tr("Реклама → +200 монет.","Ad → +200 coins."),"system",true);}
+  },
+  {
+    key:"actions",
+    icon:"⚡",
+    name:{uk:"+3 дії сьогодні",en:"+3 actions today"},
+    desc:{uk:"Більше часу на справи сьогодні.",en:"More time for chores today."},
+    cooldownDays:1,
+    apply(){energy=Math.min(energy+3,dailyActionLimit()+3);log("📺⚡ "+tr("Реклама → +3 дії на сьогодні.","Ad → +3 actions today."),"system",true);}
+  },
+  {
+    key:"restock",
+    icon:"🎁",
+    name:{uk:"Оновити крамницю міста",en:"Restock city shop"},
+    desc:{uk:"Перерозіграти весь асортимент і кількість.",en:"Reroll the entire offer and quantities."},
+    cooldownDays:2,
+    apply(){
+      if(!shopStock || !shopStock.cities) shopStock={cities:{}};
+      delete shopStock.cities[currentCity];
+      ensureShopStock();
+      log("📺🎁 "+tr("Реклама → крамниця ","Ad → shop in ")+cityName(currentCity)+tr(" повністю оновлена."," fully restocked."),"shop",true);
+    }
+  }
+];
+function adRewardState(){
+  if(!player) return {usedToday:0,history:{},day:0};
+  player.adRewards=player.adRewards||{usedToday:0,history:{},day:0};
+  // Reset daily counter when the in-game day changes
+  if(player.adRewards.day!==day){player.adRewards.day=day;player.adRewards.usedToday=0;}
+  return player.adRewards;
+}
+function adRewardAvailable(reward){
+  const s=adRewardState();
+  if(s.usedToday>=3) return {ok:false,reason:tr("Сьогодні бонусів більше немає (макс. 3 / день).","No more bonuses today (max 3 / day).")};
+  const last=s.history[reward.key];
+  if(last && day-last < (reward.cooldownDays||1)){
+    const left=(reward.cooldownDays||1)-(day-last);
+    return {ok:false,reason:tr("Знову через ","Try again in ")+left+tr(" дн.","d.")};
+  }
+  return {ok:true};
+}
+function showAdRewardButtonIfNeeded(){
+  const btn=document.getElementById("adRewardBtn");
+  if(!btn) return;
+  const enabled=CG.isReady && CG.isReady() && CG.isCrazyGames && CG.isCrazyGames();
+  btn.classList.toggle("hidden",!enabled);
+}
+function openAdRewardModal(){
+  renderAdRewardOptions();
+  document.getElementById("adRewardModal").classList.remove("hidden");
+}
+function closeAdRewardModal(){
+  document.getElementById("adRewardModal").classList.add("hidden");
+}
+function renderAdRewardOptions(){
+  const target=document.getElementById("adRewardOptions");
+  if(!target) return;
+  const s=adRewardState();
+  document.getElementById("adRewardHint").innerText=tr("Подивись коротку рекламу — отримай корисний бонус. Сьогодні використано ","Watch a short ad to get a useful bonus. Used today: ")+s.usedToday+"/3.";
+  target.innerHTML=AD_REWARDS.map(r=>{
+    const name=lang==="en"?r.name.en:r.name.uk;
+    const desc=lang==="en"?r.desc.en:r.desc.uk;
+    const avail=adRewardAvailable(r);
+    const btnLbl=avail.ok?(tr("📺 Подивитися","📺 Watch")):escapeHtml(avail.reason);
+    return `<button class="ad-reward-card" ${avail.ok?"":"disabled"} onclick="claimAdReward('${r.key}')"><div class="ad-reward-icon">${r.icon}</div><div class="ad-reward-name">${escapeHtml(name)}</div><div class="ad-reward-desc">${escapeHtml(desc)}</div><div class="ad-reward-cta">${btnLbl}</div></button>`;
+  }).join("");
+}
+async function claimAdReward(key){
+  const reward=AD_REWARDS.find(r=>r.key===key);
+  if(!reward) return;
+  const avail=adRewardAvailable(reward);
+  if(!avail.ok){alert(avail.reason);return;}
+  // Disable all buttons during the ad
+  document.querySelectorAll("#adRewardOptions .ad-reward-card").forEach(b=>b.disabled=true);
+  let ok=false;
+  try{ok=await CG.rewardedAd();}catch(e){ok=false;}
+  if(!ok){
+    alert(tr("Не вдалося показати рекламу. Спробуй пізніше.","Ad couldn't be shown. Try again later."));
+    renderAdRewardOptions();
+    return;
+  }
+  const s=adRewardState();
+  s.usedToday+=1;
+  s.history[reward.key]=day;
+  try{reward.apply();}catch(e){console.warn("[CG] reward apply failed:",e);}
+  saveGame(false);
+  render();
+  closeAdRewardModal();
+}
+// ============================================================================
 function nextWeek(){
   if(playerLevel()<5){log("❌ Наступний тиждень відкривається з 5 рівня героя.","system");render();return;}
   const start=day;
