@@ -2,6 +2,116 @@
 const LEGACY_SAVE_KEYS = [];
 const CARAVAN_ENABLED = false;
 const CAMPAIGN_YEAR = 1205;
+
+// === v0.43: CrazyGames SDK wrapper ===========================================
+// Safe no-op when the SDK isn't present (itch.io, GitHub Pages, local file://).
+// On CrazyGames the SDK becomes available shortly after page load — we wait
+// for it and then enable the real implementation. Outside of CG every call
+// silently resolves so nothing breaks.
+const CG = (function(){
+  const state = {
+    sdk: null,
+    initialized: false,
+    initStarted: false,
+    isCrazyGames: false,
+    lastMidgameDay: -999,
+    midgameMinGap: 3,           // require ≥3 in-game days between midgame ads
+    inGameplay: false
+  };
+  function isOnCrazyGames(){
+    try{
+      const host = (location && location.hostname || "").toLowerCase();
+      return host.endsWith("crazygames.com") || host.endsWith("1001juegos.com");
+    }catch(e){return false;}
+  }
+  function getSDK(){
+    return (typeof window!=="undefined" && window.CrazyGames && window.CrazyGames.SDK) || null;
+  }
+  async function init(){
+    if(state.initialized || state.initStarted) return;
+    state.initStarted = true;
+    state.isCrazyGames = isOnCrazyGames();
+    if(window.__CG_FAIL || !state.isCrazyGames){
+      // SDK script not loaded or we're not on CrazyGames → stay in stub mode.
+      state.initialized = true;
+      return;
+    }
+    // Wait up to 4 s for the async <script> to resolve window.CrazyGames.SDK
+    const start = (window.performance && performance.now()) || Date.now();
+    while(!getSDK()){
+      const now = (window.performance && performance.now()) || Date.now();
+      if(now - start > 4000){state.initialized=true;return;}
+      await new Promise(r=>setTimeout(r,50));
+    }
+    state.sdk = getSDK();
+    try{
+      // SDK v3 init – tells CG we're ready to receive ad calls
+      if(state.sdk.init){await state.sdk.init();}
+    }catch(e){console.warn("[CG] init failed:",e);}
+    state.initialized = true;
+  }
+  function loadingStart(){if(state.sdk && state.sdk.game && state.sdk.game.loadingStart) try{state.sdk.game.loadingStart();}catch(e){}}
+  function loadingStop(){if(state.sdk && state.sdk.game && state.sdk.game.loadingStop) try{state.sdk.game.loadingStop();}catch(e){}}
+  function gameplayStart(){
+    if(state.inGameplay) return;
+    state.inGameplay = true;
+    if(state.sdk && state.sdk.game && state.sdk.game.gameplayStart) try{state.sdk.game.gameplayStart();}catch(e){}
+  }
+  function gameplayStop(){
+    if(!state.inGameplay) return;
+    state.inGameplay = false;
+    if(state.sdk && state.sdk.game && state.sdk.game.gameplayStop) try{state.sdk.game.gameplayStop();}catch(e){}
+  }
+  function happytime(){if(state.sdk && state.sdk.game && state.sdk.game.happytime) try{state.sdk.game.happytime();}catch(e){}}
+  // Midgame ad with frequency cap (no more than once per N in-game days).
+  // Returns a promise that resolves after the ad finishes OR if there is no SDK.
+  function maybeMidgameAd(currentDay){
+    return new Promise(resolve=>{
+      if(!state.sdk || !state.sdk.ad || !state.sdk.ad.requestAd){resolve(false);return;}
+      if(typeof currentDay==="number" && currentDay - state.lastMidgameDay < state.midgameMinGap){resolve(false);return;}
+      let finished=false;
+      const finish=ok=>{if(finished) return;finished=true;resolve(ok);};
+      try{
+        gameplayStop();
+        state.sdk.ad.requestAd("midgame",{
+          adStarted:()=>{},
+          adFinished:()=>{
+            if(typeof currentDay==="number") state.lastMidgameDay = currentDay;
+            gameplayStart();
+            finish(true);
+          },
+          adError:err=>{console.warn("[CG] midgame ad error:",err);gameplayStart();finish(false);}
+        });
+        // Safety timeout in case the SDK never calls the callback
+        setTimeout(()=>{if(!finished){gameplayStart();finish(false);}},20000);
+      }catch(e){console.warn("[CG] midgame ad threw:",e);gameplayStart();finish(false);}
+    });
+  }
+  // Rewarded ad — caller decides what reward to give on success.
+  function rewardedAd(){
+    return new Promise(resolve=>{
+      if(!state.sdk || !state.sdk.ad || !state.sdk.ad.requestAd){resolve(false);return;}
+      let finished=false;
+      const finish=ok=>{if(finished) return;finished=true;resolve(ok);};
+      try{
+        gameplayStop();
+        state.sdk.ad.requestAd("rewarded",{
+          adStarted:()=>{},
+          adFinished:()=>{gameplayStart();finish(true);},
+          adError:err=>{console.warn("[CG] rewarded ad error:",err);gameplayStart();finish(false);}
+        });
+        setTimeout(()=>{if(!finished){gameplayStart();finish(false);}},30000);
+      }catch(e){console.warn("[CG] rewarded ad threw:",e);gameplayStart();finish(false);}
+    });
+  }
+  return {init,loadingStart,loadingStop,gameplayStart,gameplayStop,happytime,maybeMidgameAd,rewardedAd,
+    isCrazyGames:()=>state.isCrazyGames,
+    isReady:()=>state.initialized};
+})();
+// Kick off the SDK init as early as possible so it's ready by first gameplay.
+CG.init();
+// ============================================================================
+
 const BALANCE = Object.freeze({
   actionsPerDay:7,
   startingGold:1000,
@@ -202,7 +312,7 @@ function hasItemAnywhere(id){
   const people=(Array.isArray(ownedSlaves)?ownedSlaves:[]).concat(Array.isArray(ownedHirelings)?ownedHirelings:[]);
   return itemStock(id)>0 || people.some(person=>Object.values(person.equipment||{}).includes(id));
 }
-// === v0.42: Difficulty ===
+// === v0.43: Difficulty ===
 const DIFFICULTY_LEVELS={
   easy:{
     key:"easy",
@@ -249,7 +359,7 @@ function dailyActionLimit(){
   return Math.max(1,BALANCE.actionsPerDay+bonus)+(hasItemAnywhere("scholar_motion_talisman")?1:0);
 }
 
-// === v0.42: Save slots ===
+// === v0.43: Save slots ===
 const SAVE_SLOT_PREFIX="medievalMerchantSlot_";
 function listSaveSlots(){
   const slots=[];
@@ -298,7 +408,7 @@ function writeSaveSlotWithCleanup(key,json){
 }
 function saveToSlot(name){
   if(!name||!name.trim()) return false;
-  // v0.42+: allow apostrophes, dots, commas, parentheses — typical for slot names
+  // v0.43+: allow apostrophes, dots, commas, parentheses — typical for slot names
   const safe=name.trim().replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9 _\-'’.,():!?]/g,"").slice(0,40);
   if(!safe) return false;
   try{
@@ -362,7 +472,7 @@ function renderSaveSlots(){
   const fmt=ts=>{if(!ts)return"";const d=new Date(ts);return d.toLocaleDateString()+" "+d.toLocaleTimeString().slice(0,5);};
   const list=slots.length?slots.map(s=>{
     const diffIcon=DIFFICULTY_LEVELS[s.difficulty]?DIFFICULTY_LEVELS[s.difficulty].icon:"";
-    // v0.42 fix: use data-slot attribute + event delegation to avoid quote-escaping bugs
+    // v0.43 fix: use data-slot attribute + event delegation to avoid quote-escaping bugs
     return `<div class="save-slot-row" data-slot="${encodeURIComponent(s.name)}">
       <div class="save-slot-info">
         <div class="save-slot-name"><b>${escapeHtml(s.name)}</b> ${diffIcon}</div>
@@ -431,7 +541,7 @@ const playerRanks = [
   {name:"Голова гільдії",xp:2600},
   {name:"Мер торгового міста",xp:3120}
 ];
-// v0.42: achievements with bilingual title/desc. Stored title/desc remain UK for save compatibility;
+// v0.43: achievements with bilingual title/desc. Stored title/desc remain UK for save compatibility;
 // accessors achievementTitle() / achievementDesc() return localized strings.
 const achievementCatalog = [
   ...playerRanks.map((rank,index)=>({
@@ -817,7 +927,7 @@ const regionalNpcNames = {
   }
 };
 // Add set IDs here after placing additional portrait folders under assets/npc/.
-// v0.42: free female NPCs now use all 5 panel slots (female_01..female_05),
+// v0.43: free female NPCs now use all 5 panel slots (female_01..female_05),
 // matching the 5-panel women atlas. Slave/serf variants stay separate.
 const npcPortraitSets = {
   male:["male_01","male_slave_01","male_slave_02","male_slave_03","male_slave_04","male_slave_05"],
@@ -924,7 +1034,7 @@ const hiddenPlaces = {
   }
 };
 
-// === v0.42: Tavern rumours that decode the smiths' riddle ===
+// === v0.43: Tavern rumours that decode the smiths' riddle ===
 // Each rumour points to a city that supplies the required ingredient.
 // Player must visit each city and overhear the rumour to decode the recipe.
 const TAVERN_RUMORS=[
@@ -1087,10 +1197,10 @@ let securityUntil, caravanBoostUntil, kitchenUntil, roomActionsUsed, caravanId, 
 let player, energy, daySummary, homeInventory, achievements, visitedCities, shopStock;
 let activeTab = "market";
 
-// === v0.42: i18n helpers for new strings ===
+// === v0.43: i18n helpers for new strings ===
 function tr(uk,en){return lang==="en"?en:uk;}
 
-// === v0.42: Seasons ===
+// === v0.43: Seasons ===
 const SEASONS=[
   {key:"spring",name:"Весна",nameEn:"Spring",icon:"🌱",
     mods:{"Зерно":1.20,"Льон":1.20,"Хутро":0.85,"Дрова":0.85,"Сіль":0.95}},
@@ -1188,6 +1298,8 @@ function unlockAchievement(id){
   if(!achievement || achievementUnlocked(id)) return;
   achievements[id]={day,title:achievement.title};
   log("🏆 "+tr("Досягнення отримано","Achievement unlocked")+": "+achievementTitle(achievement)+". "+achievementDesc(achievement),"achievement",true);
+  // v0.43: tell CrazyGames this is a happy moment (good for share prompts)
+  CG.happytime();
 }
 function checkLevelAchievements(){
   for(let level=1;level<=playerLevel();level++) unlockAchievement("level_"+level);
@@ -1481,7 +1593,7 @@ function compensationDetail(person){
 function portraitMasterKey(job){
   return {"Кузня":"forge","Ткацький цех":"weaving","Ферма":"farm","Кухня":"kitchen","Заїжджий двір":"inn","Склад":"warehouse","Тренування":"guard","Ювелірна майстерня":"jeweler","Меблева майстерня":"furniture"}[job]||"worker";
 }
-// v0.42: Women portraits from 5-panel image
+// v0.43: Women portraits from 5-panel image
 const WOMEN_PANEL_SETS=["female_01","female_02","female_03","female_04","female_05"];
 function getWomenPanelIndex(person){
   if(!person||person.status==="slave"||person.gender!=="female") return -1;
@@ -1644,7 +1756,7 @@ function interactWithNPC(id,interactionId){
   person.interactionDays[interactionId]=day;
   adjustRelationship(person,interaction.effects);
   logAction("💬 "+profileName(person)+": «"+interaction.name+"». Рівень стосунків: "+relationshipRank(person)+" ("+relationshipLabel(person)+").","relation");
-  // v0.42 fix: close relationship modal before showing interaction result so it doesn't overlap
+  // v0.43 fix: close relationship modal before showing interaction result so it doesn't overlap
   closeRelationshipDialog();
   showInteractionEvent(person,interaction,before);
   saveGame(false);
@@ -2118,7 +2230,7 @@ function replaceQuest(quest){
   if(index>=0) board[index]=quest.kind==="guild"?makeGuildQuest(quest.issuer):makeCouncilQuest(quest.issuer);
 }
 function grantCouncilReward(reward){
-  // v0.42: harden against corrupted/missing reward data
+  // v0.43: harden against corrupted/missing reward data
   if(!reward||!reward.type) return "—";
   if(reward.type==="goods"){
     if(!reward.name||!Number.isFinite(reward.qty)||reward.qty<1) return "—";
@@ -2210,7 +2322,7 @@ function expireQuests(){
 }
 
 function startNewState(){
-  // v0.42: use difficulty preset if player has chosen one, else normal
+  // v0.43: use difficulty preset if player has chosen one, else normal
   const diffKey=(player&&player.difficulty)||"normal";
   const diff=DIFFICULTY_LEVELS[diffKey]||DIFFICULTY_LEVELS.normal;
   gold = diff.startingGold;
@@ -2362,10 +2474,12 @@ function loadGame(){
 
 function newGame(){
   if(!window.confirm(tr("Почати нову гру? Поточне збереження буде замінено.","Start a new game? The current save will be replaced."))) return;
+  // v0.43: tell CrazyGames active gameplay is ending
+  CG.gameplayStop();
   startNewState();
-  // v0.42 fix: reset created so welcome → creation flow works
+  // v0.43 fix: reset created so welcome → creation flow works
   if(player) player.created=false;
-  log(tr("🎮 Нова кампанія v0.42 очікує створення героя.","🎮 New v0.42 campaign awaits character creation."),"system");
+  log(tr("🎮 Нова кампанія v0.43 очікує створення героя.","🎮 New v0.43 campaign awaits character creation."),"system");
   saveGame(false);
   render();
   // Show welcome (language) screen at the start of a new game
@@ -2452,6 +2566,8 @@ function beginCampaign(){
   saveGame(false);
   render();
   deferUnlockPageScroll();
+  // v0.43: gameplay has officially started
+  CG.gameplayStart();
 }
 function establishHeadquarters(){
   const cost=BALANCE.headquartersCost;
@@ -2817,7 +2933,7 @@ function renderTab(tabId){
   };
   (tabRenderers[tabId]||renderMarket)();
 }
-// === v0.42: Help / New player guide ===
+// === v0.43: Help / New player guide ===
 const HELP_CONTENT={
   uk:[
     {h:"🎮 З чого починається гра",b:`<p>Ти — молодий торговець у 1205 році. Європа розколота на сотні князівств, церков і міст-комун. Сіль з Кракова цінується у Венеції, шовк з Константинополя — у Парижі, хутро з Києва — всюди.</p>
@@ -2920,9 +3036,9 @@ const HELP_CONTENT={
 </ul>`}
   ]
 };
-// === v0.42: Changelog ===
+// === v0.43: Changelog ===
 const CHANGELOG=[
-  {version:"v0.42",date:"2026-06-02",entries:{
+  {version:"v0.43",date:"2026-06-02",entries:{
     uk:[
       {tag:"FIX",text:"Розширено пул жіночих портретів: усі 5 панелей атласу (female_01..female_05) тепер реально потрапляють у вільних NPC. Раніше випадково призначався лише female_01 — інші 4 ніколи не показувалися."},
       {tag:"FIX",text:"Перекаліброванні координати міст на мапі подорожі: тепер усі 34 крапки збігаються з реальним малюнком europe_1205.png."},
@@ -3132,8 +3248,8 @@ function renderHelp(which=currentHelpTab){
   currentHelpTab=which==="changelog"?"changelog":"guide";
   const content=HELP_CONTENT[lang]||HELP_CONTENT.uk;
   const versionLine=tr(
-    `Поточна версія: <b>v0.42</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
-    `Current version: <b>v0.42</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
+    `Поточна версія: <b>v0.43</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
+    `Current version: <b>v0.43</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
   );
   const tabs=`<div class="help-tabs"><button type="button" class="help-tab ${currentHelpTab==="guide"?"active":""}" data-help-tab="guide" aria-pressed="${currentHelpTab==="guide"}" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button type="button" class="help-tab ${currentHelpTab==="changelog"?"active":""}" data-help-tab="changelog" aria-pressed="${currentHelpTab==="changelog"}" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
   const guide=`<div id="helpTabGuide" class="help-tab-content ${currentHelpTab==="guide"?"active":""}"><div class="help-grid">`+content.map(item=>`<div class="profile-block help-card"><h3>${item.h}</h3>${item.b}</div>`).join("")+`</div></div>`;
@@ -3193,7 +3309,7 @@ function priceTrendBadge(g){
 }
 
 function renderMarket(){
-  // v0.42: try to reveal a tavern rumour on each market visit (chance-based)
+  // v0.43: try to reveal a tavern rumour on each market visit (chance-based)
   maybeRevealRumor();
   const city=cities[currentCity];
   const profile=cityProfile(currentCity);
@@ -3203,7 +3319,7 @@ function renderMarket(){
   const factNote=lang==="en"?"In-game historical note: population figures are approximate for the early 12th century.":"Ігрова історична довідка: чисельність наведена орієнтовно для початку XII століття.";
   document.getElementById("cityFacts").innerHTML=`<div class="city-facts"><b>${cityName(currentCity)}, ${regionName(city.region)}</b><span>${factLabels[0]}: <b>${profile[0]}</b></span><span>${factLabels[1]}: <b>${profile[1]}</b></span><span>${factLabels[2]}: <b>${profile[2]}</b></span><span>${factLabels[3]}: <b>${profile[3]}</b></span><span><b>${reputationLabel(currentCity)}</b></span><small>${factNote}</small></div>`;
   document.getElementById("marketHint").innerText=cityHint(city)+(lang==="en"?" Buying and selling are available only at this local market.":" Купівля і продаж доступні тільки на цьому місцевому ринку.");
-  // v0.42: inventory strip above goods grid
+  // v0.43: inventory strip above goods grid
   const ownedItems=Object.entries(inventory||{}).filter(e=>e[1]>0);
   let invStrip="";
   if(ownedItems.length){
@@ -3247,7 +3363,7 @@ function renderTravel(){
   }).join("");
 }
 
-// v0.42+: calibrated overlay coordinates for assets/map/europe_1205.png.
+// v0.43+: calibrated overlay coordinates for assets/map/europe_1205.png.
 const cityMapPoints = [
   {x:62.5,y:37.5}, // Krakow
   {x:87.5,y:39.0}, // Kyiv
@@ -3390,7 +3506,7 @@ function travelHeroMarkerHtml(origin,destination,progress=null){
   const y=from.y+(to.y-from.y)*progress;
   return `<div class="map-hero-marker map-hero-marker-step" style="left:${x}%;top:${y}%">🧭</div>`;
 }
-// v0.42: build the map once per journey; update only the marker position smoothly
+// v0.43: build the map once per journey; update only the marker position smoothly
 function renderTravelAnimMap(origin,destination,progress=0){
   const target=document.getElementById("travelAnimMap");
   if(!target) return;
@@ -3495,7 +3611,7 @@ function renderNpcMarket(){
     const cards=localPeople.filter(n=>n.status===status&&n.gender===gender).map(n=>npcCard(n,"market")).join("")||`<div class="empty">${noneLbl}</div>`;
     return `<div class="people-lane"><h3>${title}</h3><div class="people-lane-scroll">${cards}</div></div>`;
   };
-  // v0.42: render Free and Slave markets into separate Square sub-containers
+  // v0.43: render Free and Slave markets into separate Square sub-containers
   const free=localPeople.filter(p=>p.status==="free");
   const slaves=localPeople.filter(p=>p.status==="slave");
   const freeEl=document.getElementById("npcMarketFree");
@@ -3529,7 +3645,7 @@ function renderNpcMarket(){
   }
 }
 
-// === v0.42: Square (Main Square) — city hub combining Guild, Shop, Employment, Slave Market ===
+// === v0.43: Square (Main Square) — city hub combining Guild, Shop, Employment, Slave Market ===
 let currentSquareSub="guild";
 function setSquareSub(name){
   if(!["guild","shop","people","slaves"].includes(name)) return;
@@ -3604,7 +3720,7 @@ function shopHomeCandidates(){
   const tier=cities[currentCity].shopTier;
   return homeItemCatalog.filter(item=>!item.loot && ((item.rarity==="common") || (item.rarity==="rare" && tier>=3)));
 }
-// v0.42: per-item quantity limits in shop. Each item gets 1-3 stock based on rarity.
+// v0.43: per-item quantity limits in shop. Each item gets 1-3 stock based on rarity.
 function shopStockSizeFor(rarity){
   // Higher rarity → fewer copies
   if(rarity==="legendary") return 1;
@@ -3627,7 +3743,7 @@ function ensureShopStock(){
   homeIds.forEach(id=>{const it=homeItemById(id);if(it) homeStock[id]=shopStockSizeFor(it.rarity||"common");});
   shopStock.cities[currentCity]={week,npcIds,homeIds,npcStock,homeStock};
 }
-// v0.42: stock accessors and decrement
+// v0.43: stock accessors and decrement
 function shopStockCount(id,kind){
   ensureShopStock();
   const data=shopStock.cities[currentCity];
@@ -3709,7 +3825,7 @@ function renderGuild(){
   const active=activeQuests();
   document.getElementById("activeGuildQuests").innerHTML=active.length?active.map(quest=>questCard(quest,false)).join(""):`<div class="empty">${tr("Прийнятих замовлень поки немає.","No accepted orders yet.")}</div>`;
 }
-// v0.42: find best places to buy a good (lowest current buy price with stock)
+// v0.43: find best places to buy a good (lowest current buy price with stock)
 function bestSourcesFor(goodName,limit=3){
   if(!markets||!markets.length) return [];
   const sources=[];
@@ -3784,7 +3900,7 @@ function renderQuestDock(){
 function findOwnedAny(id){return ownedPeople().find(person=>person.id===id);}
 function setActiveTab(tabId){
   if(tabId==="caravan" && !CARAVAN_ENABLED) tabId="market";
-  // v0.42: legacy tab IDs redirect into Square sub-tabs
+  // v0.43: legacy tab IDs redirect into Square sub-tabs
   if(tabId==="guild"){tabId="square";currentSquareSub="guild";}
   else if(tabId==="shop"){tabId="square";currentSquareSub="shop";}
   else if(tabId==="people"){tabId="square";currentSquareSub="people";}
@@ -3809,7 +3925,7 @@ function toggleActionDock(){
   const btn=dock.querySelector(".dock-toggle-btn");
   if(btn) btn.innerText=dock.classList.contains("dock-expanded")?"▼":"▲";
 }
-// v0.42+: collapsible desktop UI (side-nav + action-dock).
+// v0.43+: collapsible desktop UI (side-nav + action-dock).
 // IMPORTANT: action-dock is a SIBLING of .app-shell, not a child.
 // We therefore put the collapse classes on <body> so the CSS can target both.
 const COLLAPSE_KEY="merchant_ui_collapsed_v40";
@@ -3929,7 +4045,7 @@ function renderNpcProfile(){
   }
   const images=fullPortraitPaths(person);
   const portrait=images.shift();
-  // v0.42: use women-panel atlas for free female NPCs in full-portrait too
+  // v0.43: use women-panel atlas for free female NPCs in full-portrait too
   const fullPortraitHtml=getWomenPanelIndex(person)>=0
     ? `<div class="women-panel-portrait" style="background-position-x:${(getWomenPanelIndex(person)/(WOMEN_PANEL_SETS.length-1))*100}%"></div>`
     : `<img src="${portrait}" data-fallbacks="${images.join("|")}" data-icon="${person.status==="slave"?"⛓️":"🧍"}" onerror="nextPortrait(this)">`;
@@ -3956,7 +4072,7 @@ function renderNpcProfile(){
 
 function renderRoutes(){
   if(!CARAVAN_ENABLED){
-    document.getElementById("activeCaravans").innerHTML=`<h2 class="subhead">У дорозі</h2><div class="empty">Караванна система тимчасово прихована в білді v0.42. Поточні каравани, якщо вони були у старому збереженні, ще можуть завершити шлях.</div>`;
+    document.getElementById("activeCaravans").innerHTML=`<h2 class="subhead">У дорозі</h2><div class="empty">Караванна система тимчасово прихована в білді v0.43. Поточні каравани, якщо вони були у старому збереженні, ще можуть завершити шлях.</div>`;
     document.getElementById("routes").innerHTML="";
     return;
   }
@@ -4023,7 +4139,7 @@ function renderFamilyRooms(){
   const familyChildren=children.length?children.map(child=>`<div class="family-room"><b>${htmlName(child)}</b><span class="badge">Вік: ${child.age}</span><span class="muted">Мати: ${escapeHtml(child.childOf.motherName)}. ${child.status==="child"?"До повноліття не працює.":"Повнолітній член родини."}</span></div>`).join(""):`<div class="empty">Дітей у родині поки немає.</div>`;
   target.innerHTML=`<h2 class="subhead">${tr("Сімейні покої","Family quarters")}</h2><p class="muted">${tr("Для кожного чоловіка або дружини потрібна окрема облаштована кімната.","Each spouse needs their own furnished room.")}</p><div class="family-room-grid">${privateRooms}</div><h2 class="subhead">${tr("Діти торгового дому","Children of the trading house")}</h2><div class="family-room-grid">${familyChildren}</div>`;
 }
-// v0.42: hero inventory cards with images and descriptions
+// v0.43: hero inventory cards with images and descriptions
 function ownedItemCard(item){
   const quality=itemRarity(item).colorClass;
   const qty=itemStock(item.id);
@@ -4041,7 +4157,7 @@ function renderPlayerProfile(){
   const target=document.getElementById("playerProfile");
   if(!target || !player) return;
   const goods=Object.entries(inventory).filter(entry=>entry[1]>0).map(([name,qty])=>goodsLine(name,qty)).join("")||`<div class="empty">${tr("Товарів на складі немає.","No goods in storage.")}</div>`;
-  // v0.42: rich item cards with images + descriptions instead of plain text lines
+  // v0.43: rich item cards with images + descriptions instead of plain text lines
   const ownedGifts=itemCatalog.filter(item=>itemStock(item.id)>0);
   const gifts=ownedGifts.length
     ? `<div class="owned-items-grid">${ownedGifts.map(ownedItemCard).join("")}</div>`
@@ -4122,7 +4238,7 @@ function removeKilledNpc(person){
   ownedHirelings=ownedHirelings.filter(candidate=>candidate.id!==person.id);
   leaveProfileIfRemoved(person.id);
 }
-// ==== v0.42: DD combat skills, ranks, stress ====
+// ==== v0.43: DD combat skills, ranks, stress ====
 const DD_SKILL_NAMES={
   strike:{name:"Удар",nameEn:"Strike",desc:"Звичайна атака.",descEn:"Basic attack."},
   cleave:{name:"Розкол строю",nameEn:"Cleave",desc:"+60% шкоди, але -1 захист на 1 раунд.",descEn:"+60% damage, -1 defense for 1 round."},
@@ -4237,7 +4353,7 @@ function ddUnitHtml(unit,side,index,extraClass=""){
     const name=htmlName(unit.person);
     const cmbLbl=tr("Бій","Cmb");
     const meta=`HP ${Math.max(0,unit.hp)}/${unit.maxHp} • ${cmbLbl} ${unit.person.combat}${stress>=100?" • 😱":""}`;
-    // v0.42: women panel portraits in combat
+    // v0.43: women panel portraits in combat
     const womenIdx=getWomenPanelIndex(unit.person);
     const portraitMarkup=womenIdx>=0
       ? `<div class="women-panel-portrait" style="background-position-x:${(womenIdx/(WOMEN_PANEL_SETS.length-1))*100}%"></div>`
@@ -4596,7 +4712,7 @@ async function ddRunAutoCombat(){
       state.turnPos=t;
       const turn=state.turnOrder[t];
       const actor=turn.side==="allies"?state.allies[turn.index]:state.enemies[turn.index];
-      // v0.42 fix: skip dead actors (defense-in-depth) and re-check end-of-combat
+      // v0.43 fix: skip dead actors (defense-in-depth) and re-check end-of-combat
       if(!actor||actor.hp<=0) continue;
       if(state.allies.every(u=>u.hp<=0) || state.enemies.every(u=>u.hp<=0)) break;
       if(turn.side==="allies"){
@@ -4644,7 +4760,7 @@ async function ddManualUseSkill(skillKey,targetIdx,targetSide){
   const actor=state.allies[turn.index];
   const skill=DD_SKILLS.find(s=>s.key===skillKey);
   if(!actor||!skill){state.awaitingPlayer=true;return;}
-  // v0.42 fix: dead actor can't act
+  // v0.43 fix: dead actor can't act
   if(actor.hp<=0){return ddAdvanceManual();}
   // Override execute targets - use the user's pick
   const targets=targetSide==="allies"?[state.allies[targetIdx]]:[state.enemies[targetIdx]];
@@ -4886,7 +5002,7 @@ function combatRewardBox(lines,manual=false){
   return `<div class="combat-reward-box"><h3>Підсумок бою</h3>${content}${mode}</div>`;
 }
 function applyCombatOutcome(origin,destination,companionIds,pool,allies,enemies,rounds,isRaid,victory,manual=false,prose=null){
-  // v0.42: reset stress on victory, half on defeat
+  // v0.43: reset stress on victory, half on defeat
   allies.forEach(unit=>{
     if(unit.person) unit.person.combatStress=victory?0:Math.floor((unit.stress||0)/2);
   });
@@ -4947,9 +5063,9 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   if(!isRaid && !options.forced && badReputationFear(origin)){
     const text=pick(roadFearEvents);
     log("🛡️ "+cities[origin].name+" → "+cities[destination].name+": "+text+" Погана репутація спрацювала як захист дороги.","travel");
-    return null; // v0.42: no modal opened, nothing to await
+    return null; // v0.43: no modal opened, nothing to await
   }
-  // v0.42: build promise that resolves on closeCombat (combat modal opens in all paths below)
+  // v0.43: build promise that resolves on closeCombat (combat modal opens in all paths below)
   const combatPromise=waitForCombatClose();
   const party=travelParty(origin,companionIds);
   if(!party.length){
@@ -4994,7 +5110,7 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
     }
     if(ddCombatState.turnPos>=ddCombatState.turnOrder.length){
       const ai=ddCombatState.turnOrder.findIndex(t=>t.side==="allies");
-      // v0.42: guard against findIndex === -1 (no allies in turn order)
+      // v0.43: guard against findIndex === -1 (no allies in turn order)
       ddCombatState.turnPos=ai>=0?ai:0;
     }
     if(ddCombatState.turnPos<0) ddCombatState.turnPos=0;
@@ -5005,7 +5121,7 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   ddRunAutoCombat();
   return combatPromise;
 }
-// v0.42: split into pure roll (returns kind) + apply (logs/state) for async travel flow
+// v0.43: split into pure roll (returns kind) + apply (logs/state) for async travel flow
 function rollTravelEvent(origin,destination,companionIds=null){
   const event=pick(travelEvents);
   if((event.gold<0 || event.reputation<0) && badReputationFear(origin)){
@@ -5032,7 +5148,7 @@ function applyTravelEvent(origin,destination,companionIds=null){
     resolveRoadCombat(origin,destination,companionIds,{manual:selectedBattleMode==="manual"});
   }
 }
-// === v0.42 Routes ===
+// === v0.43 Routes ===
 const ROUTE_TYPES=[
   {key:"forest",icon:"🌲",name:"Лісом",nameEn:"Forest path",daysMod:-1,costMod:0.9,ambushMod:1.6,eventMod:1.1,
     desc:"Швидше на 1 день, дешевше на 10%. Висока ймовірність засідки.",descEn:"-1 day, -10% cost, +60% ambush chance."},
@@ -5140,7 +5256,7 @@ function moveTravelCompanions(companionIds,destination){
   const destCityName=cities[destination]&&cities[destination].name;
   moved.forEach(person=>{
     person.locationCity=destination;
-    // v0.42 #2: Mark aspiration flags for travel-based archetypes
+    // v0.43 #2: Mark aspiration flags for travel-based archetypes
     person.aspirationFlags=person.aspirationFlags||{};
     const data=getAspirationData(person);
     if(data){
@@ -5171,7 +5287,7 @@ function skipTravelAnim(){
   document.getElementById("travelAnimOverlay").classList.add("hidden");
   _pendingTravelAnim=null;
 }
-// === v0.42: incremental travel overlay for async confirmTravel ===
+// === v0.43: incremental travel overlay for async confirmTravel ===
 function beginTravelOverlay(origin,destination,duration){
   _travelSkipRequested=false;
   _travelAnimRoute={origin,destination};
@@ -5196,7 +5312,7 @@ function setTravelDay(day,duration){
   const counter=document.getElementById("travelAnimDayCounter");
   const progress=Math.max(0,Math.min(1,day/duration));
   counter.textContent=(tr("День ","Day "))+day+" / "+duration;
-  // v0.42: smooth wagon movement on map instead of teleport
+  // v0.43: smooth wagon movement on map instead of teleport
   smoothTravelProgress(progress, _travelSkipRequested?0:900);
 }
 function addTravelOverlayEvent(text,type){
@@ -5223,7 +5339,7 @@ function endTravelOverlay(destination){
   counter.textContent=tr("Прибуття! ","Arrival! ")+cityName(destination);
   if(_travelAnimRoute) renderTravelAnimMap(_travelAnimRoute.origin,_travelAnimRoute.destination,1);
 }
-// v0.42: wait for user to click finish button instead of auto-closing
+// v0.43: wait for user to click finish button instead of auto-closing
 let _travelFinishResolver=null;
 function waitForTravelFinish(){
   // Hide skip button, show finish button
@@ -5248,7 +5364,7 @@ function finishTravelOverlay(){
 }
 function travelSkipRequested(){return _travelSkipRequested;}
 function travelSleep(ms){return new Promise(r=>setTimeout(r,_travelSkipRequested?0:ms));}
-// === v0.42: combat resolution Promise ===
+// === v0.43: combat resolution Promise ===
 let _combatCloseResolver=null;
 function waitForCombatClose(){
   return new Promise(resolve=>{
@@ -5442,7 +5558,7 @@ async function confirmTravel(raid){
   saveGame(false);
   endTravelOverlay(destination);
   addTravelOverlayEvent("📍 "+tr("Прибуття до міста ","Arrival in ")+cityName(destination),"travel");
-  // v0.42: wait for user to manually close — gives time to read the journey log
+  // v0.43: wait for user to manually close — gives time to read the journey log
   if(!travelSkipRequested()){
     await waitForTravelFinish();
   }else{
@@ -5466,7 +5582,7 @@ function hiddenPlaceActions(key){
   }
   if(state.completed) return `<span class="badge">${tr("Завдання вже виконано","Quest already completed")}</span>`;
   if(!state.accepted) return `<button class="btn green" onclick="acceptHiddenQuest('${key}')">${tr("Прийняти виклик","Accept the challenge")}</button>`;
-  // v0.42: for the smiths' secret recipe, hide the need list — only reveal what player has decoded via rumours
+  // v0.43: for the smiths' secret recipe, hide the need list — only reveal what player has decoded via rumours
   if(place.hideNeed){
     const need=place.quest.need;
     const heardRumors=player.rumorsHeard||{};
@@ -5499,7 +5615,7 @@ function showHiddenPlace(key){
   const desc=lang==="en"&&place.descEn?place.descEn:place.desc;
   const lore=lang==="en"&&place.loreEn?place.loreEn:place.lore;
   document.getElementById("hiddenPlaceTitle").innerText=title;
-  // v0.42: rich text — desc as opening + lore as legend block (supports inline HTML for bold)
+  // v0.43: rich text — desc as opening + lore as legend block (supports inline HTML for bold)
   const textEl=document.getElementById("hiddenPlaceText");
   textEl.innerHTML=`<p class="hidden-desc">${escapeHtml(desc)}</p>`+(lore?`<div class="hidden-lore">${lore}</div>`:"");
   const imgEl=document.getElementById("hiddenPlaceImage");
@@ -6066,7 +6182,7 @@ function consumeFirst(names,qty){
   removeItem(match,qty);
   return match;
 }
-// === v0.42: Skill drift system ===
+// === v0.43: Skill drift system ===
 // Base growth rates per workshop. Multiple stats may grow simultaneously
 // (primary fast, secondary slow). All values mean "points per day at stat=0".
 const SKILL_DRIFT_RATES={
@@ -6282,7 +6398,7 @@ function replenishNpcMarket(){
 }
 
 function applyDailyEvent(){
-  // v0.42: guard against an empty/malformed dailyEvents array
+  // v0.43: guard against an empty/malformed dailyEvents array
   if(!Array.isArray(dailyEvents)||!dailyEvents.length) return;
   const event=dailyEvents[rand(0,dailyEvents.length-1)];
   if(!Array.isArray(event)||event.length<3) return;
@@ -6305,7 +6421,7 @@ function advanceDay(withEvent,showSummary=true){
   const previousEntries=daySummary.slice();
   day++;
   energy=dailyActionLimit();
-  // v0.42: check season transition + npc requests
+  // v0.43: check season transition + npc requests
   if(((day-1)%30)===0){
     const s=currentSeason();
     log("🗓️ Розпочався новий сезон: "+s.icon+" "+s.name+". Ціни на ринку зміняться.","system");
@@ -6319,15 +6435,15 @@ function advanceDay(withEvent,showSummary=true){
   });
   checkExpiredRequest();
   processNpcRequests();
-  // v0.42 #2: Aspirations
+  // v0.43 #2: Aspirations
   ownedPeople().forEach(p=>processAspiration(p));
   if(pendingAspirationId!=null && document.getElementById("npcRequestNotice").classList.contains("hidden")) showAspirationResolution();
-  // v0.42 #2: Partnership income from departed NPCs
+  // v0.43 #2: Partnership income from departed NPCs
   if(player.partnershipIncome){
     gold+=player.partnershipIncome;
     log("🤝 "+tr("Партнерські відрахування","Partnership income")+": +"+player.partnershipIncome+" 💰","relation");
   }
-  // v0.42 #2: Disillusioned NPCs slowly lose loyalty
+  // v0.43 #2: Disillusioned NPCs slowly lose loyalty
   ownedPeople().forEach(p=>{
     if(p.disillusioned && (day-p.aspiration.startedDay)%7===0){
       p.loyalty=clamp((p.loyalty||0)-1,0,BALANCE.maxAttribute);
@@ -6361,7 +6477,7 @@ function advanceDay(withEvent,showSummary=true){
   saveGame(false);
   render();
 }
-// === v0.42 NPC Aspirations (#2) ===
+// === v0.43 NPC Aspirations (#2) ===
 // Each hope archetype maps to a multi-step personal quest. The final step
 // triggers a resolution dialog where the player chooses how to respond.
 function cityIndexByName(name){
@@ -6371,7 +6487,7 @@ function removeOwnedPerson(person){
   if(!person) return;
   ownedHirelings=ownedHirelings.filter(p=>p.id!==person.id);
   ownedSlaves=ownedSlaves.filter(p=>p.id!==person.id);
-  // v0.42: also clear from travel state so the NPC doesn't ghost in the dock/UI
+  // v0.43: also clear from travel state so the NPC doesn't ghost in the dock/UI
   if(Array.isArray(travelCompanionIds)) travelCompanionIds=travelCompanionIds.filter(id=>id!==person.id);
   if(Array.isArray(selectedTravelCompanions)) selectedTravelCompanions=selectedTravelCompanions.filter(id=>id!==person.id);
   if(activeNpcRequest && activeNpcRequest.personId===person.id){
@@ -6646,7 +6762,7 @@ function resolveAspiration(optKey){
   render();
 }
 
-// === v0.42 NPC Requests ===
+// === v0.43 NPC Requests ===
 const NPC_REQUEST_TYPES=[
   {key:"home_visit",weight:3,
     generate(person){
@@ -6848,7 +6964,14 @@ function checkExpiredRequest(){
   }
 }
 
-function nextDay(){advanceDay(true);}
+// v0.43: midgame ad runs (with cap) before the day actually advances on CrazyGames.
+// On every other host the wrapper resolves immediately and gameplay is unchanged.
+async function nextDay(){
+  if(CG.isReady && CG.isReady() && CG.isCrazyGames && CG.isCrazyGames()){
+    try{await CG.maybeMidgameAd(day);}catch(e){}
+  }
+  advanceDay(true);
+}
 function nextWeek(){
   if(playerLevel()<5){log("❌ Наступний тиждень відкривається з 5 рівня героя.","system");render();return;}
   const start=day;
@@ -6859,7 +6982,7 @@ function nextWeek(){
   render();
 }
 function closeEvent(){document.getElementById("eventModal").classList.add("hidden");}
-// === v0.42: Artistic day summary ===
+// === v0.43: Artistic day summary ===
 const DAY_OPENINGS={
   spring:[
     "Тіні весняного вечора подовжуються над {city}, день {n} літа Господнього 1205 згортається у спогад.",
@@ -7198,7 +7321,7 @@ function log(text,type="system",playerAction=false){
 document.querySelectorAll(".nav").forEach(btn=>{btn.onclick=()=>{
   setActiveTab(btn.dataset.tab);
 };});
-// v0.42: track user-opened state for mobile collapsibles
+// v0.43: track user-opened state for mobile collapsibles
 document.addEventListener("toggle",function(e){
   if(e.target.matches("details.npc-actions-toggle")){
     if(e.target.open) e.target.dataset.userOpened="1";
@@ -7228,20 +7351,26 @@ function showWelcomeIfNew(){
   el.classList.remove("hidden");
   return true;
 }
+// v0.43: tell CrazyGames we're loading
+CG.loadingStart();
 if(!loadGame()){
   startNewState();
-  log("🎮 Білд v0.42 запущено. Створіть героя, оберіть стартове місто і розпочніть шлях у 1205 році.","system",true);
+  log("🎮 Білд v0.43 запущено. Створіть героя, оберіть стартове місто і розпочніть шлях у 1205 році.","system",true);
   saveGame(false);
 }else{
   saveGame(false);
 }
 applyStaticI18n();
 render();
-// v0.42: collapsible UI
+// v0.43: collapsible UI
 applySavedCollapsedUI();
 bindCollapseTapHandlers();
+// v0.43: loading complete; start gameplay tracking once a hero exists
+CG.loadingStop();
 if(showWelcomeIfNew()){
   // wait for chooseWelcomeLang to handle creation
 }else if(!player.created){
   showCharacterCreation();
+}else{
+  CG.gameplayStart();
 }
