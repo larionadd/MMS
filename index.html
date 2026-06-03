@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Medieval Merchant Simulator v0.40</title>
+  <title>Medieval Merchant Simulator v0.41</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23f0c06a'/><stop offset='100%25' stop-color='%238b642b'/></linearGradient></defs><rect width='64' height='64' rx='12' fill='%23241809'/><path d='M10 50 L10 28 L18 28 L18 22 L22 22 L22 28 L28 28 L28 18 L36 18 L36 28 L42 28 L42 22 L46 22 L46 28 L54 28 L54 50 Z' fill='url(%23g)' stroke='%23d3a348' stroke-width='1.5'/><rect x='27' y='34' width='10' height='16' fill='%23241809'/><circle cx='32' cy='40' r='1.5' fill='%23f0c06a'/><path d='M14 32 L14 36 L16 36 L16 32 Z M20 32 L20 36 L22 36 L22 32 Z M42 32 L42 36 L44 36 L44 32 Z M48 32 L48 36 L50 36 L50 32 Z' fill='%23241809'/><circle cx='32' cy='13' r='2.5' fill='%23f0c06a'/></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,15 +11,13 @@
 <button class="ui-collapse-toggle" id="uiCollapseToggle" title="Compact UI" onclick="toggleCollapsedUI()">⇔</button>
 <div class="app-shell" id="appShell">
   <aside class="side-nav">
-    <div class="logo"><div class="logo-icon">🏰</div><div><b>Merchant</b><span>Simulator v0.40</span></div></div>
+    <div class="logo"><div class="logo-icon">🏰</div><div><b>Merchant</b><span>Simulator v0.41</span></div></div>
     <select id="mobileTabDropdown" class="mobile-tab-dropdown" onchange="setActiveTab(this.value)">
       <option value="market" data-i18n="nav.market">Ринок</option>
+      <option value="square" data-i18n="nav.square">Головна площа</option>
       <option value="travel" data-i18n="nav.travel">Подорожі</option>
       <option value="player" data-i18n="nav.player">Герой</option>
-      <option value="guild" data-i18n="nav.guild">Гільдія</option>
-      <option value="people" data-i18n="nav.people">Центр зайнятості</option>
       <option value="subordinates" data-i18n="nav.subordinates">Підлеглі</option>
-      <option value="shop" data-i18n="nav.shop">Крамниця</option>
       <option value="hq" data-i18n="nav.hq">Штаб</option>
       <option value="journal" data-i18n="nav.journal">Журнал</option>
       <option value="help" data-i18n="nav.help">Довідка</option>
@@ -27,12 +25,10 @@
     </select>
     <button class="btn gray lang-toggle" id="langToggle" onclick="toggleLang()">English</button>
     <button class="nav active" data-tab="market">💰<span data-i18n="nav.market">Ринок</span></button>
+    <button class="nav" data-tab="square">🏛️<span data-i18n="nav.square">Площа</span></button>
     <button class="nav" data-tab="travel">🧭<span data-i18n="nav.travel">Подорожі</span></button>
     <button class="nav" data-tab="player">🧭<span data-i18n="nav.player">Герой</span></button>
-    <button class="nav" data-tab="guild">📜<span data-i18n="nav.guild">Гільдія</span></button>
-    <button class="nav" data-tab="people">👥<span data-i18n="nav.people">Центр зайнятості</span></button>
     <button class="nav" data-tab="subordinates">🛡️<span data-i18n="nav.subordinates">Підлеглі</span></button>
-    <button class="nav" data-tab="shop">🎁<span data-i18n="nav.shop">Крамниця</span></button>
     <button class="nav feature-disabled" data-tab="caravan">🐎<span data-i18n="nav.caravan">Караван</span></button>
     <button class="nav" data-tab="hq">🏰<span data-i18n="nav.hq">Штаб</span></button>
     <button class="nav" data-tab="journal">📜<span data-i18n="nav.journal">Журнал</span></button>
@@ -103,26 +99,68 @@
       <div id="playerProfile"></div>
     </section>
 
-    <section id="guild" class="tab">
+    <section id="square" class="tab">
       <div class="panel">
-        <h2 id="guildName" data-i18n="guild.title">📜 Гільдія торговців</h2>
-        <div id="guildRegion" class="hint"></div>
-        <h2 class="subhead" data-i18n="guild.contracts">Торгові контракти гільдії</h2>
-        <div id="guildBoard" class="guild-grid"></div>
-        <h2 id="councilName" class="subhead" data-i18n="guild.council">Мерія міста</h2>
-        <div id="councilRegion" class="hint"></div>
-        <div id="councilBoard" class="guild-grid council-grid"></div>
-        <h2 class="subhead" data-i18n="guild.accepted">Прийняті замовлення</h2>
-        <div id="activeGuildQuests" class="guild-grid"></div>
-      </div>
-    </section>
+        <h2 data-i18n="square.title">🏛️ Головна площа</h2>
+        <div id="squareCity" class="square-city"></div>
+        <div class="square-subtabs">
+          <button class="square-tab active" data-sub="guild" onclick="setSquareSub('guild')">📜 <span data-i18n="square.guild">Гільдія</span></button>
+          <button class="square-tab" data-sub="shop" onclick="setSquareSub('shop')">🎁 <span data-i18n="square.shop">Крамниця</span></button>
+          <button class="square-tab" data-sub="people" onclick="setSquareSub('people')">👥 <span data-i18n="square.people">Центр зайнятості</span></button>
+          <button class="square-tab" data-sub="slaves" onclick="setSquareSub('slaves')">⛓️ <span data-i18n="square.slaves">Ринок рабів</span></button>
+        </div>
 
-    <section id="people" class="tab">
-      <div class="panel">
-        <h2 data-i18n="people.title">👥 Центр зайнятості</h2>
-        <p class="muted" data-i18n="people.desc">Тут гравець може найняти нових працівників та купити підневільних людей. Доступні лише люди міста, в якому ти перебуваєш; вирушай в інші міста, щоб знайти інших кандидатів.</p>
-        <div id="peopleMarketHint" class="hint"></div>
-        <div id="npcMarket"></div>
+        <div id="sub-guild" class="square-sub active">
+          <h2 id="guildName" data-i18n="guild.title">📜 Гільдія торговців</h2>
+          <div id="guildRegion" class="hint"></div>
+          <h2 class="subhead" data-i18n="guild.contracts">Торгові контракти гільдії</h2>
+          <div id="guildBoard" class="guild-grid"></div>
+          <h2 id="councilName" class="subhead" data-i18n="guild.council">Мерія міста</h2>
+          <div id="councilRegion" class="hint"></div>
+          <div id="councilBoard" class="guild-grid council-grid"></div>
+          <h2 class="subhead" data-i18n="guild.accepted">Прийняті замовлення</h2>
+          <div id="activeGuildQuests" class="guild-grid"></div>
+        </div>
+
+        <div id="sub-shop" class="square-sub">
+          <h2 id="localShopName" data-i18n="shop.title">🎁 Крамниця речей</h2>
+          <p class="muted" data-i18n="shop.desc">Придбані речі зберігаються у запасі. Вручити їх конкретному персонажу можна в його особовій справі.</p>
+          <div id="localShopHint" class="hint"></div>
+          <div class="economy-note" data-i18n="shop.quality_note">Якість речей: звичайна, покращена, рідкісна, виняткова, легендарна. Легендарні реліквії не продаються: їх можна випадково знайти під час подорожі.</div>
+          <div class="shop-columns">
+            <div>
+              <h2 class="subhead" data-i18n="shop.workers">Для працівників і громадян</h2>
+              <p class="muted" data-i18n="shop.workers_desc">Подарунки, одяг і талісмани, які підвищують комфорт та відданість.</p>
+              <div id="workerShop"></div>
+            </div>
+            <div>
+              <h2 class="subhead" data-i18n="shop.bonded">Забезпечення підневільних людей</h2>
+              <p class="muted" data-i18n="shop.bonded_desc">Теплі та корисні речі для покращення здоров'я і лояльності.</p>
+              <div id="supportShop"></div>
+            </div>
+          </div>
+          <h2 class="subhead" data-i18n="shop.home">Для дому та штаб-квартири</h2>
+          <p class="muted" data-i18n="shop.home_desc">Меблі й обладнання можна встановлювати лише у доречних приміщеннях штабу.</p>
+          <div id="homeShop" class="home-shop-grid"></div>
+          <h2 class="subhead" data-i18n="shop.my_items">Мої придбані речі</h2>
+          <div id="giftInventory"></div>
+          <h2 class="subhead" data-i18n="shop.home_items">Меблі та обладнання в запасі</h2>
+          <div id="homeInventory"></div>
+        </div>
+
+        <div id="sub-people" class="square-sub">
+          <h2 data-i18n="people.title">👥 Центр зайнятості</h2>
+          <p class="muted" data-i18n="people.desc">Найми вільних людей. Доступні лише мешканці міста, в якому ти перебуваєш.</p>
+          <div id="peopleMarketHint" class="hint"></div>
+          <div id="npcMarketFree"></div>
+        </div>
+
+        <div id="sub-slaves" class="square-sub">
+          <h2 data-i18n="slaves.title">⛓️ Ринок рабів</h2>
+          <p class="muted" data-i18n="slaves.desc">Можна купити підневільних людей. Доступні лише мешканці поточного міста.</p>
+          <div id="slavesMarketHint" class="hint"></div>
+          <div id="npcMarketSlaves"></div>
+        </div>
       </div>
     </section>
 
@@ -138,34 +176,6 @@
 
     <section id="profile" class="tab">
       <div id="npcProfile"></div>
-    </section>
-
-    <section id="shop" class="tab">
-      <div class="panel">
-        <h2 id="localShopName" data-i18n="shop.title">🎁 Крамниця речей</h2>
-        <p class="muted" data-i18n="shop.desc">Придбані речі зберігаються у запасі. Вручити їх конкретному персонажу можна в його особовій справі.</p>
-        <div id="localShopHint" class="hint"></div>
-        <div class="economy-note" data-i18n="shop.quality_note">Якість речей: звичайна, покращена, рідкісна, виняткова, легендарна. Легендарні реліквії не продаються: їх можна випадково знайти під час подорожі.</div>
-        <div class="shop-columns">
-          <div>
-            <h2 class="subhead" data-i18n="shop.workers">Для працівників і громадян</h2>
-            <p class="muted" data-i18n="shop.workers_desc">Подарунки, одяг і талісмани, які підвищують комфорт та відданість.</p>
-            <div id="workerShop"></div>
-          </div>
-          <div>
-            <h2 class="subhead" data-i18n="shop.bonded">Забезпечення підневільних людей</h2>
-            <p class="muted" data-i18n="shop.bonded_desc">Теплі та корисні речі для покращення здоров'я і лояльності.</p>
-            <div id="supportShop"></div>
-          </div>
-        </div>
-        <h2 class="subhead" data-i18n="shop.home">Для дому та штаб-квартири</h2>
-        <p class="muted" data-i18n="shop.home_desc">Меблі й обладнання можна встановлювати лише у доречних приміщеннях штабу. Звичайні та рідкісні речі продаються, легендарні потрібно знайти.</p>
-        <div id="homeShop" class="home-shop-grid"></div>
-        <h2 class="subhead" data-i18n="shop.my_items">Мої придбані речі</h2>
-        <div id="giftInventory"></div>
-        <h2 class="subhead" data-i18n="shop.home_items">Меблі та обладнання в запасі</h2>
-        <div id="homeInventory"></div>
-      </div>
     </section>
 
     <section id="caravan" class="tab">

@@ -47,7 +47,9 @@ function toggleLang(){ setLang(lang==="uk"?"en":"uk"); }
 const STRINGS = {
   uk:{
     "ui.lang_toggle":"English",
-    "nav.market":"Ринок","nav.travel":"Подорожі","nav.player":"Герой","nav.guild":"Гільдія",
+    "nav.market":"Ринок","nav.square":"Площа","nav.travel":"Подорожі","nav.player":"Герой","nav.guild":"Гільдія",
+    "square.title":"🏛️ Головна площа","square.guild":"Гільдія","square.shop":"Крамниця","square.people":"Центр зайнятості","square.slaves":"Ринок рабів",
+    "slaves.title":"⛓️ Ринок рабів","slaves.desc":"Можна купити підневільних людей. Доступні лише мешканці поточного міста.",
     "nav.people":"Центр зайнятості","nav.subordinates":"Підлеглі","nav.shop":"Крамниця",
     "nav.caravan":"Караван","nav.hq":"Штаб","nav.journal":"Журнал","nav.help":"Довідка","nav.achievements":"Досягнення",
     "btn.next_day":"⏭️ Наступний день","btn.next_week":"⏩ Наступний тиждень","btn.save":"Зберегти","btn.new_game":"Нова гра",
@@ -78,7 +80,9 @@ const STRINGS = {
   },
   en:{
     "ui.lang_toggle":"Українська",
-    "nav.market":"Market","nav.travel":"Travel","nav.player":"Hero","nav.guild":"Guild",
+    "nav.market":"Market","nav.square":"Square","nav.travel":"Travel","nav.player":"Hero","nav.guild":"Guild",
+    "square.title":"🏛️ Main Square","square.guild":"Guild","square.shop":"Shop","square.people":"Employment","square.slaves":"Slave market",
+    "slaves.title":"⛓️ Slave market","slaves.desc":"Buy bonded people. Only candidates from the current city are available.",
     "nav.people":"Employment","nav.subordinates":"Retinue","nav.shop":"Shop",
     "nav.caravan":"Caravan","nav.hq":"Headquarters","nav.journal":"Journal","nav.help":"Help","nav.achievements":"Achievements",
     "btn.next_day":"⏭️ Next day","btn.next_week":"⏩ Next week","btn.save":"Save","btn.new_game":"New game",
@@ -198,7 +202,7 @@ function hasItemAnywhere(id){
   const people=(Array.isArray(ownedSlaves)?ownedSlaves:[]).concat(Array.isArray(ownedHirelings)?ownedHirelings:[]);
   return itemStock(id)>0 || people.some(person=>Object.values(person.equipment||{}).includes(id));
 }
-// === v0.40: Difficulty ===
+// === v0.41: Difficulty ===
 const DIFFICULTY_LEVELS={
   easy:{
     key:"easy",
@@ -245,7 +249,7 @@ function dailyActionLimit(){
   return Math.max(1,BALANCE.actionsPerDay+bonus)+(hasItemAnywhere("scholar_motion_talisman")?1:0);
 }
 
-// === v0.40: Save slots ===
+// === v0.41: Save slots ===
 const SAVE_SLOT_PREFIX="medievalMerchantSlot_";
 function listSaveSlots(){
   const slots=[];
@@ -294,7 +298,7 @@ function writeSaveSlotWithCleanup(key,json){
 }
 function saveToSlot(name){
   if(!name||!name.trim()) return false;
-  // v0.40+: allow apostrophes, dots, commas, parentheses — typical for slot names
+  // v0.41+: allow apostrophes, dots, commas, parentheses — typical for slot names
   const safe=name.trim().replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9 _\-'’.,():!?]/g,"").slice(0,40);
   if(!safe) return false;
   try{
@@ -358,7 +362,7 @@ function renderSaveSlots(){
   const fmt=ts=>{if(!ts)return"";const d=new Date(ts);return d.toLocaleDateString()+" "+d.toLocaleTimeString().slice(0,5);};
   const list=slots.length?slots.map(s=>{
     const diffIcon=DIFFICULTY_LEVELS[s.difficulty]?DIFFICULTY_LEVELS[s.difficulty].icon:"";
-    // v0.40 fix: use data-slot attribute + event delegation to avoid quote-escaping bugs
+    // v0.41 fix: use data-slot attribute + event delegation to avoid quote-escaping bugs
     return `<div class="save-slot-row" data-slot="${encodeURIComponent(s.name)}">
       <div class="save-slot-info">
         <div class="save-slot-name"><b>${escapeHtml(s.name)}</b> ${diffIcon}</div>
@@ -427,7 +431,7 @@ const playerRanks = [
   {name:"Голова гільдії",xp:2600},
   {name:"Мер торгового міста",xp:3120}
 ];
-// v0.40: achievements with bilingual title/desc. Stored title/desc remain UK for save compatibility;
+// v0.41: achievements with bilingual title/desc. Stored title/desc remain UK for save compatibility;
 // accessors achievementTitle() / achievementDesc() return localized strings.
 const achievementCatalog = [
   ...playerRanks.map((rank,index)=>({
@@ -813,7 +817,7 @@ const regionalNpcNames = {
   }
 };
 // Add set IDs here after placing additional portrait folders under assets/npc/.
-// v0.40: free female NPCs now use all 5 panel slots (female_01..female_05),
+// v0.41: free female NPCs now use all 5 panel slots (female_01..female_05),
 // matching the 5-panel women atlas. Slave/serf variants stay separate.
 const npcPortraitSets = {
   male:["male_01","male_slave_01","male_slave_02","male_slave_03","male_slave_04","male_slave_05"],
@@ -920,7 +924,7 @@ const hiddenPlaces = {
   }
 };
 
-// === v0.40: Tavern rumours that decode the smiths' riddle ===
+// === v0.41: Tavern rumours that decode the smiths' riddle ===
 // Each rumour points to a city that supplies the required ingredient.
 // Player must visit each city and overhear the rumour to decode the recipe.
 const TAVERN_RUMORS=[
@@ -1083,10 +1087,10 @@ let securityUntil, caravanBoostUntil, kitchenUntil, roomActionsUsed, caravanId, 
 let player, energy, daySummary, homeInventory, achievements, visitedCities, shopStock;
 let activeTab = "market";
 
-// === v0.40: i18n helpers for new strings ===
+// === v0.41: i18n helpers for new strings ===
 function tr(uk,en){return lang==="en"?en:uk;}
 
-// === v0.40: Seasons ===
+// === v0.41: Seasons ===
 const SEASONS=[
   {key:"spring",name:"Весна",nameEn:"Spring",icon:"🌱",
     mods:{"Зерно":1.20,"Льон":1.20,"Хутро":0.85,"Дрова":0.85,"Сіль":0.95}},
@@ -1477,7 +1481,7 @@ function compensationDetail(person){
 function portraitMasterKey(job){
   return {"Кузня":"forge","Ткацький цех":"weaving","Ферма":"farm","Кухня":"kitchen","Заїжджий двір":"inn","Склад":"warehouse","Тренування":"guard","Ювелірна майстерня":"jeweler","Меблева майстерня":"furniture"}[job]||"worker";
 }
-// v0.40: Women portraits from 5-panel image
+// v0.41: Women portraits from 5-panel image
 const WOMEN_PANEL_SETS=["female_01","female_02","female_03","female_04","female_05"];
 function getWomenPanelIndex(person){
   if(!person||person.status==="slave"||person.gender!=="female") return -1;
@@ -1640,7 +1644,7 @@ function interactWithNPC(id,interactionId){
   person.interactionDays[interactionId]=day;
   adjustRelationship(person,interaction.effects);
   logAction("💬 "+profileName(person)+": «"+interaction.name+"». Рівень стосунків: "+relationshipRank(person)+" ("+relationshipLabel(person)+").","relation");
-  // v0.40 fix: close relationship modal before showing interaction result so it doesn't overlap
+  // v0.41 fix: close relationship modal before showing interaction result so it doesn't overlap
   closeRelationshipDialog();
   showInteractionEvent(person,interaction,before);
   saveGame(false);
@@ -2114,7 +2118,7 @@ function replaceQuest(quest){
   if(index>=0) board[index]=quest.kind==="guild"?makeGuildQuest(quest.issuer):makeCouncilQuest(quest.issuer);
 }
 function grantCouncilReward(reward){
-  // v0.40: harden against corrupted/missing reward data
+  // v0.41: harden against corrupted/missing reward data
   if(!reward||!reward.type) return "—";
   if(reward.type==="goods"){
     if(!reward.name||!Number.isFinite(reward.qty)||reward.qty<1) return "—";
@@ -2206,7 +2210,7 @@ function expireQuests(){
 }
 
 function startNewState(){
-  // v0.40: use difficulty preset if player has chosen one, else normal
+  // v0.41: use difficulty preset if player has chosen one, else normal
   const diffKey=(player&&player.difficulty)||"normal";
   const diff=DIFFICULTY_LEVELS[diffKey]||DIFFICULTY_LEVELS.normal;
   gold = diff.startingGold;
@@ -2359,9 +2363,9 @@ function loadGame(){
 function newGame(){
   if(!window.confirm(tr("Почати нову гру? Поточне збереження буде замінено.","Start a new game? The current save will be replaced."))) return;
   startNewState();
-  // v0.40 fix: reset created so welcome → creation flow works
+  // v0.41 fix: reset created so welcome → creation flow works
   if(player) player.created=false;
-  log(tr("🎮 Нова кампанія v0.40 очікує створення героя.","🎮 New v0.40 campaign awaits character creation."),"system");
+  log(tr("🎮 Нова кампанія v0.41 очікує створення героя.","🎮 New v0.41 campaign awaits character creation."),"system");
   saveGame(false);
   render();
   // Show welcome (language) screen at the start of a new game
@@ -2798,13 +2802,11 @@ function collapseMobileDetails(){
 function renderTab(tabId){
   const tabRenderers={
     market:renderMarket,
+    square:renderSquare,
     travel:renderTravel,
     player:renderPlayerProfile,
-    people:renderNpcMarket,
     subordinates:renderOwned,
     profile:renderNpcProfile,
-    shop:renderShops,
-    guild:renderGuild,
     caravan:renderRoutes,
     hq:()=>{renderRooms();renderFamilyRooms();},
     journal:renderLog,
@@ -2813,7 +2815,7 @@ function renderTab(tabId){
   };
   (tabRenderers[tabId]||renderMarket)();
 }
-// === v0.40: Help / New player guide ===
+// === v0.41: Help / New player guide ===
 const HELP_CONTENT={
   uk:[
     {h:"🎮 З чого починається гра",b:`<p>Ти — молодий торговець у 1205 році. Європа розколота на сотні князівств, церков і міст-комун. Сіль з Кракова цінується у Венеції, шовк з Константинополя — у Парижі, хутро з Києва — всюди.</p>
@@ -2916,9 +2918,9 @@ const HELP_CONTENT={
 </ul>`}
   ]
 };
-// === v0.40: Changelog ===
+// === v0.41: Changelog ===
 const CHANGELOG=[
-  {version:"v0.40",date:"2026-06-02",entries:{
+  {version:"v0.41",date:"2026-06-02",entries:{
     uk:[
       {tag:"FIX",text:"Розширено пул жіночих портретів: усі 5 панелей атласу (female_01..female_05) тепер реально потрапляють у вільних NPC. Раніше випадково призначався лише female_01 — інші 4 ніколи не показувалися."},
       {tag:"FIX",text:"Перекаліброванні координати міст на мапі подорожі: тепер усі 34 крапки збігаються з реальним малюнком europe_1205.png."},
@@ -3128,8 +3130,8 @@ function renderHelp(which=currentHelpTab){
   currentHelpTab=which==="changelog"?"changelog":"guide";
   const content=HELP_CONTENT[lang]||HELP_CONTENT.uk;
   const versionLine=tr(
-    `Поточна версія: <b>v0.40</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
-    `Current version: <b>v0.40</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
+    `Поточна версія: <b>v0.41</b> — фікс критичного бага бою (мертві NPC билися) + рівні складності, сейв-слоти, жіночі портрети, еволюція NPC.`,
+    `Current version: <b>v0.41</b> — critical combat fix (dead NPCs kept fighting) + difficulty levels, save slots, female portraits, NPC evolution.`
   );
   const tabs=`<div class="help-tabs"><button type="button" class="help-tab ${currentHelpTab==="guide"?"active":""}" data-help-tab="guide" aria-pressed="${currentHelpTab==="guide"}" onclick="switchHelpTab(this,'guide')">${tr("📖 Гайд","📖 Guide")}</button><button type="button" class="help-tab ${currentHelpTab==="changelog"?"active":""}" data-help-tab="changelog" aria-pressed="${currentHelpTab==="changelog"}" onclick="switchHelpTab(this,'changelog')">${tr("📜 Літопис змін","📜 Changelog")}</button></div>`;
   const guide=`<div id="helpTabGuide" class="help-tab-content ${currentHelpTab==="guide"?"active":""}"><div class="help-grid">`+content.map(item=>`<div class="profile-block help-card"><h3>${item.h}</h3>${item.b}</div>`).join("")+`</div></div>`;
@@ -3189,7 +3191,7 @@ function priceTrendBadge(g){
 }
 
 function renderMarket(){
-  // v0.40: try to reveal a tavern rumour on each market visit (chance-based)
+  // v0.41: try to reveal a tavern rumour on each market visit (chance-based)
   maybeRevealRumor();
   const city=cities[currentCity];
   const profile=cityProfile(currentCity);
@@ -3199,7 +3201,7 @@ function renderMarket(){
   const factNote=lang==="en"?"In-game historical note: population figures are approximate for the early 12th century.":"Ігрова історична довідка: чисельність наведена орієнтовно для початку XII століття.";
   document.getElementById("cityFacts").innerHTML=`<div class="city-facts"><b>${cityName(currentCity)}, ${regionName(city.region)}</b><span>${factLabels[0]}: <b>${profile[0]}</b></span><span>${factLabels[1]}: <b>${profile[1]}</b></span><span>${factLabels[2]}: <b>${profile[2]}</b></span><span>${factLabels[3]}: <b>${profile[3]}</b></span><span><b>${reputationLabel(currentCity)}</b></span><small>${factNote}</small></div>`;
   document.getElementById("marketHint").innerText=cityHint(city)+(lang==="en"?" Buying and selling are available only at this local market.":" Купівля і продаж доступні тільки на цьому місцевому ринку.");
-  // v0.40: inventory strip above goods grid
+  // v0.41: inventory strip above goods grid
   const ownedItems=Object.entries(inventory||{}).filter(e=>e[1]>0);
   let invStrip="";
   if(ownedItems.length){
@@ -3243,7 +3245,7 @@ function renderTravel(){
   }).join("");
 }
 
-// v0.40+: calibrated overlay coordinates for assets/map/europe_1205.png.
+// v0.41+: calibrated overlay coordinates for assets/map/europe_1205.png.
 const cityMapPoints = [
   {x:62.5,y:37.5}, // Krakow
   {x:87.5,y:39.0}, // Kyiv
@@ -3449,18 +3451,78 @@ function managerActions(n,includeProfile=true){
 }
 function renderNpcMarket(){
   const localPeople=npcMarket.filter(person=>person.city===currentCity);
-  document.getElementById("peopleMarketHint").innerText=tr("Місто: ","City: ")+cityName(currentCity)+tr(". Доступно кандидатів: ",". Candidates available: ")+localPeople.length+".";
-  if(!localPeople.length){
-    document.getElementById("npcMarket").innerHTML=`<div class="empty">${tr("Сьогодні в місті немає доступних кандидатів. За кілька днів можуть прибути нові люди.","No candidates available in town today. New people may arrive in a few days.")}</div>`;
-    return;
-  }
   const noneLbl=tr("Немає кандидатів","No candidates");
+  const menLbl=tr("♂ Чоловіки","♂ Men"),womenLbl=tr("♀ Жінки","♀ Women");
   const lane=(status,gender,title)=>{
     const cards=localPeople.filter(n=>n.status===status&&n.gender===gender).map(n=>npcCard(n,"market")).join("")||`<div class="empty">${noneLbl}</div>`;
     return `<div class="people-lane"><h3>${title}</h3><div class="people-lane-scroll">${cards}</div></div>`;
   };
-  const menLbl=tr("♂ Чоловіки","♂ Men"),womenLbl=tr("♀ Жінки","♀ Women");
-  document.getElementById("npcMarket").innerHTML=`<div class="people-columns"><div><h2 class="subhead">${tr("Найманці","Hirelings")}</h2>${lane("free","male",menLbl)}${lane("free","female",womenLbl)}</div><div><h2 class="subhead">${tr("Підневільні люди","Bonded people")}</h2>${lane("slave","male",menLbl)}${lane("slave","female",womenLbl)}</div></div>`;
+  // v0.41: render Free and Slave markets into separate Square sub-containers
+  const free=localPeople.filter(p=>p.status==="free");
+  const slaves=localPeople.filter(p=>p.status==="slave");
+  const freeEl=document.getElementById("npcMarketFree");
+  const slavesEl=document.getElementById("npcMarketSlaves");
+  if(freeEl){
+    const hint=document.getElementById("peopleMarketHint");
+    if(hint) hint.innerText=tr("Місто: ","City: ")+cityName(currentCity)+tr(". Доступно вільних: ",". Free candidates available: ")+free.length+".";
+    if(!free.length){
+      freeEl.innerHTML=`<div class="empty">${tr("Сьогодні в місті немає вільних кандидатів.","No free candidates available in town today.")}</div>`;
+    }else{
+      freeEl.innerHTML=`<div class="people-columns single"><div>${lane("free","male",menLbl)}${lane("free","female",womenLbl)}</div></div>`;
+    }
+  }
+  if(slavesEl){
+    const hintS=document.getElementById("slavesMarketHint");
+    if(hintS) hintS.innerText=tr("Місто: ","City: ")+cityName(currentCity)+tr(". Доступно рабів: ",". Bonded available: ")+slaves.length+".";
+    if(!slaves.length){
+      slavesEl.innerHTML=`<div class="empty">${tr("Сьогодні в місті немає підневільних кандидатів.","No bonded people available today.")}</div>`;
+    }else{
+      slavesEl.innerHTML=`<div class="people-columns single"><div>${lane("slave","male",menLbl)}${lane("slave","female",womenLbl)}</div></div>`;
+    }
+  }
+  // Legacy container retained for backward compat
+  const legacy=document.getElementById("npcMarket");
+  if(legacy && !freeEl && !slavesEl){
+    if(!localPeople.length){
+      legacy.innerHTML=`<div class="empty">${tr("Сьогодні в місті немає доступних кандидатів.","No candidates available in town today.")}</div>`;
+    }else{
+      legacy.innerHTML=`<div class="people-columns"><div><h2 class="subhead">${tr("Найманці","Hirelings")}</h2>${lane("free","male",menLbl)}${lane("free","female",womenLbl)}</div><div><h2 class="subhead">${tr("Підневільні люди","Bonded people")}</h2>${lane("slave","male",menLbl)}${lane("slave","female",womenLbl)}</div></div>`;
+    }
+  }
+}
+
+// === v0.41: Square (Main Square) — city hub combining Guild, Shop, Employment, Slave Market ===
+let currentSquareSub="guild";
+function setSquareSub(name){
+  if(!["guild","shop","people","slaves"].includes(name)) return;
+  currentSquareSub=name;
+  document.querySelectorAll(".square-tab").forEach(b=>b.classList.toggle("active",b.dataset.sub===name));
+  document.querySelectorAll(".square-sub").forEach(div=>div.classList.toggle("active",div.id==="sub-"+name));
+  // Re-render the relevant sub
+  if(name==="guild") renderGuild();
+  else if(name==="shop") renderShops();
+  else if(name==="people"||name==="slaves") renderNpcMarket();
+}
+function renderSquare(){
+  // Top banner: city image + facts (mirrors Market tab info)
+  const city=cities[currentCity];
+  const profile=cityProfiles[currentCity];
+  const banner=document.getElementById("squareCity");
+  if(banner){
+    const factLabels=lang==="en"?["Founded","Population","Religion","Authority"]:["Заснування","Населення","Релігія","Влада"];
+    banner.innerHTML=`
+      <div class="square-banner">
+        <div class="square-banner-art"><img src="assets/cities/${cityArtKeys[currentCity]}.png" onerror="this.style.display='none'"></div>
+        <div class="square-banner-info">
+          <h3>📍 ${escapeHtml(cityName(currentCity))}, ${escapeHtml(regionName(city.region))}</h3>
+          <p><b>${factLabels[0]}:</b> ${escapeHtml(profile[0])} • <b>${factLabels[1]}:</b> ${escapeHtml(profile[1])}</p>
+          <p><b>${factLabels[2]}:</b> ${escapeHtml(profile[2])} • <b>${factLabels[3]}:</b> ${escapeHtml(profile[3])}</p>
+          <p class="muted">${escapeHtml(reputationLabel(currentCity))}</p>
+        </div>
+      </div>`;
+  }
+  // Render sub-content; ensure currentSquareSub matches DOM state
+  setSquareSub(currentSquareSub);
 }
 function renderOwned(){
   document.getElementById("ownedSlaves").innerHTML=ownedSlaves.length?ownedSlaves.map(n=>npcCard(n,"owned")).join(""):`<div class="empty">${tr("У тебе немає куплених рабів.","You have no bonded people.")}</div>`;
@@ -3575,7 +3637,7 @@ function renderGuild(){
   const active=activeQuests();
   document.getElementById("activeGuildQuests").innerHTML=active.length?active.map(quest=>questCard(quest,false)).join(""):`<div class="empty">${tr("Прийнятих замовлень поки немає.","No accepted orders yet.")}</div>`;
 }
-// v0.40: find best places to buy a good (lowest current buy price with stock)
+// v0.41: find best places to buy a good (lowest current buy price with stock)
 function bestSourcesFor(goodName,limit=3){
   if(!markets||!markets.length) return [];
   const sources=[];
@@ -3650,6 +3712,10 @@ function renderQuestDock(){
 function findOwnedAny(id){return ownedPeople().find(person=>person.id===id);}
 function setActiveTab(tabId){
   if(tabId==="caravan" && !CARAVAN_ENABLED) tabId="market";
+  // v0.41: legacy tab IDs redirect into Square sub-tabs
+  if(tabId==="guild"){tabId="square";currentSquareSub="guild";}
+  else if(tabId==="shop"){tabId="square";currentSquareSub="shop";}
+  else if(tabId==="people"){tabId="square";currentSquareSub="people";}
   activeTab=tabId;
   document.querySelectorAll(".nav").forEach(button=>{button.classList.remove("active");if(button.dataset.tab===tabId) button.classList.add("active");});
   document.querySelectorAll(".tab").forEach(tab=>{tab.classList.remove("active");if(tab.id===tabId) tab.classList.add("active");});
@@ -3671,7 +3737,7 @@ function toggleActionDock(){
   const btn=dock.querySelector(".dock-toggle-btn");
   if(btn) btn.innerText=dock.classList.contains("dock-expanded")?"▼":"▲";
 }
-// v0.40+: collapsible desktop UI (side-nav + action-dock).
+// v0.41+: collapsible desktop UI (side-nav + action-dock).
 // IMPORTANT: action-dock is a SIBLING of .app-shell, not a child.
 // We therefore put the collapse classes on <body> so the CSS can target both.
 const COLLAPSE_KEY="merchant_ui_collapsed_v40";
@@ -3791,7 +3857,7 @@ function renderNpcProfile(){
   }
   const images=fullPortraitPaths(person);
   const portrait=images.shift();
-  // v0.40: use women-panel atlas for free female NPCs in full-portrait too
+  // v0.41: use women-panel atlas for free female NPCs in full-portrait too
   const fullPortraitHtml=getWomenPanelIndex(person)>=0
     ? `<div class="women-panel-portrait" style="background-position-x:${(getWomenPanelIndex(person)/(WOMEN_PANEL_SETS.length-1))*100}%"></div>`
     : `<img src="${portrait}" data-fallbacks="${images.join("|")}" data-icon="${person.status==="slave"?"⛓️":"🧍"}" onerror="nextPortrait(this)">`;
@@ -3818,7 +3884,7 @@ function renderNpcProfile(){
 
 function renderRoutes(){
   if(!CARAVAN_ENABLED){
-    document.getElementById("activeCaravans").innerHTML=`<h2 class="subhead">У дорозі</h2><div class="empty">Караванна система тимчасово прихована в білді v0.40. Поточні каравани, якщо вони були у старому збереженні, ще можуть завершити шлях.</div>`;
+    document.getElementById("activeCaravans").innerHTML=`<h2 class="subhead">У дорозі</h2><div class="empty">Караванна система тимчасово прихована в білді v0.41. Поточні каравани, якщо вони були у старому збереженні, ще можуть завершити шлях.</div>`;
     document.getElementById("routes").innerHTML="";
     return;
   }
@@ -3963,7 +4029,7 @@ function removeKilledNpc(person){
   ownedHirelings=ownedHirelings.filter(candidate=>candidate.id!==person.id);
   leaveProfileIfRemoved(person.id);
 }
-// ==== v0.40: DD combat skills, ranks, stress ====
+// ==== v0.41: DD combat skills, ranks, stress ====
 const DD_SKILL_NAMES={
   strike:{name:"Удар",nameEn:"Strike",desc:"Звичайна атака.",descEn:"Basic attack."},
   cleave:{name:"Розкол строю",nameEn:"Cleave",desc:"+60% шкоди, але -1 захист на 1 раунд.",descEn:"+60% damage, -1 defense for 1 round."},
@@ -4078,7 +4144,7 @@ function ddUnitHtml(unit,side,index,extraClass=""){
     const name=htmlName(unit.person);
     const cmbLbl=tr("Бій","Cmb");
     const meta=`HP ${Math.max(0,unit.hp)}/${unit.maxHp} • ${cmbLbl} ${unit.person.combat}${stress>=100?" • 😱":""}`;
-    // v0.40: women panel portraits in combat
+    // v0.41: women panel portraits in combat
     const womenIdx=getWomenPanelIndex(unit.person);
     const portraitMarkup=womenIdx>=0
       ? `<div class="women-panel-portrait" style="background-position-x:${(womenIdx/(WOMEN_PANEL_SETS.length-1))*100}%"></div>`
@@ -4437,7 +4503,7 @@ async function ddRunAutoCombat(){
       state.turnPos=t;
       const turn=state.turnOrder[t];
       const actor=turn.side==="allies"?state.allies[turn.index]:state.enemies[turn.index];
-      // v0.40 fix: skip dead actors (defense-in-depth) and re-check end-of-combat
+      // v0.41 fix: skip dead actors (defense-in-depth) and re-check end-of-combat
       if(!actor||actor.hp<=0) continue;
       if(state.allies.every(u=>u.hp<=0) || state.enemies.every(u=>u.hp<=0)) break;
       if(turn.side==="allies"){
@@ -4485,7 +4551,7 @@ async function ddManualUseSkill(skillKey,targetIdx,targetSide){
   const actor=state.allies[turn.index];
   const skill=DD_SKILLS.find(s=>s.key===skillKey);
   if(!actor||!skill){state.awaitingPlayer=true;return;}
-  // v0.40 fix: dead actor can't act
+  // v0.41 fix: dead actor can't act
   if(actor.hp<=0){return ddAdvanceManual();}
   // Override execute targets - use the user's pick
   const targets=targetSide==="allies"?[state.allies[targetIdx]]:[state.enemies[targetIdx]];
@@ -4727,7 +4793,7 @@ function combatRewardBox(lines,manual=false){
   return `<div class="combat-reward-box"><h3>Підсумок бою</h3>${content}${mode}</div>`;
 }
 function applyCombatOutcome(origin,destination,companionIds,pool,allies,enemies,rounds,isRaid,victory,manual=false,prose=null){
-  // v0.40: reset stress on victory, half on defeat
+  // v0.41: reset stress on victory, half on defeat
   allies.forEach(unit=>{
     if(unit.person) unit.person.combatStress=victory?0:Math.floor((unit.stress||0)/2);
   });
@@ -4788,9 +4854,9 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   if(!isRaid && !options.forced && badReputationFear(origin)){
     const text=pick(roadFearEvents);
     log("🛡️ "+cities[origin].name+" → "+cities[destination].name+": "+text+" Погана репутація спрацювала як захист дороги.","travel");
-    return null; // v0.40: no modal opened, nothing to await
+    return null; // v0.41: no modal opened, nothing to await
   }
-  // v0.40: build promise that resolves on closeCombat (combat modal opens in all paths below)
+  // v0.41: build promise that resolves on closeCombat (combat modal opens in all paths below)
   const combatPromise=waitForCombatClose();
   const party=travelParty(origin,companionIds);
   if(!party.length){
@@ -4835,7 +4901,7 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
     }
     if(ddCombatState.turnPos>=ddCombatState.turnOrder.length){
       const ai=ddCombatState.turnOrder.findIndex(t=>t.side==="allies");
-      // v0.40: guard against findIndex === -1 (no allies in turn order)
+      // v0.41: guard against findIndex === -1 (no allies in turn order)
       ddCombatState.turnPos=ai>=0?ai:0;
     }
     if(ddCombatState.turnPos<0) ddCombatState.turnPos=0;
@@ -4846,7 +4912,7 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   ddRunAutoCombat();
   return combatPromise;
 }
-// v0.40: split into pure roll (returns kind) + apply (logs/state) for async travel flow
+// v0.41: split into pure roll (returns kind) + apply (logs/state) for async travel flow
 function rollTravelEvent(origin,destination,companionIds=null){
   const event=pick(travelEvents);
   if((event.gold<0 || event.reputation<0) && badReputationFear(origin)){
@@ -4873,7 +4939,7 @@ function applyTravelEvent(origin,destination,companionIds=null){
     resolveRoadCombat(origin,destination,companionIds,{manual:selectedBattleMode==="manual"});
   }
 }
-// === v0.40 Routes ===
+// === v0.41 Routes ===
 const ROUTE_TYPES=[
   {key:"forest",icon:"🌲",name:"Лісом",nameEn:"Forest path",daysMod:-1,costMod:0.9,ambushMod:1.6,eventMod:1.1,
     desc:"Швидше на 1 день, дешевше на 10%. Висока ймовірність засідки.",descEn:"-1 day, -10% cost, +60% ambush chance."},
@@ -4981,7 +5047,7 @@ function moveTravelCompanions(companionIds,destination){
   const destCityName=cities[destination]&&cities[destination].name;
   moved.forEach(person=>{
     person.locationCity=destination;
-    // v0.40 #2: Mark aspiration flags for travel-based archetypes
+    // v0.41 #2: Mark aspiration flags for travel-based archetypes
     person.aspirationFlags=person.aspirationFlags||{};
     const data=getAspirationData(person);
     if(data){
@@ -5012,7 +5078,7 @@ function skipTravelAnim(){
   document.getElementById("travelAnimOverlay").classList.add("hidden");
   _pendingTravelAnim=null;
 }
-// === v0.40: incremental travel overlay for async confirmTravel ===
+// === v0.41: incremental travel overlay for async confirmTravel ===
 function beginTravelOverlay(origin,destination,duration){
   _travelSkipRequested=false;
   _travelAnimRoute={origin,destination};
@@ -5065,7 +5131,7 @@ function endTravelOverlay(destination){
   counter.textContent=tr("Прибуття! ","Arrival! ")+cityName(destination);
   if(_travelAnimRoute) renderTravelAnimMap(_travelAnimRoute.origin,_travelAnimRoute.destination,1);
 }
-// v0.40: wait for user to click finish button instead of auto-closing
+// v0.41: wait for user to click finish button instead of auto-closing
 let _travelFinishResolver=null;
 function waitForTravelFinish(){
   // Hide skip button, show finish button
@@ -5090,7 +5156,7 @@ function finishTravelOverlay(){
 }
 function travelSkipRequested(){return _travelSkipRequested;}
 function travelSleep(ms){return new Promise(r=>setTimeout(r,_travelSkipRequested?0:ms));}
-// === v0.40: combat resolution Promise ===
+// === v0.41: combat resolution Promise ===
 let _combatCloseResolver=null;
 function waitForCombatClose(){
   return new Promise(resolve=>{
@@ -5284,7 +5350,7 @@ async function confirmTravel(raid){
   saveGame(false);
   endTravelOverlay(destination);
   addTravelOverlayEvent("📍 "+tr("Прибуття до міста ","Arrival in ")+cityName(destination),"travel");
-  // v0.40: wait for user to manually close — gives time to read the journey log
+  // v0.41: wait for user to manually close — gives time to read the journey log
   if(!travelSkipRequested()){
     await waitForTravelFinish();
   }else{
@@ -5308,7 +5374,7 @@ function hiddenPlaceActions(key){
   }
   if(state.completed) return `<span class="badge">${tr("Завдання вже виконано","Quest already completed")}</span>`;
   if(!state.accepted) return `<button class="btn green" onclick="acceptHiddenQuest('${key}')">${tr("Прийняти виклик","Accept the challenge")}</button>`;
-  // v0.40: for the smiths' secret recipe, hide the need list — only reveal what player has decoded via rumours
+  // v0.41: for the smiths' secret recipe, hide the need list — only reveal what player has decoded via rumours
   if(place.hideNeed){
     const need=place.quest.need;
     const heardRumors=player.rumorsHeard||{};
@@ -5341,7 +5407,7 @@ function showHiddenPlace(key){
   const desc=lang==="en"&&place.descEn?place.descEn:place.desc;
   const lore=lang==="en"&&place.loreEn?place.loreEn:place.lore;
   document.getElementById("hiddenPlaceTitle").innerText=title;
-  // v0.40: rich text — desc as opening + lore as legend block (supports inline HTML for bold)
+  // v0.41: rich text — desc as opening + lore as legend block (supports inline HTML for bold)
   const textEl=document.getElementById("hiddenPlaceText");
   textEl.innerHTML=`<p class="hidden-desc">${escapeHtml(desc)}</p>`+(lore?`<div class="hidden-lore">${lore}</div>`:"");
   const imgEl=document.getElementById("hiddenPlaceImage");
@@ -5908,7 +5974,7 @@ function consumeFirst(names,qty){
   removeItem(match,qty);
   return match;
 }
-// === v0.40: Skill drift system ===
+// === v0.41: Skill drift system ===
 // Base growth rates per workshop. Multiple stats may grow simultaneously
 // (primary fast, secondary slow). All values mean "points per day at stat=0".
 const SKILL_DRIFT_RATES={
@@ -6124,7 +6190,7 @@ function replenishNpcMarket(){
 }
 
 function applyDailyEvent(){
-  // v0.40: guard against an empty/malformed dailyEvents array
+  // v0.41: guard against an empty/malformed dailyEvents array
   if(!Array.isArray(dailyEvents)||!dailyEvents.length) return;
   const event=dailyEvents[rand(0,dailyEvents.length-1)];
   if(!Array.isArray(event)||event.length<3) return;
@@ -6147,7 +6213,7 @@ function advanceDay(withEvent,showSummary=true){
   const previousEntries=daySummary.slice();
   day++;
   energy=dailyActionLimit();
-  // v0.40: check season transition + npc requests
+  // v0.41: check season transition + npc requests
   if(((day-1)%30)===0){
     const s=currentSeason();
     log("🗓️ Розпочався новий сезон: "+s.icon+" "+s.name+". Ціни на ринку зміняться.","system");
@@ -6161,15 +6227,15 @@ function advanceDay(withEvent,showSummary=true){
   });
   checkExpiredRequest();
   processNpcRequests();
-  // v0.40 #2: Aspirations
+  // v0.41 #2: Aspirations
   ownedPeople().forEach(p=>processAspiration(p));
   if(pendingAspirationId!=null && document.getElementById("npcRequestNotice").classList.contains("hidden")) showAspirationResolution();
-  // v0.40 #2: Partnership income from departed NPCs
+  // v0.41 #2: Partnership income from departed NPCs
   if(player.partnershipIncome){
     gold+=player.partnershipIncome;
     log("🤝 "+tr("Партнерські відрахування","Partnership income")+": +"+player.partnershipIncome+" 💰","relation");
   }
-  // v0.40 #2: Disillusioned NPCs slowly lose loyalty
+  // v0.41 #2: Disillusioned NPCs slowly lose loyalty
   ownedPeople().forEach(p=>{
     if(p.disillusioned && (day-p.aspiration.startedDay)%7===0){
       p.loyalty=clamp((p.loyalty||0)-1,0,BALANCE.maxAttribute);
@@ -6203,7 +6269,7 @@ function advanceDay(withEvent,showSummary=true){
   saveGame(false);
   render();
 }
-// === v0.40 NPC Aspirations (#2) ===
+// === v0.41 NPC Aspirations (#2) ===
 // Each hope archetype maps to a multi-step personal quest. The final step
 // triggers a resolution dialog where the player chooses how to respond.
 function cityIndexByName(name){
@@ -6213,7 +6279,7 @@ function removeOwnedPerson(person){
   if(!person) return;
   ownedHirelings=ownedHirelings.filter(p=>p.id!==person.id);
   ownedSlaves=ownedSlaves.filter(p=>p.id!==person.id);
-  // v0.40: also clear from travel state so the NPC doesn't ghost in the dock/UI
+  // v0.41: also clear from travel state so the NPC doesn't ghost in the dock/UI
   if(Array.isArray(travelCompanionIds)) travelCompanionIds=travelCompanionIds.filter(id=>id!==person.id);
   if(Array.isArray(selectedTravelCompanions)) selectedTravelCompanions=selectedTravelCompanions.filter(id=>id!==person.id);
   if(activeNpcRequest && activeNpcRequest.personId===person.id){
@@ -6488,7 +6554,7 @@ function resolveAspiration(optKey){
   render();
 }
 
-// === v0.40 NPC Requests ===
+// === v0.41 NPC Requests ===
 const NPC_REQUEST_TYPES=[
   {key:"home_visit",weight:3,
     generate(person){
@@ -6701,7 +6767,7 @@ function nextWeek(){
   render();
 }
 function closeEvent(){document.getElementById("eventModal").classList.add("hidden");}
-// === v0.40: Artistic day summary ===
+// === v0.41: Artistic day summary ===
 const DAY_OPENINGS={
   spring:[
     "Тіні весняного вечора подовжуються над {city}, день {n} літа Господнього 1205 згортається у спогад.",
@@ -7040,7 +7106,7 @@ function log(text,type="system",playerAction=false){
 document.querySelectorAll(".nav").forEach(btn=>{btn.onclick=()=>{
   setActiveTab(btn.dataset.tab);
 };});
-// v0.40: track user-opened state for mobile collapsibles
+// v0.41: track user-opened state for mobile collapsibles
 document.addEventListener("toggle",function(e){
   if(e.target.matches("details.npc-actions-toggle")){
     if(e.target.open) e.target.dataset.userOpened="1";
@@ -7072,14 +7138,14 @@ function showWelcomeIfNew(){
 }
 if(!loadGame()){
   startNewState();
-  log("🎮 Білд v0.40 запущено. Створіть героя, оберіть стартове місто і розпочніть шлях у 1205 році.","system",true);
+  log("🎮 Білд v0.41 запущено. Створіть героя, оберіть стартове місто і розпочніть шлях у 1205 році.","system",true);
   saveGame(false);
 }else{
   saveGame(false);
 }
 applyStaticI18n();
 render();
-// v0.40: collapsible UI
+// v0.41: collapsible UI
 applySavedCollapsedUI();
 bindCollapseTapHandlers();
 if(showWelcomeIfNew()){
