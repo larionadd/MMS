@@ -91,6 +91,10 @@ assert.match(html, /travelModal/, "travel preparation dialog exists");
 assert.match(html, /id="travelAnimMap"/, "travel animation overlay contains an embedded map");
 assert.match(source, /function html5TravelMapBackdrop/, "travel map uses an HTML5/SVG backdrop");
 assert.match(source, /class="travel-map-bg"/, "travel map renders an SVG map layer");
+assert.match(source, /const mapGeoBounds/, "travel map has geographic projection bounds");
+assert.match(source, /const cityGeoPoints/, "travel map city markers are based on longitude and latitude");
+assert.match(source, /function geoToMapPoint/, "travel map projects geo coordinates into SVG space");
+assert.match(source, /function geoPath/, "travel map draws coastline paths from geo coordinates");
 assert.match(source, /map-island/, "HTML5 map includes island shapes for Europe");
 assert.match(source, /map-britain/, "HTML5 map has a recognizable Britain shape");
 assert.match(source, /map-iberia/, "HTML5 map has a recognizable Iberian peninsula");
@@ -164,6 +168,7 @@ assert.match(game.nodes.travelGrid.innerHTML, /travel-card/, "travel destination
 game.run("player.foundHiddenPlaces=['witch','smiths']; renderTravelMap();");
 assert.match(game.nodes.travelMap.innerHTML, /map-hidden-marker/, "discovered hidden places render on the travel map");
 assert.match(game.nodes.travelMap.innerHTML, /Києвом і Лісабоном|Краковом і Полоцьком/, "hidden place tooltips explain how to find the place again");
+assert.doesNotMatch(game.nodes.travelMap.innerHTML, /NaN/, "projected travel map must not contain invalid SVG coordinates");
 game.run("prepareTravel((currentCity+1)%cities.length)");
 assert.match(game.nodes.travelCompanionList.innerHTML, /Обрано супровід/, "travel dialog renders companion selector");
 assert.equal(game.nodes.raidCaravanButton.disabled, true, "raid is disabled without selected companions");

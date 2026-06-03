@@ -3238,42 +3238,43 @@ function renderTravel(){
   }).join("");
 }
 
-// v0.40+: stylized equirectangular Europe map coordinates.
-const cityMapPoints = [
-  {x:59.1,y:42.1}, // Krakow
-  {x:78.7,y:40.6}, // Kyiv
-  {x:45.0,y:60.0}, // Venice
-  {x:48.9,y:42.0}, // Prague
-  {x:22.0,y:36.5}, // London
-  {x:20.2,y:27.1}, // York
-  {x:26.6,y:46.7}, // Paris
-  {x:24.3,y:44.7}, // Rouen
-  {x:28.2,y:37.7}, // Bruges
-  {x:29.1,y:38.5}, // Ghent
-  {x:35.1,y:38.7}, // Cologne
-  {x:37.5,y:42.0}, // Mainz
-  {x:44.7,y:46.0}, // Regensburg
-  {x:52.5,y:49.0}, // Vienna
-  {x:46.5,y:50.8}, // Salzburg
-  {x:39.2,y:59.8}, // Milan
-  {x:38.8,y:63.8}, // Genoa
-  {x:41.5,y:66.5}, // Pisa
-  {x:43.1,y:66.3}, // Florence
-  {x:45.4,y:73.5}, // Rome
-  {x:43.2,y:63.5}, // Bologna
-  {x:75.9,y:76.9}, // Constantinople
-  {x:64.7,y:78.3}, // Thessaloniki
-  {x:80.2,y:9.6}, // Novgorod
-  {x:81.6,y:23.9}, // Smolensk
-  {x:75.5,y:21.2}, // Polotsk
-  {x:40.7,y:28.8}, // Hamburg
-  {x:38.5,y:30.4}, // Bremen
-  {x:31.7,y:34.2}, // Utrecht
-  {x:26.2,y:75.5}, // Barcelona
-  {x:14.8,y:81.3}, // Toledo
-  {x:13.4,y:88.9}, // Cordoba
-  {x:11.1,y:90.8}, // Seville
-  {x:5.3,y:85.7}  // Lisbon
+// v0.40+: travel map uses real longitude/latitude projected into the SVG.
+const mapGeoBounds = {west:-11.5,east:42.5,north:62.5,south:36};
+const cityGeoPoints = [
+  {lon:19.945,lat:50.064}, // Krakow
+  {lon:30.523,lat:50.450}, // Kyiv
+  {lon:12.315,lat:45.440}, // Venice
+  {lon:14.438,lat:50.076}, // Prague
+  {lon:-0.128,lat:51.507}, // London
+  {lon:-1.082,lat:53.959}, // York
+  {lon:2.352,lat:48.857}, // Paris
+  {lon:1.099,lat:49.443}, // Rouen
+  {lon:3.225,lat:51.209}, // Bruges
+  {lon:3.717,lat:51.054}, // Ghent
+  {lon:6.960,lat:50.938}, // Cologne
+  {lon:8.247,lat:49.993}, // Mainz
+  {lon:12.102,lat:49.013}, // Regensburg
+  {lon:16.374,lat:48.208}, // Vienna
+  {lon:13.055,lat:47.810}, // Salzburg
+  {lon:9.190,lat:45.464}, // Milan
+  {lon:8.946,lat:44.405}, // Genoa
+  {lon:10.402,lat:43.716}, // Pisa
+  {lon:11.256,lat:43.770}, // Florence
+  {lon:12.496,lat:41.903}, // Rome
+  {lon:11.343,lat:44.495}, // Bologna
+  {lon:28.978,lat:41.008}, // Constantinople
+  {lon:22.944,lat:40.640}, // Thessaloniki
+  {lon:31.276,lat:58.523}, // Novgorod
+  {lon:32.045,lat:54.783}, // Smolensk
+  {lon:28.800,lat:55.485}, // Polotsk
+  {lon:9.994,lat:53.551}, // Hamburg
+  {lon:8.802,lat:53.079}, // Bremen
+  {lon:5.121,lat:52.091}, // Utrecht
+  {lon:2.173,lat:41.385}, // Barcelona
+  {lon:-4.027,lat:39.863}, // Toledo
+  {lon:-4.779,lat:37.888}, // Cordoba
+  {lon:-5.985,lat:37.389}, // Seville
+  {lon:-9.139,lat:38.722}  // Lisbon
 ];
 const cityLabelOffsets = [
   {x:-10,y:-30}, // Krakow
@@ -3312,17 +3313,70 @@ const cityLabelOffsets = [
   {x:-18,y:16}  // Lisbon
 ];
 const hiddenMapPoints = {
-  witch:{x:42,y:78,icon:"✦"},
-  smiths:{x:67,y:31,icon:"⚒"},
-  circus:{x:35,y:55,icon:"✹"},
-  scholars:{x:50,y:53,icon:"✧"}
+  witch:{lon:10.5,lat:43.0,icon:"✦"},
+  smiths:{lon:24.3,lat:52.7,icon:"⚒"},
+  circus:{lon:6.5,lat:47.0,icon:"✹"},
+  scholars:{lon:13.5,lat:46.4,icon:"✧"}
 };
+function geoToMapPoint(lon,lat){
+  const x=4+((lon-mapGeoBounds.west)/(mapGeoBounds.east-mapGeoBounds.west))*92;
+  const y=5+((mapGeoBounds.north-lat)/(mapGeoBounds.north-mapGeoBounds.south))*90;
+  return {x:Math.max(0,Math.min(100,Math.round(x*10)/10)),y:Math.max(0,Math.min(100,Math.round(y*10)/10))};
+}
+function geoPath(points,close=true){
+  const path=points.map((point,index)=>{
+    const projected=geoToMapPoint(point[0],point[1]);
+    return `${index?"L":"M"}${projected.x} ${projected.y}`;
+  }).join(" ");
+  return close?`${path} Z`:path;
+}
 function cityMapPoint(index){
-  return cityMapPoints[validCityIndex(index,0)] || {x:50,y:50};
+  const point=cityGeoPoints[validCityIndex(index,0)];
+  return point?geoToMapPoint(point.lon,point.lat):{x:50,y:50};
 }
 function cityLabelOffset(index){
   return cityLabelOffsets[validCityIndex(index,0)] || {x:0,y:14};
 }
+function hiddenMapPoint(key){
+  const point=hiddenMapPoints[key];
+  if(!point) return {x:50,y:50};
+  return Number.isFinite(point.lon)&&Number.isFinite(point.lat)?geoToMapPoint(point.lon,point.lat):point;
+}
+const mapMainlandGeo = [
+  [-9.5,38.7],[-9.1,40.9],[-8.4,43.4],[-5.5,43.7],[-1.7,43.4],[1.6,42.7],
+  [3.0,43.2],[5.5,43.4],[7.7,43.7],[9.0,44.1],[10.3,44.1],[12.2,45.4],
+  [13.6,45.9],[16.1,45.4],[18.4,44.7],[20.9,43.4],[23.0,41.9],[26.3,41.0],
+  [29.2,41.1],[31.0,44.0],[35.0,45.6],[40.0,48.0],[42.5,52.5],[38.2,56.0],
+  [32.0,59.2],[25.8,57.4],[22.0,56.1],[18.2,54.8],[14.0,54.6],[10.6,54.9],
+  [8.6,54.5],[7.1,53.6],[5.2,52.7],[3.0,51.4],[1.3,50.8],[-1.1,50.0],
+  [-4.5,48.5],[-1.3,46.2],[-1.8,44.7],[-5.2,43.5],[-8.2,41.8],[-9.5,38.7]
+];
+const mapBritainGeo = [
+  [-6.2,50.0],[-5.5,52.5],[-4.8,55.4],[-3.0,58.1],[0.8,57.6],[2.0,55.0],
+  [1.2,52.0],[-1.0,50.2],[-3.8,49.8],[-6.2,50.0]
+];
+const mapIrelandGeo = [
+  [-10.3,51.4],[-9.6,54.4],[-7.6,55.4],[-5.8,54.0],[-6.3,51.9],[-8.4,51.2],[-10.3,51.4]
+];
+const mapScandinaviaGeo = [
+  [5.0,57.2],[7.5,61.5],[13.0,62.3],[20.0,60.8],[26.0,58.5],[24.0,55.8],
+  [18.5,55.1],[14.0,56.0],[10.0,55.3],[5.0,57.2]
+];
+const mapJutlandGeo = [
+  [8.0,54.5],[9.8,56.3],[10.8,57.4],[11.1,55.0],[10.0,53.9],[8.8,54.0],[8.0,54.5]
+];
+const mapItalyGeo = [
+  [7.6,44.4],[9.5,45.2],[12.2,44.7],[13.4,43.4],[14.2,41.7],[16.4,40.1],
+  [17.3,39.0],[15.6,38.0],[13.0,40.0],[12.2,42.0],[10.6,43.6],[7.6,44.4]
+];
+const mapBalkansGeo = [
+  [13.8,45.5],[18.0,45.3],[22.0,43.8],[26.0,41.7],[29.2,41.1],[27.0,39.8],
+  [23.0,39.5],[20.2,40.5],[17.4,42.0],[15.0,44.0],[13.8,45.5]
+];
+const mapSicilyGeo = [[12.0,38.2],[14.8,38.0],[16.0,37.2],[13.5,36.7],[12.0,38.2]];
+const mapSardiniaGeo = [[8.0,41.4],[9.5,40.8],[9.5,39.0],[8.3,38.7],[8.0,41.4]];
+const mapCorsicaGeo = [[8.5,43.0],[9.6,42.3],[9.2,41.5],[8.3,41.8],[8.5,43.0]];
+const mapIberiaRegionGeo = [[-9.5,38.7],[-8.2,41.8],[-5.2,43.5],[-1.8,44.7],[3.0,43.2],[1.2,40.4],[-1.5,37.5],[-6.0,36.8],[-9.5,38.7]];
 function html5TravelMapBackdrop(){
   return `<svg class="travel-map-bg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
     <defs>
@@ -3338,35 +3392,41 @@ function html5TravelMapBackdrop(){
       </linearGradient>
     </defs>
     <rect class="map-sea" width="100" height="100"/>
-    <path class="map-coast-glow" d="M5 86 L8 76 L16 70 L24 72 L28 66 L25 57 L28 49 L24 45 L29 39 L31 34 L36 33 L41 27 L45 23 L50 25 L50 33 L46 35 L48 40 L56 41 L61 35 L60 28 L66 23 L73 14 L82 10 L91 22 L99 39 L96 53 L87 60 L77 62 L72 67 L77 76 L73 83 L64 80 L58 72 L52 68 L48 75 L44 73 L42 66 L38 64 L34 68 L28 69 L25 75 L27 84 L21 92 L13 94 Z"/>
-    <path class="map-land map-mainland" d="M5 86 L8 76 L16 70 L24 72 L28 66 L25 57 L28 49 L24 45 L29 39 L31 34 L36 33 L41 27 L45 23 L50 25 L50 33 L46 35 L48 40 L56 41 L61 35 L60 28 L66 23 L73 14 L82 10 L91 22 L99 39 L96 53 L87 60 L77 62 L72 67 L77 76 L73 83 L64 80 L58 72 L52 68 L48 75 L44 73 L42 66 L38 64 L34 68 L28 69 L25 75 L27 84 L21 92 L13 94 Z"/>
-    <path class="map-land map-island map-britain" d="M19 18 L24 20 L27 28 L26 37 L22 43 L17 39 L15 30 L16 23 Z"/>
-    <path class="map-land map-island map-ireland" d="M10 24 L15 22 L18 28 L17 38 L13 43 L9 38 L8 30 Z"/>
-    <path class="map-land map-island map-scandinavia" d="M44 8 L52 2 L63 5 L72 14 L75 25 L68 34 L58 31 L51 24 L46 18 Z"/>
-    <path class="map-coastline map-atlantic" d="M5 86 L8 76 L16 70 L24 72 L28 66 L25 57 L28 49 L24 45 L29 39 L31 34 L36 33 L41 27 L45 23"/>
-    <path class="map-coastline map-north-sea" d="M45 23 L50 25 L50 33 L46 35 L48 40 L56 41 L61 35 L60 28 L66 23 L73 14 L82 10"/>
-    <path class="map-coastline map-east-europe" d="M82 10 L91 22 L99 39 L96 53 L87 60 L77 62 L72 67"/>
-    <path class="map-coastline map-mediterranean" d="M5 86 L13 94 L21 92 L27 84 L25 75 L28 69 L34 68 L38 64 L42 66 L44 73 L48 75 L52 68 L58 72 L64 80 L73 83 L77 76 L72 67"/>
-    <path class="map-coastline map-jutland" d="M42 26 L45 24 L47 29 L46 36 L43 38 L41 32 Z"/>
-    <path class="map-coastline map-italy" d="M38 58 L45 58 L49 64 L50 72 L54 78 L50 83 L45 76 L42 68 L37 63"/>
-    <path class="map-coastline map-balkans" d="M52 62 L63 58 L74 63 L82 72 L78 81 L66 84 L58 78 L51 70"/>
-    <path class="map-coastline map-sicily" d="M44 80 L51 78 L58 81 L53 85 L46 84 Z"/>
-    <path class="map-coastline map-sardinia" d="M36 73 L39 75 L39 81 L36 83 L34 78 Z"/>
-    <path class="map-coastline map-corsica" d="M38 68 L41 70 L40 74 L37 74 Z"/>
-    <path class="map-coastline map-british-coast" d="M19 18 L24 20 L27 28 L26 37 L22 43 L17 39 L15 30 L16 23 Z M10 24 L15 22 L18 28 L17 38 L13 43 L9 38 L8 30 Z"/>
-    <path class="map-coastline map-scandinavian-coast" d="M44 8 L52 2 L63 5 L72 14 L75 25 L68 34 L58 31 L51 24 L46 18 Z"/>
-    <path class="map-region map-iberia" d="M5 86 L8 76 L16 70 L24 72 L28 78 L26 88 L20 94 L12 94 Z"/>
-    <path class="map-region" d="M25 47 L29 39 L36 37 L43 42 L42 51 L35 58 L28 55 Z"/>
-    <path class="map-region" d="M39 31 L48 30 L56 40 L52 49 L43 47 L37 39 Z"/>
-    <path class="map-region" d="M58 28 L68 20 L82 12 L92 25 L98 40 L94 52 L80 58 L66 53 L58 42 Z"/>
-    <path class="map-region" d="M38 58 L48 60 L57 69 L55 80 L47 80 L42 69 L36 64 Z"/>
-    <path class="map-region" d="M52 62 L64 59 L78 66 L81 74 L75 82 L63 81 L54 72 Z"/>
-    <path class="map-river" d="M35 40 C42 43,48 48,55 54 C63 61,70 65,79 68"/>
-    <path class="map-river" d="M62 29 C65 38,67 47,73 55 C80 63,88 67,96 70"/>
-    <path class="map-river" d="M22 42 C25 50,29 57,35 64"/>
-    <path class="map-mountain" d="M29 68 L33 63 L37 69 L42 62 L47 70 L52 64 L57 73"/>
-    <path class="map-mountain" d="M37 56 L42 51 L48 58 L53 52 L59 61"/>
-    <path class="map-mountain" d="M57 45 L62 39 L67 48 L73 42 L80 52"/>
+    <path class="map-coast-glow" d="${geoPath(mapMainlandGeo)}"/>
+    <path class="map-land map-mainland" d="${geoPath(mapMainlandGeo)}"/>
+    <path class="map-land map-island map-britain" d="${geoPath(mapBritainGeo)}"/>
+    <path class="map-land map-island map-ireland" d="${geoPath(mapIrelandGeo)}"/>
+    <path class="map-land map-island map-scandinavia" d="${geoPath(mapScandinaviaGeo)}"/>
+    <path class="map-land map-peninsula map-jutland" d="${geoPath(mapJutlandGeo)}"/>
+    <path class="map-land map-peninsula map-italy" d="${geoPath(mapItalyGeo)}"/>
+    <path class="map-land map-peninsula map-balkans" d="${geoPath(mapBalkansGeo)}"/>
+    <path class="map-land map-island map-sicily" d="${geoPath(mapSicilyGeo)}"/>
+    <path class="map-land map-island map-sardinia" d="${geoPath(mapSardiniaGeo)}"/>
+    <path class="map-land map-island map-corsica" d="${geoPath(mapCorsicaGeo)}"/>
+    <path class="map-coastline map-atlantic" d="${geoPath(mapMainlandGeo.slice(0,18),false)}"/>
+    <path class="map-coastline map-north-sea" d="${geoPath(mapMainlandGeo.slice(27,37),false)}"/>
+    <path class="map-coastline map-east-europe" d="${geoPath(mapMainlandGeo.slice(18,27),false)}"/>
+    <path class="map-coastline map-mediterranean" d="${geoPath(mapMainlandGeo.slice(0,1).concat(mapMainlandGeo.slice(43,50).reverse()).concat(mapMainlandGeo.slice(17,23).reverse()),false)}"/>
+    <path class="map-coastline map-jutland" d="${geoPath(mapJutlandGeo)}"/>
+    <path class="map-coastline map-italy" d="${geoPath(mapItalyGeo)}"/>
+    <path class="map-coastline map-balkans" d="${geoPath(mapBalkansGeo)}"/>
+    <path class="map-coastline map-sicily" d="${geoPath(mapSicilyGeo)}"/>
+    <path class="map-coastline map-sardinia" d="${geoPath(mapSardiniaGeo)}"/>
+    <path class="map-coastline map-corsica" d="${geoPath(mapCorsicaGeo)}"/>
+    <path class="map-coastline map-british-coast" d="${geoPath(mapBritainGeo)} ${geoPath(mapIrelandGeo)}"/>
+    <path class="map-coastline map-scandinavian-coast" d="${geoPath(mapScandinaviaGeo)}"/>
+    <path class="map-region map-iberia" d="${geoPath(mapIberiaRegionGeo)}"/>
+    <path class="map-region" d="${geoPath([[-1.8,44.7],[1.3,50.8],[6.5,49.8],[8.0,45.8],[5.5,43.4],[1.6,42.7],[-1.8,44.7]])}"/>
+    <path class="map-region" d="${geoPath([[5.2,52.7],[14.0,54.6],[18.0,50.0],[13.6,45.9],[8.0,45.8],[6.5,49.8],[5.2,52.7]])}"/>
+    <path class="map-region" d="${geoPath([[18.0,50.0],[25.8,57.4],[32.0,59.2],[42.5,52.5],[35.0,45.6],[26.3,41.0],[18.4,44.7],[18.0,50.0]])}"/>
+    <path class="map-region" d="${geoPath(mapItalyGeo)}"/>
+    <path class="map-region" d="${geoPath(mapBalkansGeo)}"/>
+    <path class="map-river" d="${geoPath([[7.0,50.0],[10.0,48.0],[14.0,47.0],[18.0,46.0],[23.0,45.0],[28.5,44.2]],false)}"/>
+    <path class="map-river" d="${geoPath([[18.5,54.5],[22.0,52.0],[25.5,49.0],[28.8,46.5],[31.0,44.0]],false)}"/>
+    <path class="map-river" d="${geoPath([[-2.0,49.5],[0.0,48.5],[2.3,48.8],[4.5,49.8]],false)}"/>
+    <path class="map-mountain" d="${geoPath([[-1.5,43.2],[2.0,42.7],[5.5,43.4],[8.0,44.3],[10.5,45.0]],false)}"/>
+    <path class="map-mountain" d="${geoPath([[6.0,46.0],[9.0,47.0],[12.0,47.5],[15.0,47.0],[18.0,46.0]],false)}"/>
+    <path class="map-mountain" d="${geoPath([[14.0,43.5],[17.5,42.0],[21.0,41.0],[24.0,40.5],[27.0,40.0]],false)}"/>
     <text class="map-label" x="18" y="48">Britannia</text>
     <text class="map-label" x="29" y="56">Francia</text>
     <text class="map-label" x="43" y="38">Imperium</text>
@@ -3405,7 +3465,7 @@ function hiddenPlaceMapMarkers(){
   return player.foundHiddenPlaces
     .filter(key=>hiddenPlaces[key] && hiddenMapPoints[key])
     .map(key=>{
-      const point=hiddenMapPoints[key];
+      const point=hiddenMapPoint(key);
       const place=hiddenPlaces[key];
       const desc=lang==="en" ? (place.descEn||place.desc||"") : (place.desc||place.descEn||"");
       const hint=`${hiddenPlaceName(key)}. ${hiddenPlaceRouteHint(key)} ${plainMapHint(desc).slice(0,180)}`;
