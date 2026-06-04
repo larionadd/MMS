@@ -5485,7 +5485,7 @@ function toggleTravelCompanion(id){
   id=Number(id);
   if(selectedTravelCompanions.includes(id)){
     if(requiredTravelCompanionIds(currentCity).includes(id)){
-      log("ℹ️ Цей NPC уже в дорожньому загоні й не може залишитися у чужому місті без героя.","travel");
+      log("ℹ️ "+tr("Цей NPC уже в дорожньому загоні й не може залишитися у чужому місті без героя.","This NPC is already in the travel party and cannot remain in a foreign city without the hero."),"travel");
       renderLog();
       return;
     }
@@ -5493,7 +5493,7 @@ function toggleTravelCompanion(id){
   }else if(selectedTravelCompanions.length<4){
     selectedTravelCompanions.push(id);
   }else{
-    log("❌ У дорожній загін можна взяти максимум 4 NPC.","travel");
+    log("❌ "+tr("У дорожній загін можна взяти максимум 4 NPC.","A travel party can include at most 4 NPCs."),"travel");
   }
   renderTravelCompanionList();
   renderLog();
@@ -5515,13 +5515,13 @@ function renderTravelCompanionList(){
   );
   const list=companions.length?companions.map(person=>{
     const selected=selectedTravelCompanions.includes(person.id);
-    return `<button class="companion-choice ${selected?"selected":""}" onclick="toggleTravelCompanion(${person.id})"><b>${htmlName(person)}</b><br><span class="badge">${statusLabel(person)}</span>${required.has(person.id)?`<span class="badge relation-rank">Їде з героєм</span>`:""}<span class="badge">Бій ${person.combat}</span><span class="badge">Сила ${person.strength}</span><span class="badge">Здоров'я ${person.health}</span><br><span class="muted">Сила загону: ${travelCompanionPower(person)}</span></button>`;
-  }).join(""):`<div class="empty">У цьому місті немає вільних дорослих NPC. Найми когось у Центрі зайнятості або звільни підлеглого від роботи перед дорогою.</div>`;
+    return `<button class="companion-choice ${selected?"selected":""}" onclick="toggleTravelCompanion(${person.id})"><b>${htmlName(person)}</b><br><span class="badge">${statusLabel(person)}</span>${required.has(person.id)?`<span class="badge relation-rank">${tr("Їде з героєм","Travels with hero")}</span>`:""}<span class="badge">${tr("Бій","Combat")} ${person.combat}</span><span class="badge">${tr("Сила","Strength")} ${person.strength}</span><span class="badge">${tr("Здоров'я","Health")} ${person.health}</span><br><span class="muted">${tr("Сила загону","Party power")}: ${travelCompanionPower(person)}</span></button>`;
+  }).join(""):`<div class="empty">${tr("У цьому місті немає вільних дорослих NPC. Найми когось у Центрі зайнятості або звільни підлеглого від роботи перед дорогою.","No free adult NPCs available in this city. Hire someone at the Employment Center or release a worker before the road.")}</div>`;
   const raidDisabled=chosen.length<1;
-  document.getElementById("travelCompanionList").innerHTML=`<div class="travel-risk-note"><b>Обрано супровід:</b> ${chosen.length} / 4. ${chosen.length?"Можна приймати бій або напасти на чужий караван.":"Без супроводу нападати не можна; якщо на героя нападуть, він автоматично втратить товар."}</div><div class="travel-party-grid">${list}</div>`;
+  document.getElementById("travelCompanionList").innerHTML=`<div class="travel-risk-note"><b>${tr("Обрано супровід","Escort chosen")}:</b> ${chosen.length} / 4. ${chosen.length?tr("Можна приймати бій або напасти на чужий караван.","You may stand and fight, or attack a passing caravan."):tr("Без супроводу нападати не можна; якщо на героя нападуть, він автоматично втратить товар.","Without an escort you cannot attack; if attacked, the hero loses goods automatically.")}</div><div class="travel-party-grid">${list}</div>`;
   const raidButton=document.getElementById("raidCaravanButton");
   raidButton.disabled=raidDisabled;
-  raidButton.innerText=raidDisabled?"Напад недоступний без NPC":"Напасти на зустрічний караван";
+  raidButton.innerText=raidDisabled?tr("Напад недоступний без NPC","Raid requires NPCs"):tr("Напасти на зустрічний караван","Attack passing caravan");
 }
 function moveTravelCompanions(companionIds,destination){
   const moved=travelParty(currentCity,companionIds);
