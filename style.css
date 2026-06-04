@@ -1021,9 +1021,9 @@ select{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);b
 #combatModal[data-combat-kind="raiders"] .dd-fullscreen-arena{background-image:url("assets/combat/bandits.jpg")}
 
 /* === v0.44: Square location art + tavern + city lock === */
-.location-art{margin:-12px -12px 14px;border-radius:14px 14px 0 0;overflow:hidden;position:relative;background:#1a110a;line-height:0}
-.location-art img{display:block;width:100%;height:auto;filter:saturate(.92) brightness(.96)}
-.location-art::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent 0%,rgba(20,12,6,.7) 100%);pointer-events:none}
+.location-art{margin:6px auto 16px;border-radius:14px;overflow:hidden;position:relative;background:#1a110a;line-height:0;max-width:560px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.location-art img{display:block;width:100%;height:auto;max-height:360px;object-fit:contain;filter:saturate(.95) brightness(.98);margin:0 auto}
+.location-art::after{display:none}
 /* Market tab city portrait — full image, no crop, sits inside the city info panel */
 .city-card-art{margin:0 0 14px;border-radius:12px}
 .city-card-art img{width:100%;height:auto}
