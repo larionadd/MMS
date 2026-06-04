@@ -1012,6 +1012,54 @@ const npcFamilyStatuses = [
   "Заручений / заручена",
   "Піклується про молодшого родича"
 ];
+// === v0.44: NPC i18n (UK strings stay as keys; EN translations looked up at render time) ===
+const NPC_PROFESSION_EN={
+  "Носій":"Porter","Ткачка":"Weaver","Коваль":"Smith","Охоронець":"Guard","Писар":"Scribe","Візник":"Driver","Кухарка":"Cook","Корчмар":"Innkeeper",
+  "Підневільний робітник":"Bonded labourer","Підневільна пряля":"Bonded spinner","Підневільний вантажник":"Bonded porter"
+};
+const NPC_JOB_EN={
+  "Без призначення":"Unassigned","Склад":"Warehouse","Тренування":"Training","Ткацький цех":"Weaving shop","Кузня":"Forge","Кухня":"Kitchen","Заїжджий двір":"Inn","Ферма":"Farm","Стайня":"Stable","Ювелірна майстерня":"Jeweller","Меблева майстерня":"Carpenter","Камера":"Cell"
+};
+const NPC_TRAIT_EN={
+  artisan:{name:"Skilled hands",description:"Knows the craft from childhood and spots small flaws.",effect:"Craft +2"},
+  vigilant:{name:"Watchful eye",description:"Notices motion in the alleys before anyone else.",effect:"Combat +2"},
+  strong:{name:"Sturdy",description:"Used to hard work and long roads.",effect:"Strength +2"},
+  organized:{name:"Thrifty",description:"Keeps the bags in order and never loses goods in the bustle.",effect:"+3 warehouse capacity"},
+  kind:{name:"Kind-hearted",description:"Easily finds common ground with HQ residents.",effect:"Loyalty +2"},
+  reserved:{name:"Quiet",description:"Speaks little of themselves but listens carefully.",effect:"Obedience +2"},
+  resilient:{name:"Resilient",description:"Has endured hard years and rarely complains of fatigue.",effect:"Health +2"},
+  welcoming:{name:"Welcoming",description:"Knows how to listen to a traveller and set a good mood.",effect:"Hospitality +2"}
+};
+const NPC_HISTORIES_EN=[
+  "Once worked the fair wagons and knows the smell of every market yard.",
+  "Lost their home after a bad harvest and seeks a place to begin anew.",
+  "Learned the craft in the family, but had to leave the workshop because of debts.",
+  "Remembers several far roads and always asks travellers for news.",
+  "Loves quiet mornings by the market and keeps a small carved talisman.",
+  "Once tended horses and still spots a good animal at first glance."
+];
+const NPC_HOPES_EN=[
+  "dreams of one day opening their own shop",
+  "wants to save coin for the family",
+  "longs to learn a new craft",
+  "hopes to see Venice",
+  "wants a safe home of their own",
+  "dreams of earning the city's respect"
+];
+const NPC_FAMILY_EN={
+  "Неодружений / неодружена":"Unmarried",
+  "Має родину в рідному місті":"Has family in their home city",
+  "Вдівець / вдова":"Widowed",
+  "Заручений / заручена":"Betrothed",
+  "Піклується про молодшого родича":"Cares for a younger kin"
+};
+function npcProfession(n){return lang==="en"&&NPC_PROFESSION_EN[n.profession]||n.profession;}
+function npcJob(jobStr){if(!jobStr) return "";return lang==="en"&&NPC_JOB_EN[jobStr]||jobStr;}
+function npcTraitField(t,field){if(!t) return "";const en=NPC_TRAIT_EN[t.key]&&NPC_TRAIT_EN[t.key][field];return lang==="en"&&en?en:t[field];}
+function npcStoryEn(s){const i=npcHistories.indexOf(s);return i>=0&&NPC_HISTORIES_EN[i]?NPC_HISTORIES_EN[i]:s;}
+function npcHopeEn(h){const i=npcHopes.indexOf(h);return i>=0&&NPC_HOPES_EN[i]?NPC_HOPES_EN[i]:h;}
+function npcStory(s){return lang==="en"?npcStoryEn(s):s;}
+function npcHope(h){return lang==="en"?npcHopeEn(h):h;}
 const hiddenPlaces = {
   witch:{title:"Лавка старої ворожки",image:"assets/hidden/witch.jpg",route:[1,33],
     desc:"На краю занедбаного тракту між Києвом і Лісабоном стоїть похила лавка, обвішана сушеними травами. Стара ворожка Мирослава колись була лікаркою при княжому дворі, але після невдалого пророцтва — нібито побачила смерть князевого первістка — її вигнали з міста назавжди. Вона вижила серед доріг, навчилась слухати хвороби й тепер продає те, що називає еліксиром життя.",
@@ -3632,13 +3680,13 @@ function npcCard(n,mode){
   const gender=`<span class="badge gender-sign">${n.gender==="female"?tr("♀ Жінка","♀ Woman"):tr("♂ Чоловік","♂ Man")}</span>`;
   const longevity=n.longLived?`<span class="badge relation-rank">${tr("Довгожитель","Long-lived")}</span>`:"";
   const location=mode==="owned"?`<span class="badge">${tr("Перебуває","Located")}: ${cityName(n.locationCity)}</span>`:"";
-  return `<div class="card npc-card gender-${n.gender}"><div class="portrait">${portraitHtml(n)}</div><div><div class="card-title"><b>${htmlName(n)}</b><span class="badge">${statusLabel(n)} • ${escapeHtml(n.profession)}</span></div>${gender}<span class="badge">${tr("Вік","Age")}: ${n.age}</span>${longevity}<span class="badge">${tr("Звідки","From")}: ${escapeHtml(cityNameByName(n.homeCity)||n.homeCity)}</span>${location}${tenure}${relationship}<span class="badge">${compensationText(n)}</span><br><span class="badge">${tr("Сила","Str")} ${n.strength}</span><span class="badge">${tr("Ремесло","Crf")} ${n.craft}</span><span class="badge">${tr("Бій","Cmb")} ${n.combat}</span><span class="badge">${tr("Гостинність","Svc")} ${n.service}</span><span class="badge">${tr("Лояльність","Loy")} ${n.loyalty}</span><span class="badge">${tr("Покірність","Obd")} ${n.obedience}</span><span class="badge">${tr("Здоров'я","Hp")} ${n.health}</span><div class="person-profile"><strong>${escapeHtml(n.trait.name)}</strong> (${escapeHtml(n.trait.effect)})<br>${escapeHtml(n.trait.description)}<br><span class="muted">${escapeHtml(n.story)} ${escapeHtml(displayFirstName(n))} ${escapeHtml(n.hope)}.</span></div><p class="muted">${tr("Робота","Job")}: <b>${escapeHtml(n.job)}</b></p>${career}<p>${tr("Ціна / цінність","Price / value")}: <b>${mode==="market"?npcPrice(n):(n.value||n.price)}</b></p></div><div class="actions">${mode==="market"?`<button class="btn green" onclick="buyNPC(${n.id})">${isSlave?tr("Купити","Buy"):tr("Найняти","Hire")}</button>`:managerActions(n)}</div></div>`;
+  return `<div class="card npc-card gender-${n.gender}"><div class="portrait">${portraitHtml(n)}</div><div><div class="card-title"><b>${htmlName(n)}</b><span class="badge">${statusLabel(n)} • ${escapeHtml(npcProfession(n))}</span></div>${gender}<span class="badge">${tr("Вік","Age")}: ${n.age}</span>${longevity}<span class="badge">${tr("Звідки","From")}: ${escapeHtml(cityNameByName(n.homeCity)||n.homeCity)}</span>${location}${tenure}${relationship}<span class="badge">${compensationText(n)}</span><br><span class="badge">${tr("Сила","Str")} ${n.strength}</span><span class="badge">${tr("Ремесло","Crf")} ${n.craft}</span><span class="badge">${tr("Бій","Cmb")} ${n.combat}</span><span class="badge">${tr("Гостинність","Svc")} ${n.service}</span><span class="badge">${tr("Лояльність","Loy")} ${n.loyalty}</span><span class="badge">${tr("Покірність","Obd")} ${n.obedience}</span><span class="badge">${tr("Здоров'я","Hp")} ${n.health}</span><div class="person-profile"><strong>${escapeHtml(npcTraitField(n.trait,"name"))}</strong> (${escapeHtml(npcTraitField(n.trait,"effect"))})<br>${escapeHtml(npcTraitField(n.trait,"description"))}<br><span class="muted">${escapeHtml(npcStory(n.story))} ${escapeHtml(displayFirstName(n))} ${escapeHtml(npcHope(n.hope))}.</span></div><p class="muted">${tr("Робота","Job")}: <b>${escapeHtml(npcJob(n.job))}</b></p>${career}<p>${tr("Ціна / цінність","Price / value")}: <b>${mode==="market"?npcPrice(n):(n.value||n.price)}</b></p></div><div class="actions">${mode==="market"?`<button class="btn green" onclick="buyNPC(${n.id})">${isSlave?tr("Купити","Buy"):tr("Найняти","Hire")}</button>`:managerActions(n)}</div></div>`;
 }
 function careerHint(person){
   if(person.status==="slave") return `<p class="career-note">${tr("Кріпак: разом 5 днів, покірність 6, сила або ремесло 8.","Serf: 5 days together, obedience 6, strength or craft 8.")}</p>`;
   if(person.status==="serf") return `<p class="career-note">${tr("Громадянин: разом 10 днів, лояльність 9, робоча навичка 8.","Citizen: 10 days together, loyalty 9, work skill 8.")}</p>`;
   if(!person.mastery) return `<p class="career-note">${tr("Майстер: 12 днів, робоча навичка 12 і призначення в справу.","Master: 12 days, work skill 12, assigned to a craft.")}</p>`;
-  return `<p class="career-note">Визнаний майстер справи: ${person.mastery}.</p>`;
+  return `<p class="career-note">${tr("Визнаний майстер справи","Recognised master of the craft")}: ${escapeHtml(npcJob(person.mastery))}.</p>`;
 }
 function managerActions(n,includeProfile=true){
   const profileLbl=tr("Особова справа","Profile");
