@@ -5198,12 +5198,12 @@ function tryCaptureDefeatedEnemy(origin,destination,companionIds){
   const captured=makeNPC("slave",origin,{gender:pick(["male","female"]),locationCity:origin,city:origin,homeCity:"полонений на шляху "+cities[origin].name+" → "+cities[destination].name,story:"Після програної сутички ця людина потрапила до рук торгового дому",hope:"вижити й знайти нове місце в чужому дворі"});
   ownedSlaves.push(captured);
   companionIds.push(captured.id);
-  return " Захоплено полоненого: "+profileName(captured)+".";
+  return " "+tr("Захоплено полоненого: ","Captured prisoner: ")+profileName(captured)+".";
 }
 function combatRewardBox(lines,manual=false){
   const content=lines.filter(Boolean).map(line=>`<div>${escapeHtml(line)}</div>`).join("");
   const mode=manual?`<div class="combat-mode-note">${tr("Ручний режим поки працює як збільшена тактична сцена з повним журналом. Наступний крок - кліки по NPC і цілі.","Manual mode currently renders an enlarged tactical scene with a full log. Next step: clicks on NPC and target.")}</div>`:"";
-  return `<div class="combat-reward-box"><h3>Підсумок бою</h3>${content}${mode}</div>`;
+  return `<div class="combat-reward-box"><h3>${tr("Підсумок бою","Battle summary")}</h3>${content}${mode}</div>`;
 }
 function applyCombatOutcome(origin,destination,companionIds,pool,allies,enemies,rounds,isRaid,victory,manual=false,prose=null){
   // v0.43: reset stress on victory, half on defeat
@@ -5245,12 +5245,12 @@ function applyCombatOutcome(origin,destination,companionIds,pool,allies,enemies,
       adjustReputation(-4,destination);
       const capture=tryCaptureDefeatedEnemy(origin,destination,companionIds);
       log("⚔️ "+tr("Напад на караван міста ","Caravan raid in ")+cityName(destination)+tr(" вдався. Здобуто "," succeeded. Earned ")+money+tr(" монет"," coins")+(good?(tr(", товар: ",", goods: ")+goodName(good)+" × "+goodQty):"")+tr(". Репутація в цьому місті -4.",". Reputation in this city -4.")+capture,"danger");
-      showCombatReport("Перемога над караваном","Підлеглі розбили охорону чужого обозу. Місто "+cities[destination].name+" запам'ятає цей напад. Загиблих серед твоїх людей: "+fallen.length+".",rounds,combatArenaHtml(allies,enemies),combatRewardBox(["Здобуто монет: +"+money,good?"Здобуто товар: "+good+" × "+goodQty:"",combatLoot?"Знайдено спорядження: "+itemById(combatLoot).name:"",capture.trim()||"", "Репутація "+cities[destination].name+": -4"],manual),prose);
+      showCombatReport(tr("Перемога над караваном","Victory over the caravan"),tr("Підлеглі розбили охорону чужого обозу. Місто ","Your retainers broke the rival convoy's guards. The city of ")+cityName(destination)+tr(" запам'ятає цей напад. Загиблих серед твоїх людей: "," will remember this raid. Fallen on your side: ")+fallen.length+".",rounds,combatArenaHtml(allies,enemies),combatRewardBox([tr("Здобуто монет: +","Coins earned: +")+money,good?tr("Здобуто товар: ","Goods seized: ")+goodName(good)+" × "+goodQty:"",combatLoot?tr("Знайдено спорядження: ","Gear found: ")+itemById(combatLoot).name:"",capture.trim()||"", tr("Репутація ","Reputation ")+cityName(destination)+": -4"],manual),prose);
     }else{
       adjustReputation(1,origin);
       const capture=tryCaptureDefeatedEnemy(origin,destination,companionIds);
       log("⚔️ "+tr("Перемога в дорозі: ","Road victory: ")+poolTitle(pool)+tr(". Здобуто ",". Earned ")+money+tr(" монет"," coins")+(foodReward?(tr(", їжа +",", food +")+foodReward):"")+(good?(tr(", товар: ",", goods: ")+goodName(good)):"")+"."+capture,"travel");
-      showCombatReport("Перемога: "+pool.title,"Підлеглі захистили шлях між "+cities[origin].name+" і "+cities[destination].name+". Загиблих: "+fallen.length+".",rounds,combatArenaHtml(allies,enemies),combatRewardBox(["Здобуто монет: +"+money,foodReward?"Їжа: +"+foodReward:"",good?"Здобуто товар: "+good:"",combatLoot?"Знайдено спорядження: "+itemById(combatLoot).name:"",capture.trim()||"", "Репутація "+cities[origin].name+": +1"],manual),prose);
+      showCombatReport(tr("Перемога: ","Victory: ")+poolTitle(pool),tr("Підлеглі захистили шлях між ","Your retainers defended the road between ")+cityName(origin)+tr(" і "," and ")+cityName(destination)+tr(". Загиблих: ",". Fallen: ")+fallen.length+".",rounds,combatArenaHtml(allies,enemies),combatRewardBox([tr("Здобуто монет: +","Coins earned: +")+money,foodReward?tr("Їжа: +","Food: +")+foodReward:"",good?tr("Здобуто товар: ","Goods seized: ")+goodName(good):"",combatLoot?tr("Знайдено спорядження: ","Gear found: ")+itemById(combatLoot).name:"",capture.trim()||"", tr("Репутація ","Reputation ")+cityName(origin)+": +1"],manual),prose);
     }
   }else{
     const loss=Math.min(Math.max(0,gold),rand(30,90));
@@ -5258,7 +5258,7 @@ function applyCombatOutcome(origin,destination,companionIds,pool,allies,enemies,
     gold-=loss;
     adjustReputation(isRaid?-2:-1,isRaid?destination:origin);
     log("⚔️ "+tr("Поразка в дорозі: ","Road defeat: ")+poolTitle(pool)+tr(". Втрачено ",". Lost ")+loss+tr(" монет і товар (",  " coins and goods (")+lostGoods+tr("). Загиблих: ","). Fallen: ")+fallen.length+".","danger");
-    showCombatReport("Поразка: "+pool.title,"Загін не втримав дорогу між "+cities[origin].name+" і "+cities[destination].name+". Загиблих: "+fallen.length+".",rounds,combatArenaHtml(allies,enemies),combatRewardBox(["Втрачено монет: -"+loss,"Втрачено товар: "+lostGoods,"Загиблих: "+fallen.length],manual),prose);
+    showCombatReport(tr("Поразка: ","Defeat: ")+poolTitle(pool),tr("Загін не втримав дорогу між ","The escort failed to hold the road between ")+cityName(origin)+tr(" і "," and ")+cityName(destination)+tr(". Загиблих: ",". Fallen: ")+fallen.length+".",rounds,combatArenaHtml(allies,enemies),combatRewardBox([tr("Втрачено монет: -","Coins lost: -")+loss,tr("Втрачено товар: ","Goods lost: ")+lostGoods,tr("Загиблих: ","Fallen: ")+fallen.length],manual),prose);
   }
 }
 function resolveRoadCombat(origin,destination,companionIds=null,options={}){
@@ -5274,13 +5274,13 @@ function resolveRoadCombat(origin,destination,companionIds=null,options={}){
   const party=travelParty(origin,companionIds);
   if(!party.length){
     const lostGoods=loseTravelCargo(true);
-    log("⚔️ На шляху стався напад, але торговець вирушив без охорони. Опору не було: втрачено весь доступний товар ("+lostGoods+").","danger");
-    showCombatReport("Беззахисна подорож","Без підлеглих герой не може прийняти бій. Нападники забрали товар і зникли до світанку.",["Підлеглих у дорозі немає.","Втрачено: "+lostGoods+"."],combatArenaHtml([],[]),combatRewardBox(["Втрачено: "+lostGoods],manual));
+    log("⚔️ "+tr("На шляху стався напад, але торговець вирушив без охорони. Опору не було: втрачено весь доступний товар (","An attack on the road, but the merchant set out without an escort. No resistance: lost all available goods (")+lostGoods+").","danger");
+    showCombatReport(tr("Беззахисна подорож","Undefended journey"),tr("Без підлеглих герой не може прийняти бій. Нападники забрали товар і зникли до світанку.","Without retainers the hero cannot stand a fight. The raiders took the goods and vanished before dawn."),[tr("Підлеглих у дорозі немає.","No retainers on the road."),tr("Втрачено: ","Lost: ")+lostGoods+"."],combatArenaHtml([],[]),combatRewardBox([tr("Втрачено: ","Lost: ")+lostGoods],manual));
     return combatPromise;
   }
   const difficulty=clamp(Math.ceil(travelDaysBetween(origin,destination)/2),1,4);
   const pool=isRaid
-    ? {kind:"caravan",title:"Зустрічний караван міста "+cities[destination].name,names:["Охоронець каравану","Візник зі списом","Найманий меч","Старший обозу"],loot:["Монети"].concat(cities[destination].supply||[])}
+    ? {kind:"caravan",title:"Зустрічний караван міста "+cities[destination].name,titleEn:"Rival caravan from "+cities[destination].name,names:["Охоронець каравану","Візник зі списом","Найманий меч","Старший обозу"],namesEn:["Caravan guard","Spear-driver","Hired blade","Caravan master"],loot:["Монети"].concat(cities[destination].supply||[])}
     : pick(combatEnemyPools);
   const enemies=Array.from({length:rand(1,4)},(_,index)=>makeEnemyUnit(pool,index,difficulty));
   const allies=party.map(person=>{
